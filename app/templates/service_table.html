@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+  <div class="row">
+    <div class="col-md-4 mb-2">
+      <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('service_create') }}';">Add service</button>
+    </div>
+  </div>
+  <table id="data" class="table table-hover border-top border-bottom border-light">
+    <thead>
+      <tr class="table-primary border-start border-end border-light text-center">
+        <th>Name</th>
+        <th class="col-2">Locations</th>
+        <th class="col-1"><img class="ms-2" src="/time.png" alt="time" width="22"></th>
+        <th class="col-2"><img class="ms-2" src="/price.png" alt="time" width="21"></th>
+        <th class="col-1">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in items %}
+        <tr class="{{ loop.cycle('table-success', 'table-default') }}  border-start border-end border-light">
+          <td class="ps-3">
+            {% if s.no_active %}
+              <img src="/hidden.png" alt="hidden" width="24">
+            {% endif %}
+            {{ s.name[:80] }}
+          </td>
+          <td class="text-center">
+            <span class="badge bg-primary rounded-pill">{{ s.locations|count }}</span>
+          </td>
+          <td class="col-1 text-center">{{ s.duration }}</td>
+          <td class="col-2 text-center">{{ s.price }}</td>
+          <td class="col-1  text-center">
+            <a href="{{ url_for('service_edit', id=s.id) }}"><img src="/edit.png" alt="edit" width="24"></a>
+            <a href="{{ url_for('service_delete', id=s.id) }}"><img class="ms-2" src="/trash.png" alt="delete" width="23"></a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+<div class='d-flex justify-content-end'>
+  <ul class="pagination">
+    {% if pagination.has_prev %}
+      <li class="page-item">
+        <a class="page-link" href="{{ url_for('services', page=pagination.page-1) }}">&laquo;</a>
+      </li>
+    {% else %}
+      <li class="page-item disabled">
+        <a class="page-link" href="#">&laquo;</a>
+      </li>
+    {% endif %}
+    {% for page in pagination.iter_pages() %}
+      {% if page %}
+        {% if page != pagination.page %}
+          <li class="page-item">
+            <a class="page-link" href="{{ url_for('services', page=page) }}">{{ page }}</a>
+          </li>
+        {% else %}
+          <li class="page-item active">
+            <a class="page-link" href="#">{{ page }}</a>
+          </li>
+        {% endif %}
+      {% else %}
+        <li class="page-item disabled">
+          <a class="page-link" href="#">...</a>
+        </li>
+      {% endif %}
+    {% endfor %}
+    {% if pagination.has_next %}
+       <li class="page-item">
+        <a class="page-link" href="{{ url_for('services', page=pagination.page+1) }}">&raquo;</a>
+      </li>
+    {% else %}
+      <li class="page-item disabled">
+        <a class="page-link" href="#">&raquo;</a>
+      </li>
+    {% endif %}
+  </ul>
+</div>
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+{% block app_content %}
+    <form method="post">
+        <div class="form-group row">
+            {{ form.hidden_tag() }}
+            <div class="form-group col-md-4">
+                {{ form.location.label(class_="col-form-label") }}
+                {% if form.location.errors %}
+                    {{ form.location(class_="form-select is-invalid") }}
+                {% else %}
+                    {{ form.location(class_="form-select") }}
+                {% endif %}
+                <div class="form-group mt-2">
+                    {{ form.staff.label(class_="col-form-label") }}
+                    {% if form.staff.errors %}
+                        {{ form.staff(class_="form-select is-invalid") }}
+                    {% else %}
+                        {{ form.staff(class_="form-select") }}
+                    {% endif %}
+                </div>
+            </div>
+            <div class="form-group col-md-4">
+                {{ form.client.label(class_="col-form-label") }}
+                {% if form.client.errors %}
+                    {{ form.client(class_="form-select is-invalid") }}
+                {% else %}
+                    {{ form.client(class_="form-select") }}
+                {% endif %}
+                <div class="row mt-2">
+                    <div class="col-md-7">
+                    {{ form.date.label(class_="col-form-label") }}
+                    {% if form.date.errors %}
+                        {{ form.date(class_="form-control is-invalid") }}
+                    {% else %}
+                        {{ form.date(class_="form-control") }}
+                    {% endif %}
+                    </div>
+                    <div class="col-md-5">
+                    {{ form.time.label(class_="col-form-label") }}
+                    {% if form.time.errors %}
+                        {{ form.time(class_="form-control is-invalid") }}
+                    {% else %}
+                        {{ form.time(class_="form-control") }}
+                    {% endif %}
+                    </div>
+                </div>
+        </div>
+        <div class="form-group mt-2">
+            <div class="form-group col-md-8">
+            {{ form.service.label(class_="col-form-label") }}
+            {% if form.service.errors %}
+                {{ form.service(class_="form-select is-invalid") }}
+            {% else %}
+                {{ form.service(class_="form-select") }}
+            {% endif %}
+            </div>
+            <div class="form-group col-md-8 mt-2">
+            {{ form.info.label(class_="col-form-label") }}
+            {{ form.info(class_="form-control") }}
+            </div>
+        </div>
+        <div class="form-group mt-3">
+            <div class="form-switch">
+                {{ form.cancel(class_="form-check-input") }}
+                {{ form.cancel.label(class_="form-check-label ms-1") }}
+            </div>
+        </div>
+        <div class="form-group mt-2">
+            <div class="form-group col-md-4">
+                <button type="submit" class="btn btn-primary mt-3 mb-2">Submit</button>
+                <button type="button" class="btn btn-secondary mt-3 ms-3 mb-2" onclick="window.location.href='{{ url_back }}'">Back</button>
+            </div>
+        </div>
+    </form>
+
+<script>
+    var location_select = document.getElementById("location");
+    var service_select = document.getElementById("service");
+
+    location_select.onchange = function()  {
+        fetch('/services/' + location_select.value).then(function(response) {
+            response.json().then(function(data) {
+                var optionHTML = "";
+                for (var service of data.services) {optionHTML += '<option value="' + service.id + '">' + service.name + '</option>';}
+                current_value_service = service_select.value
+                service_select.innerHTML = optionHTML;
+                service_select.value = current_value_service
+            })
+        });
+    }
+</script>
+{% endblock %}
