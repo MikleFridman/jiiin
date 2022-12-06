@@ -11,7 +11,7 @@ from flask_admin import Admin, AdminIndexView
 from werkzeug.urls import url_parse
 
 from config import Config
-from flask_sqlalchemy import SQLAlchemypip
+from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
 from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect
