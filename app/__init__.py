@@ -1,14 +1,12 @@
 import os
 
 from dotenv import load_dotenv
-from flask import Flask, redirect, url_for, request
-from flask_admin.contrib.sqla import ModelView
+from flask import Flask
 from flask_babel import Babel
 from flask_login import LoginManager
 from flask_mail import Mail
 from flask_moment import Moment
-from flask_admin import Admin, AdminIndexView
-from werkzeug.urls import url_parse
+from flask_admin import Admin
 
 from config import Config
 from flask_sqlalchemy import SQLAlchemy
@@ -43,34 +41,7 @@ mail = Mail(app)
 
 from app import views, models, errors
 from app.models import *
-from app.functions import check_permission
-
-
-class MyAdminView(AdminIndexView):
-    def is_accessible(self):
-        if not current_user.is_authenticated:
-            return False
-        return check_permission('Admin', 'read')
-
-    def inaccessible_callback(self, name, **kwargs):
-        return redirect(url_for('login', next=url_parse(request.url).path))
-
-
-class MyModelView(ModelView):
-    def is_accessible(self):
-        if not current_user.is_authenticated:
-            return False
-        return check_permission('Admin', 'read')
-
-    def inaccessible_callback(self, name, **kwargs):
-        return redirect(url_for('login', next=url_parse(request.url).path))
-
-
-class UserAdminView(MyModelView):
-    column_exclude_list = ['password_hash']
-    form_excluded_columns = ['password_hash']
-
-
+from app.admin import *
 admin = Admin(app, name="Workshop", index_view=MyAdminView())
 admin.add_view(MyModelView(Company, db.session))
 admin.add_view(MyModelView(CompanyConfig, db.session))
