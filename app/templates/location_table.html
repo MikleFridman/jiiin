@@ -21,7 +21,7 @@
         <tr class="{{ loop.cycle('table-success', 'table-default') }}  border-start border-end border-light">
           <td class="col-3 ps-3">
             {% if l.no_active %}
-              <img src="/hidden.png" alt="hidden" width="24">
+              <img src="{{ url_for('static', filename='/hidden.png') }}" alt="hidden" width="24">
             {% endif %}
             {{ l.short_name() }}
           </td>
@@ -29,8 +29,8 @@
           <td class="text-center">{{ l.phone }}</td>
           <td class="text-center">{{ l.open.strftime('%H:%M') }} - {{ l.close.strftime('%H:%M') }}</td>
           <td class="col-1 text-center">
-            <a href="{{ url_for('location_edit', id=l.id) }}"><img src="/edit.png" alt="edit" width="24"></a>
-            <a href="{{ url_for('location_delete', id=l.id) }}"><img class="ms-2" src="/trash.png" alt="delete" width="23"></a>
+            <a href="{{ url_for('location_edit', id=l.id) }}"><img src="{{ url_for('static', filename='/edit.png') }}" alt="edit" width="24"></a>
+            <a href="{{ url_for('location_delete', id=l.id) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
           </td>
         </tr>
       {% endfor %}

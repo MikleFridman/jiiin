@@ -2,7 +2,7 @@
   <div class="form-group row">
       <div class="col-sm-1 mt-1 text-center">
           {% if request.args.get('client', '0') != '0' %}
-            <img src="/card.png" alt="card" width="36">
+            <img src="{{ url_for('static', filename='/card.png') }}" alt="card" width="36">
           {% endif %}
       </div>
       {{ form.location.label(class_="col-sm-1 col-form-label text-end") }}
@@ -20,7 +20,7 @@
       </div>
 
       <div class="col-sm-1 mt-1">
-          <a href="{{ url_for('appointments') }}"><img src="/refresh.png" alt="edit" width="32"></a>
+          <a href="{{ url_for('appointments') }}"><img src="{{ url_for('static', filename='/refresh.png') }}" alt="edit" width="32"></a>
       </div>
   </div>
 </form>

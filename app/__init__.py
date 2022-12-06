@@ -1,3 +1,6 @@
+import os
+
+from dotenv import load_dotenv
 from flask import Flask, redirect, url_for, request
 from flask_admin.contrib.sqla import ModelView
 from flask_babel import Babel
@@ -8,12 +11,15 @@ from flask_admin import Admin, AdminIndexView
 from werkzeug.urls import url_parse
 
 from config import Config
-from flask_sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemypip
 from sqlalchemy import MetaData
 from flask_migrate import Migrate
 from flask_wtf.csrf import CSRFProtect
 from flask_bootstrap import Bootstrap
-from flask_modals import Modal
+
+dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+if os.path.exists(dotenv_path):
+    load_dotenv(dotenv_path)
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 app.config.from_object(Config)
@@ -32,7 +38,6 @@ csrf.init_app(app)
 login = LoginManager(app)
 login.login_view = 'login'
 moment = Moment(app)
-modal = Modal(app)
 babel = Babel(app)
 mail = Mail(app)
 

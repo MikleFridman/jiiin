@@ -16,6 +16,7 @@ def make_shell_context():
             'Item': Item,
             'Storage': Storage,
             'ItemFlow': ItemFlow,
+            'Permission': Permission,
             }
 
 
