@@ -43,6 +43,9 @@ roles_users = db.Table('roles_users',
 
 
 roles_permissions = db.Table('roles_permissions',
+                             db.Column('id',
+                                       db.Integer,
+                                       primary_key=True),
                              db.Column('role_id',
                                        db.Integer,
                                        db.ForeignKey('role.id'),
@@ -60,6 +63,9 @@ class Tariff(db.Model):
     max_users = db.Column(db.Integer, default=1)
     max_staff = db.Column(db.Integer, default=1)
     default = db.Column(db.Boolean, default=False)
+
+    def __repr__(self):
+        return self.name
 
 
 class Company(db.Model):
@@ -341,6 +347,12 @@ class Item(db.Model):
                                          item_id=self.id)
         return sum(list(map(lambda x: x.quantity, counts)))
 
+    def get_balance_location(self, location_id):
+        counts = Storage.query.filter_by(cid=current_user.cid,
+                                         location_id=location_id,
+                                         item_id=self.id)
+        return sum(list(map(lambda x: x.quantity, counts)))
+
 
 class ItemFlow(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -364,3 +376,48 @@ class Storage(db.Model):
                         primary_key=True)
     item = db.relationship('Item', backref='storage')
     quantity = db.Column(db.Integer)
+
+
+class TaskStatus(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
+    name = db.Column(db.String(64), index=True, nullable=False)
+    description = db.Column(db.String(255))
+    final = db.Column(db.Boolean, default=False)
+
+
+class Task(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
+    staff_id = db.Column(db.Integer, db.ForeignKey('staff.id'),
+                         nullable=False)
+    staff = db.relationship('Staff', backref='tasks')
+    name = db.Column(db.String(64), index=True, nullable=False)
+    description = db.Column(db.String(255))
+    deadline = db.Column(db.Date)
+    closed = db.Column(db.Boolean, default=False)
+    author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    author = db.relationship('User', backref='tasks')
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow())
+
+    def __repr__(self):
+        return self.name
+
+
+class TaskProgress(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
+    task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)
+    task = db.relationship('Task', backref='progress')
+    staff_id = db.Column(db.Integer, db.ForeignKey('staff.id'),
+                         nullable=False)
+    staff = db.relationship('Staff', backref='tasks_progress')
+    status_id = db.Column(db.Integer, db.ForeignKey('task_status.id'),
+                          nullable=False)
+    status = db.relationship('TaskStatus', backref='tasks_progress')
+    description = db.Column(db.String(255))
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow(),
+                          onupdate=datetime.utcnow)
+
+    def __repr__(self):
+        return f'{self.task} {self.timestamp}'

@@ -108,7 +108,6 @@ def get_staff_schedule(staff_id, location_id, date):
         time_to = datetime.combine(date, item.time_to)
         list_items.append((time_from, time_to))
     list_items.sort(key=lambda x: (x[0].hour, x[0].minute))
-    print(list_items)
     return list_items
 
 

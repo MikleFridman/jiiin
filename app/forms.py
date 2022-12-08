@@ -26,7 +26,7 @@ def validate_phone(form, field):
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
-    remember_me = BooleanField('Remember Me')
+    remember_me = BooleanField('Remember me')
     submit = SubmitField('Submit')
 
 
@@ -232,5 +232,25 @@ class ItemFlowForm(FlaskForm):
     location = SelectField('Location', choices=[], coerce=int)
     date = DateField('Date')
     item = SelectField('Item', choices=[], coerce=int)
+    action = SelectField('Action', choices=[(1, 'Plus'), (-1, 'Minus')],
+                         coerce=int)
     quantity = FloatField('Quantity', default=0)
     submit = SubmitField('Submit')
+
+    def __init__(self, source_location, source_item, source_quantity,
+                 *args, **kwargs):
+        super(ItemFlowForm, self).__init__(*args, **kwargs)
+        self.source_location = source_location
+        self.source_item = source_item
+        self.source_quantity = source_quantity
+
+    def validate_quantity(self, field):
+        if self.action.data == 1:
+            return True
+        item = Item.query.get(self.item.data)
+        count = item.get_balance_location(self.location.data)
+        if (self.source_location == self.location.data and
+                self.source_item == self.item.data):
+            count -= self.source_quantity
+        if field.data > count:
+            raise ValidationError(f'Quantity exceeds available ({count})')

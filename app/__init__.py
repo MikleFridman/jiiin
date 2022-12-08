@@ -2,6 +2,7 @@ import os
 
 from dotenv import load_dotenv
 from flask import Flask
+from flask_admin.menu import MenuLink
 from flask_babel import Babel
 from flask_login import LoginManager
 from flask_mail import Mail
@@ -49,3 +50,5 @@ admin.add_view(MyModelView(Tariff, db.session))
 admin.add_view(UserAdminView(User, db.session))
 admin.add_view(MyModelView(Role, db.session))
 admin.add_view(MyModelView(Permission, db.session))
+with app.test_request_context():
+    admin.add_link(MenuLink(name='Go to site', url=url_for('index')))

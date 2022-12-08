@@ -808,24 +808,25 @@ def item_flow_create():
                              location_id=form.location.data,
                              date=form.date.data,
                              item_id=form.item.data,
-                             quantity=form.quantity.data)
+                             quantity=form.quantity.data * form.action.data)
         db.session.add(item_flow)
         storage = Storage.query.filter_by(cid=current_user.cid,
                                           location_id=form.location.data,
                                           item_id=form.item.data).first()
         if storage:
-            storage.quantity += form.quantity.data
+            storage.quantity += form.quantity.data * form.action.data
         else:
             storage = Storage(cid=current_user.cid,
                               location_id=form.location.data,
                               item_id=form.item.data,
-                              quantity=form.quantity.data)
+                              quantity=form.quantity.data * form.action.data)
             db.session.add(storage)
         db.session.commit()
         return redirect(url_back)
     elif request.method == 'POST':
         form.location.default = form.location.data
         form.item.default = form.item.data
+        form.action.default = form.action.data
         form.process()
     else:
         form.date.data = datetime.now().date()
@@ -841,7 +842,9 @@ def item_flow_edit(id):
     url_back = url_for('items_flow', **request.args)
     item_flow = ItemFlow.query.filter_by(cid=current_user.cid,
                                          id=id).first_or_404()
-    form = ItemFlowForm()
+    form = ItemFlowForm(item_flow.location_id,
+                        item_flow.item_id,
+                        item_flow.quantity)
     form.location.choices = get_active_locations()
     form.item.choices = get_active_items()
     if form.validate_on_submit():
@@ -851,7 +854,7 @@ def item_flow_edit(id):
         item_flow.location_id = form.location.data
         item_flow.date = form.date.data
         item_flow.item_id = form.item.data
-        item_flow.quantity = form.quantity.data
+        item_flow.quantity = form.quantity.data * form.action.data
         current_storage = Storage.query.filter_by(cid=current_user.cid,
                                                   location_id=current_location,
                                                   item_id=current_item).first()
@@ -860,25 +863,27 @@ def item_flow_edit(id):
                                           location_id=form.location.data,
                                           item_id=form.item.data).first()
         if storage:
-            storage.quantity += form.quantity.data
+            storage.quantity += form.quantity.data * form.action.data
         else:
             storage = Storage(cid=current_user.cid,
                               location_id=form.location.data,
                               item_id=form.item.data,
-                              quantity=form.quantity.data)
+                              quantity=form.quantity.data * form.action.data)
             db.session.add(storage)
         db.session.commit()
         return redirect(url_back)
     elif request.method == 'POST':
         form.location.default = form.location.data
         form.item.default = form.item.data
+        form.action.default = form.action.data
         form.process()
     else:
         form.location.default = item_flow.location_id
         form.item.default = item_flow.item_id
         form.process()
         form.date.data = item_flow.date
-        form.quantity.data = item_flow.quantity
+        form.quantity.data = abs(item_flow.quantity)
+        form.action.data = item_flow.quantity / abs(item_flow.quantity)
     return render_template('data_form.html',
                            title='Item flow (edit)',
                            form=form,

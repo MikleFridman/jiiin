@@ -18,3 +18,4 @@ class Config():
     MAIL_USERNAME = 'mikle.fridman@gmail.com'
     MAIL_DEFAULT_SENDER = 'mikle.fridman@gmail.com'
     MAIL_PASSWORD = 'xclvwfrftcbcruvi'
+    ADMINS = ['mikle.fridman@gmail.com']
