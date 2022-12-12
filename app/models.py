@@ -43,9 +43,6 @@ roles_users = db.Table('roles_users',
 
 
 roles_permissions = db.Table('roles_permissions',
-                             db.Column('id',
-                                       db.Integer,
-                                       primary_key=True),
                              db.Column('role_id',
                                        db.Integer,
                                        db.ForeignKey('role.id'),
@@ -169,6 +166,14 @@ class User(db.Model, UserMixin):
                 'edit': edit,
                 'create': create,
                 'delete': delete}
+
+
+class UserFile(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user = db.relationship('User', backref='files')
+    path = db.Column(db.String(64))
 
 
 class Staff(db.Model):
@@ -359,10 +364,11 @@ class ItemFlow(db.Model):
     cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
     date = db.Column(db.Date, nullable=False)
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
-    location = db.relationship('Location', backref='flow')
+    location = db.relationship('Location', backref='item_flow')
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
-    item = db.relationship('Item', backref='flow')
+    item = db.relationship('Item', backref='item_flow')
     quantity = db.Column(db.Integer)
+    sum = db.Column(db.Float)
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow(),
                           onupdate=datetime.utcnow)
 
@@ -378,6 +384,26 @@ class Storage(db.Model):
     quantity = db.Column(db.Integer)
 
 
+class CashFlow(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
+    date = db.Column(db.Date, nullable=False)
+    location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
+    location = db.relationship('Location', backref='cash_flow')
+    description = db.Column(db.String(255))
+    sum = db.Column(db.Float)
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow(),
+                          onupdate=datetime.utcnow)
+
+
+class Cash(db.Model):
+    cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
+    location_id = db.Column(db.Integer, db.ForeignKey('location.id'),
+                            primary_key=True)
+    location = db.relationship('Location', backref='cash')
+    sum = db.Column(db.Float)
+
+
 class TaskStatus(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
@@ -389,12 +415,12 @@ class TaskStatus(db.Model):
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
+    description = db.Column(db.String(255))
+    deadline = db.Column(db.Date)
     staff_id = db.Column(db.Integer, db.ForeignKey('staff.id'),
                          nullable=False)
     staff = db.relationship('Staff', backref='tasks')
     name = db.Column(db.String(64), index=True, nullable=False)
-    description = db.Column(db.String(255))
-    deadline = db.Column(db.Date)
     closed = db.Column(db.Boolean, default=False)
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     author = db.relationship('User', backref='tasks')
@@ -402,6 +428,12 @@ class Task(db.Model):
 
     def __repr__(self):
         return self.name
+
+    def current_status(self):
+        pass
+
+    def current_staff(self):
+        pass
 
 
 class TaskProgress(db.Model):

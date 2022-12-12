@@ -1,9 +1,9 @@
+import os.path
+
 from flask import render_template, flash, redirect, url_for, request, jsonify
 from flask_login import login_user, logout_user, login_required
-from sqlalchemy import text
 from werkzeug.urls import url_parse
-
-from app import app
+from werkzeug.utils import secure_filename
 
 from app.forms import *
 from app.functions import *
@@ -112,9 +112,10 @@ def user_edit(id):
                            title='User (edit)',
                            form=form,
                            url_back=url_back)
+# User block end
 
 
-# Staff start block
+# Staff block start
 @app.route('/staff/')
 @login_required
 def staff():
@@ -281,12 +282,10 @@ def staff_schedule_delete(id):
     db.session.commit()
     flash('Delete schedule {}'.format(id))
     return redirect(url_for('staff_schedule', id=staff_id))
+# Staff block end
 
 
-# Staff end block
-
-
-# Client start block
+# Client block start
 @app.route('/clients/')
 @login_required
 def clients():
@@ -354,10 +353,29 @@ def client_delete(id):
     db.session.commit()
     flash('Delete client {}'.format(id))
     return redirect(url_for('clients'))
-# Client end block
 
 
-# Service start block
+@app.route('/clients/upload_file/<id>/', methods=['GET', 'POST'])
+@login_required
+def upload_client_file(id):
+    url_back = url_for('clients')
+    client = Client.query.filter_by(cid=current_user.cid,
+                                    id=id).first_or_404()
+    if request.method == 'POST':
+        if 'file' not in request.files:
+            flash('No selected file')
+            return redirect('upload_client_file')
+        file = request.files['file']
+        if file.filename == '':
+            flash('No selected file')
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            return redirect(url_back)
+# Client block end
+
+
+# Service block start
 @app.route('/services/')
 @login_required
 def services():
@@ -439,10 +457,10 @@ def service_delete(id):
     db.session.commit()
     flash('Delete service {}'.format(id))
     return redirect(url_for('services'))
-# Service end block
+# Service block end
 
 
-# Location start block
+# Location block start
 @app.route('/locations/')
 @login_required
 def locations():
@@ -515,10 +533,10 @@ def location_delete(id):
     db.session.commit()
     flash('Delete location {}'.format(id))
     return redirect(url_for('locations'))
-# Location end block
+# Location block end
 
 
-# Appointment start block
+# Appointment block start
 @app.route('/appointments/')
 @login_required
 def appointments():
@@ -709,10 +727,10 @@ def appointment_delete(id):
     db.session.commit()
     flash('Delete appointment {}'.format(id))
     return redirect(url_for('appointments'))
-# Appointment end block
+# Appointment block end
 
 
-# Item start block
+# Item block start
 @app.route('/items/')
 @login_required
 def items():
@@ -775,10 +793,10 @@ def item_delete(id):
     db.session.commit()
     flash('Delete item {}'.format(id))
     return redirect(url_for('items'))
-# Item end block
+# Item block end
 
 
-# ItemFlow start block
+# ItemFlow block start
 @app.route('/items_flow/')
 @login_required
 def items_flow():
@@ -906,4 +924,4 @@ def item_flow_delete(id):
     db.session.commit()
     flash('Delete item flow {}'.format(id))
     return redirect(url_for('items_flow'))
-# ItemFlow end block
+# ItemFlow block end

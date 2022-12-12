@@ -19,3 +19,14 @@ class Config():
     MAIL_DEFAULT_SENDER = 'mikle.fridman@gmail.com'
     MAIL_PASSWORD = 'xclvwfrftcbcruvi'
     ADMINS = ['mikle.fridman@gmail.com']
+    UPLOAD_FOLDER = (os.environ.get('UPLOAD_FOLDER') or
+                     os.path.join(basedir, 'upload'))
+    UPLOAD_EXTENSIONS = ['.jpg',
+                         '.jpeg',
+                         '.png',
+                         '.xls',
+                         '.xlsx',
+                         '.doc',
+                         '.docx',
+                         '.pdf']
+    MAX_CONTENT_LENGTH = 1024 * 1024

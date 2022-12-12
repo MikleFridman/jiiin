@@ -1,7 +1,12 @@
-from flask_login import current_user
 from sqlalchemy import func
 
+from app import app
 from app.models import *
+
+
+def allowed_file(name):
+    allow_ext = app.config['UPLOAD_EXTENSIONS']
+    return '.' in name and name.rsplit('.', 1)[1].lower() in allow_ext
 
 
 def check_permission(object_name, access_level):
