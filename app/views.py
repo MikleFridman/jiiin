@@ -1,9 +1,10 @@
+import hashlib
 import os.path
+import uuid
 
 from flask import render_template, flash, redirect, url_for, request, jsonify
 from flask_login import login_user, logout_user, login_required
 from werkzeug.urls import url_parse
-from werkzeug.utils import secure_filename
 
 from app.forms import *
 from app.functions import *
@@ -78,18 +79,12 @@ def company_edit():
 @app.route('/users/edit/<id>/', methods=['GET', 'POST'])
 @login_required
 def user_edit(id):
-    url_back = url_for('users')
-    role = Role.query.filter_by(id=current_user.role_id).first_or_404()
-    if role.admin:
-        user = User.query.filter_by(cid=current_user.cid,
-                                    id=id).first_or_404()
-    else:
-        user = current_user
+    url_back = url_for('index')
+    user = current_user
     form = UserFormEdit(user.username, user.email)
     if form.validate_on_submit():
         user.username = form.username.data
         user.email = form.email.data
-        user.role_id = form.role.data
         if form.password.data.strip() != '':
             if not user.check_password(form.password_old.data):
                 flash('Invalid password')
@@ -98,16 +93,10 @@ def user_edit(id):
                                        form=form)
             user.set_password(form.password.data)
         db.session.commit()
-        return redirect(url_for('users'))
-    else:
-        form.cid.choices = get_active_companies()
-        if request.method == 'GET':
-            form.role.default = user.role_id
-            form.cid.default = user.cid
-            form.cid.render_kw = {'readonly': True}
-            form.process()
-            form.username.data = user.username
-            form.email.data = user.email
+        return redirect(url_for('index'))
+    elif request.method == 'GET':
+        form.username.data = user.username
+        form.email.data = user.email
     return render_template('data_form.html',
                            title='User (edit)',
                            form=form,
@@ -355,23 +344,56 @@ def client_delete(id):
     return redirect(url_for('clients'))
 
 
-@app.route('/clients/upload_file/<id>/', methods=['GET', 'POST'])
+@app.route('/clients/<id>/files/', methods=['GET', 'POST'])
 @login_required
-def upload_client_file(id):
-    url_back = url_for('clients')
+def client_files(id):
+    page = request.args.get('page', 1, type=int)
+    items = ClientFile.query.filter_by(
+        cid=current_user.id, client_id=id).paginate(
+        page, app.config['ROWS_PER_PAGE'], False)
+    return render_template('client_files_table.html',
+                           id=id,
+                           title='Files',
+                           items=items.items,
+                           pagination=items)
+
+
+@app.route('/clients/<id>/upload_file/', methods=['GET', 'POST'])
+@login_required
+def client_file_upload(id):
+    url_back = url_for('client_files', id=id)
     client = Client.query.filter_by(cid=current_user.cid,
                                     id=id).first_or_404()
+    form = ClientFileForm()
     if request.method == 'POST':
         if 'file' not in request.files:
             flash('No selected file')
-            return redirect('upload_client_file')
+            return redirect(url_for('upload_client_file', id=id))
         file = request.files['file']
         if file.filename == '':
             flash('No selected file')
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            return redirect(url_back)
+            return redirect(url_for('upload_client_file', id=id))
+        if not allowed_file(file.filename):
+            flash('Unauthorized file extension')
+            return redirect(url_for('upload_client_file', id=id))
+        file_ext = os.path.splitext(file.filename)[1]
+        path = os.path.join(app.config['UPLOAD_FOLDER'],
+                            str(uuid.uuid4()) + file_ext)
+        file.save(path)
+        with open(path, 'rb') as f:
+            hash_file = hashlib.sha1(f.read()).hexdigest()
+        client_file = ClientFile(cid=current_user.cid,
+                                 client_id=id,
+                                 name=file.filename,
+                                 path=path,
+                                 hash=hash_file)
+        db.session.add(client_file)
+        db.session.commit()
+        return redirect(url_back)
+    return render_template('upload_form.html',
+                           title='File upload',
+                           form=form,
+                           url_back=url_back)
 # Client block end
 
 

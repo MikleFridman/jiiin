@@ -44,7 +44,7 @@ from app import views, models, errors
 from app.models import *
 from app.admin import *
 admin = Admin(app, name="Workshop", index_view=MyAdminView())
-admin.add_view(MyModelView(Company, db.session))
+admin.add_view(CompanyAdminView(Company, db.session))
 admin.add_view(MyModelView(CompanyConfig, db.session))
 admin.add_view(MyModelView(Tariff, db.session))
 admin.add_view(UserAdminView(User, db.session))

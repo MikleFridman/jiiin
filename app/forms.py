@@ -5,7 +5,7 @@ from flask_wtf import FlaskForm
 from wtforms import (StringField, PasswordField, BooleanField,
                      SubmitField, TextAreaField, TelField, IntegerField,
                      FloatField, SelectField, DateField, TimeField,
-                     SelectMultipleField)
+                     SelectMultipleField, FileField)
 from wtforms.validators import (DataRequired, Email, EqualTo,
                                 ValidationError, Length)
 
@@ -34,7 +34,6 @@ class UserForm(FlaskForm):
     cid = SelectField('Company', choices=[], validate_choice=False, coerce=int)
     username = StringField('Username', validators=[DataRequired()])
     email = StringField('E-mail', validators=[DataRequired(), Email()])
-    role = SelectField('Role', choices=[(1, 'User'), (99, 'Admin')], validate_choice=False, coerce=int)
     password = PasswordField('Password', validators=[DataRequired()])
     password2 = PasswordField('Repeat password', validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Submit')
@@ -51,6 +50,7 @@ class UserForm(FlaskForm):
 
 
 class UserFormEdit(UserForm):
+    cid = None
     password_old = PasswordField('Password')
     password = PasswordField('Password new')
     password2 = PasswordField('Repeat password new', validators=[EqualTo('password')])
@@ -98,8 +98,8 @@ class StaffScheduleForm(FlaskForm):
     location = SelectField('Location', choices=[], coerce=int)
     date_from = DateField('Date from', validators=[DataRequired()])
     date_to = DateField('Date to', validators=[DataRequired()])
-    time_from = TimeField('Date from', validators=[DataRequired()])
-    time_to = TimeField('Date to', validators=[DataRequired()])
+    time_from = TimeField('Time from', validators=[DataRequired()])
+    time_to = TimeField('Time to', validators=[DataRequired()])
     no_active = BooleanField('No active')
 
     def validate_location(self, field):
@@ -128,6 +128,11 @@ class ClientForm(FlaskForm):
     phone = TelField('Phone', validators=[DataRequired(), validate_phone])
     info = TextAreaField('Info', validators=[Length(max=200)])
     no_active = BooleanField('No active')
+    submit = SubmitField('Submit')
+
+
+class ClientFileForm(FlaskForm):
+    file = FileField('')
     submit = SubmitField('Submit')
 
 

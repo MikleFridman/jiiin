@@ -168,14 +168,6 @@ class User(db.Model, UserMixin):
                 'delete': delete}
 
 
-class UserFile(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    user = db.relationship('User', backref='files')
-    path = db.Column(db.String(64))
-
-
 class Staff(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
@@ -211,6 +203,27 @@ class Client(db.Model):
 
     def short_name(self):
         return self.name[:25]
+
+    def add_file(self, file):
+        if not self.is_service(file):
+            self.files.append(file)
+
+    def remove_file(self, file):
+        if self.is_file(file):
+            self.files.remove(file)
+
+    def is_file(self, file):
+        return file in self.files
+
+
+class ClientFile(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
+    client_id = db.Column(db.Integer, db.ForeignKey('client.id'), nullable=False)
+    client = db.relationship('Client', backref='files')
+    name = db.Column(db.String(64))
+    path = db.Column(db.String(128))
+    hash = db.Column(db.String(64))
 
 
 class Service(db.Model):

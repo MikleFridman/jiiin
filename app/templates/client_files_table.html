@@ -3,42 +3,25 @@
 {% block app_content %}
   <div class="row">
     <div class="col-md-4 mb-2">
-      <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('client_create') }}';">Add new</button>
+      <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('client_file_upload', id=id) }}';">Add new</button>
     </div>
   </div>
   <table id="data" class="table table-hover border-top border-bottom border-light">
     <thead>
       <tr class="table-primary border-start border-end border-light text-center">
-        <th class="col-5">Name</th>
-        <th class="col-1">History</th>
-        <th class="col-1">Files</th>
-        <th class="col-2">Phone</th>
+        <th class="col-11">Name</th>
         <th class="col-1">Action</th>
       </tr>
     </thead>
     <tbody>
-      {% for c in items %}
+      {% for f in items %}
         <tr class="{{ loop.cycle('table-success', 'table-default') }}  border-start border-end border-light">
-          <td class="col-5 ps-3">
-            {% if c.no_active %}
-              <img src="{{ url_for('static', filename='/hidden.png') }}" alt="edit" width="24">
-            {% endif %}
-            {{ c.name }}
+          <td class="col-11 ps-3">
+            {{ f.name }}
           </td>
           <td class="col-1 text-center">
-            <a href="{{ url_for('appointments', client=c.id) }}">
-              <img class="ms-2" src="{{ url_for('static', filename='/table.png') }}" alt="table" width="24">
-            </a>
-          </td>
-          <td class="col-1 text-center">
-            <a href="{{ url_for('client_files', id=c.id) }}">
-              <img class="ms-2" src="{{ url_for('static', filename='/attach.png') }}" alt="table" width="23">
-            </a>
-          </td>
-          <td class="col-2 text-center">{{ c.phone }}</td>
-          <td class="col-1 text-center">
-            <a href="{{ url_for('client_edit', id=c.id) }}"><img src="{{ url_for('static', filename='/edit.png') }}" alt="edit" width="24"></a>
-            <a href="{{ url_for('client_delete', id=c.id) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
+            <a href=""><img src="{{ url_for('static', filename='/download.png') }}" alt="edit" width="24"></a>
+            <a href=""><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
           </td>
         </tr>
       {% endfor %}

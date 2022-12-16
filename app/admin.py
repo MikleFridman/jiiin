@@ -28,5 +28,10 @@ class MyModelView(ModelView):
 
 
 class UserAdminView(MyModelView):
-    column_exclude_list = ['password_hash']
-    form_excluded_columns = ['password_hash']
+    column_exclude_list = ['password_hash', 'info']
+    form_excluded_columns = ['password_hash', 'tasks', 'files']
+
+
+class CompanyAdminView(MyModelView):
+    column_exclude_list = ['info']
+    form_excluded_columns = ['staff', 'clients', 'services', 'locations', 'appointments']

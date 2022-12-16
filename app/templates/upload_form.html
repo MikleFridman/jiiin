@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+{% block app_content %}
+<div class="row mt-1">
+    <div class="col-md-4">
+        <form class="form-inline" action="" method="post" enctype="multipart/form-data">
+            {{ form.hidden_tag() }}
+            {% for field in form if field.widget.input_type != 'hidden' and field.widget.input_type != 'submit' %}
+                <div class="form-group mb-2">
+                    {% if field.widget.input_type != 'checkbox' %}
+                        {{ field.label(class_="col-form-label") }}
+                        {% if field.errors %}
+                            {{ field(class_="form-control is-invalid") }}
+                        {% else %}
+                            {{ field(class_="form-control") }}
+                        {% endif %}
+                    {% else %}
+                        <div class="mt-3">
+                            {{ field(class_="form-check-input") }}
+                            {{ field.label(class_="form-check-label ms-1") }}
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary mt-3 mb-2">Submit</button>
+            <button type="button" class="btn btn-secondary mt-3 ms-3 mb-2" onclick="window.location.href='{{ url_back }}'">Back</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

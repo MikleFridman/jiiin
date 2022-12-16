@@ -1,12 +1,14 @@
+import os
+
 from sqlalchemy import func
 
 from app import app
 from app.models import *
 
 
-def allowed_file(name):
+def allowed_file(filename):
     allow_ext = app.config['UPLOAD_EXTENSIONS']
-    return '.' in name and name.rsplit('.', 1)[1].lower() in allow_ext
+    return '.' in filename and os.path.splitext(filename)[1] in allow_ext
 
 
 def check_permission(object_name, access_level):
@@ -29,12 +31,8 @@ def get_config_parameter(name):
 
 
 def get_active_companies(queryset=False):
-    role = current_user.role
-    if role.superadmin:
-        items = Company.query.filter_by(no_active=False).all()
-    else:
-        items = Company.query.filter_by(no_active=False,
-                                        id=current_user.cid).all()
+    items = Company.query.filter_by(no_active=False,
+                                    id=current_user.cid).all()
     if queryset:
         return items
     if len(items) == 1:
