@@ -2,7 +2,7 @@ import hashlib
 import os.path
 import uuid
 
-from flask import render_template, flash, redirect, url_for, request, jsonify
+from flask import render_template, flash, redirect, url_for, request, jsonify, send_file
 from flask_login import login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 
@@ -373,12 +373,15 @@ def client_file_upload(id):
         if file.filename == '':
             flash('No selected file')
             return redirect(url_for('upload_client_file', id=id))
-        if not allowed_file(file.filename):
+        if not allowed_file_ext(file.filename):
             flash('Unauthorized file extension')
             return redirect(url_for('upload_client_file', id=id))
         file_ext = os.path.splitext(file.filename)[1]
-        path = os.path.join(app.config['UPLOAD_FOLDER'],
-                            str(uuid.uuid4()) + file_ext)
+        directory = os.path.join(app.config['UPLOAD_FOLDER'],
+                                 str(current_user.cid))
+        path = os.path.join(directory, str(uuid.uuid4()) + file_ext)
+        if not os.path.exists(directory):
+            os.makedirs(directory)
         file.save(path)
         with open(path, 'rb') as f:
             hash_file = hashlib.sha1(f.read()).hexdigest()
@@ -394,6 +397,35 @@ def client_file_upload(id):
                            title='File upload',
                            form=form,
                            url_back=url_back)
+
+
+@app.route('/clients/<client_id>/download_file/<id>/')
+@login_required
+def client_file_download(client_id, id):
+    url_back = url_for('client_files', id=client_id)
+    file = ClientFile.query.filter_by(cid=current_user.cid,
+                                      id=id).first()
+    return send_file(file.path, as_attachment=True, download_name=file.name)
+
+
+@app.route('/clients/<client_id>/delete_file/<id>/')
+@login_required
+def client_file_delete(client_id, id):
+    url_back = url_for('client_files', id=client_id)
+    if not check_permission('ClientFile', 'delete'):
+        flash('Insufficient access level')
+        return redirect(url_back)
+    try:
+        file = ClientFile.query.filter_by(cid=current_user.cid,
+                                          id=id).first()
+        os.remove(file.path)
+        db.session.delete(file)
+        db.session.commit()
+    except RuntimeError:
+        flash('Runtime error')
+        return redirect(url_back)
+    flash('Delete file {}'.format(id))
+    return redirect(url_back)
 # Client block end
 
 

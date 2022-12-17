@@ -204,17 +204,6 @@ class Client(db.Model):
     def short_name(self):
         return self.name[:25]
 
-    def add_file(self, file):
-        if not self.is_service(file):
-            self.files.append(file)
-
-    def remove_file(self, file):
-        if self.is_file(file):
-            self.files.remove(file)
-
-    def is_file(self, file):
-        return file in self.files
-
 
 class ClientFile(db.Model):
     id = db.Column(db.Integer, primary_key=True)

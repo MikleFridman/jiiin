@@ -6,7 +6,7 @@ from app import app
 from app.models import *
 
 
-def allowed_file(filename):
+def allowed_file_ext(filename):
     allow_ext = app.config['UPLOAD_EXTENSIONS']
     return '.' in filename and os.path.splitext(filename)[1] in allow_ext
 
