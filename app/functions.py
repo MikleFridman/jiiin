@@ -86,6 +86,20 @@ def get_active_clients(queryset=False):
     return list_items
 
 
+def get_clients_tags(queryset=False, multi=False):
+    items = ClientTag.query.filter_by(cid=current_user.cid
+                                      ).order_by(ClientTag.name).all()
+    if queryset:
+        return items
+    if multi:
+        list_items = []
+    else:
+        list_items = [(0, '-Select-')]
+    for item in items:
+        list_items.append((item.id, item.name))
+    return list_items
+
+
 def get_active_staff(queryset=False):
     items = Staff.query.filter_by(no_active=False,
                                   cid=current_user.cid

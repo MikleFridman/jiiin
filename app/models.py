@@ -53,6 +53,17 @@ roles_permissions = db.Table('roles_permissions',
                                        primary_key=True))
 
 
+clients_tags = db.Table('clients_tags',
+                        db.Column('client_id',
+                                  db.Integer,
+                                  db.ForeignKey('client.id'),
+                                  primary_key=True),
+                        db.Column('client_tag_id',
+                                  db.Integer,
+                                  db.ForeignKey('client_tag.id'),
+                                  primary_key=True))
+
+
 class Tariff(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(64), index=True, nullable=False)
@@ -193,6 +204,9 @@ class Client(db.Model):
     name = db.Column(db.String(64), index=True, nullable=False)
     phone = db.Column(db.String(20), index=True, unique=True, nullable=False)
     info = db.Column(db.Text)
+    tags = db.relationship('ClientTag', secondary=clients_tags,
+                           lazy='subquery',
+                           backref=db.backref('clients', lazy=True))
     no_active = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
@@ -213,6 +227,23 @@ class ClientFile(db.Model):
     name = db.Column(db.String(64))
     path = db.Column(db.String(128))
     hash = db.Column(db.String(64))
+
+
+class ClientTag(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
+    name = db.Column(db.String(64), index=True, nullable=False)
+
+    def add_tag(self, tag):
+        if not self.is_service(tag):
+            self.tags.append(tag)
+
+    def remove_tag(self, tag):
+        if self.is_tag(tag):
+            self.tags.remove(tag)
+
+    def is_tag(self, tag):
+        return tag in self.tag
 
 
 class Service(db.Model):
@@ -417,12 +448,12 @@ class TaskStatus(db.Model):
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
+    name = db.Column(db.String(64), index=True, nullable=False)
     description = db.Column(db.String(255))
     deadline = db.Column(db.Date)
     staff_id = db.Column(db.Integer, db.ForeignKey('staff.id'),
                          nullable=False)
     staff = db.relationship('Staff', backref='tasks')
-    name = db.Column(db.String(64), index=True, nullable=False)
     closed = db.Column(db.Boolean, default=False)
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     author = db.relationship('User', backref='tasks')

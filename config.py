@@ -19,6 +19,8 @@ class Config():
     MAIL_DEFAULT_SENDER = 'mikle.fridman@gmail.com'
     MAIL_PASSWORD = 'xclvwfrftcbcruvi'
     ADMINS = ['mikle.fridman@gmail.com']
+    LOGS_FOLDER = (os.environ.get('LOGS_FOLDER') or
+                   os.path.join(basedir, 'logs'))
     UPLOAD_FOLDER = (os.environ.get('UPLOAD_FOLDER') or
                      os.path.join(basedir, 'upload'))
     UPLOAD_EXTENSIONS = ['.jpg',

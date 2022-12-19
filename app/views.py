@@ -42,6 +42,7 @@ def login():
         next_page = request.args.get('next')
         if not next_page or url_parse(next_page).netloc != '':
             next_page = url_for('index')
+        app.logger.info('%s успешный вход в систему', user.username)
         return redirect(next_page)
     return render_template('login.html', title='Sign In', form=form)
 
@@ -376,10 +377,9 @@ def client_file_upload(id):
         if not allowed_file_ext(file.filename):
             flash('Unauthorized file extension')
             return redirect(url_for('upload_client_file', id=id))
-        file_ext = os.path.splitext(file.filename)[1]
         directory = os.path.join(app.config['UPLOAD_FOLDER'],
                                  str(current_user.cid))
-        path = os.path.join(directory, str(uuid.uuid4()) + file_ext)
+        path = os.path.join(directory, str(uuid.uuid4()))
         if not os.path.exists(directory):
             os.makedirs(directory)
         file.save(path)
@@ -427,6 +427,76 @@ def client_file_delete(client_id, id):
     flash('Delete file {}'.format(id))
     return redirect(url_back)
 # Client block end
+
+
+# Clients tag block start
+@app.route('/clients_tags/')
+@login_required
+def clients_tags():
+    page = request.args.get('page', 1, type=int)
+    items = ClientTag.query.filter_by(
+        cid=current_user.id).paginate(
+        page, app.config['ROWS_PER_PAGE'], False)
+    return render_template('clients_tags_table.html',
+                           id=id,
+                           title='Clients tags',
+                           items=items.items,
+                           pagination=items)
+
+
+@app.route('/clients_tags/create/', methods=['GET', 'POST'])
+@login_required
+def clients_tags_create():
+    url_back = url_for('clients_tags')
+    form = ClientTagForm()
+    if form.validate_on_submit():
+        tag = ClientTag(cid=current_user.cid,
+                        name=form.name.data)
+        db.session.add(tag)
+        db.session.commit()
+        return redirect(url_back)
+    elif request.method == 'POST':
+        return redirect(url_for('clients_tags_create'))
+    else:
+        return render_template('data_form.html',
+                               title='Client tag (create)',
+                               form=form,
+                               url_back=url_back)
+
+
+@app.route('/clients_tags/edit/<id>/', methods=['GET', 'POST'])
+@login_required
+def clients_tags_edit(id):
+    url_back = url_for('clients_tags')
+    tag = ClientTag.query.filter_by(cid=current_user.cid,
+                                    id=id).first_or_404()
+    form = ClientTagForm()
+    if form.validate_on_submit():
+        tag.name = form.name.data
+        db.session.commit()
+        return redirect(url_back)
+    elif request.method == 'GET':
+        form = ClientTagForm(obj=tag)
+    return render_template('data_form.html',
+                           title='Clients tag (edit)',
+                           form=form,
+                           url_back=url_back)
+
+
+@app.route('/clients_tags/delete/<id>/')
+@login_required
+def clients_tags_delete(id):
+    url_back = url_for('clients_tags')
+    if not check_permission('ClientTag', 'delete'):
+        flash('Insufficient access level')
+        return redirect(url_back)
+    tag = ClientTag.query.filter_by(cid=current_user.cid,
+                                    id=id).first_or_404()
+    db.session.delete(tag)
+    db.session.commit()
+    flash('Delete tag {}'.format(id))
+    return redirect(url_back)
+# Client tag block end
 
 
 # Service block start
@@ -872,6 +942,7 @@ def items_flow():
 @login_required
 def item_flow_create():
     url_back = url_for('items_flow')
+    item_id = request.args.get('item_id')
     form = ItemFlowForm()
     form.location.choices = get_active_locations()
     form.item.choices = get_active_items()
@@ -901,6 +972,8 @@ def item_flow_create():
         form.action.default = form.action.data
         form.process()
     else:
+        form.item.default = item_id
+        form.process()
         form.date.data = datetime.now().date()
     return render_template('data_form.html',
                            title='Item flow (create)',

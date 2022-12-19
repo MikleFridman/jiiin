@@ -3,25 +3,25 @@
 {% block app_content %}
   <div class="row">
     <div class="col-md-4 mb-2">
-      <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('client_file_upload', id=id) }}';">Add new</button>
+      <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('clients_tags_create') }}';">Add new</button>
     </div>
   </div>
   <table id="data" class="table table-hover border-top border-bottom border-light">
     <thead>
       <tr class="table-primary border-start border-end border-light text-center">
-        <th class="col-11">Name</th>
+        <th class="col-6">Name</th>
         <th class="col-1">Action</th>
       </tr>
     </thead>
     <tbody>
-      {% for f in items %}
+      {% for t in items %}
         <tr class="{{ loop.cycle('table-success', 'table-default') }}  border-start border-end border-light">
           <td class="col-11 ps-3">
-            {{ f.name }}
+            {{ t.name }}
           </td>
           <td class="col-1 text-center">
-            <a href="{{ url_for('client_file_download', client_id=id, id=f.id) }}"><img src="{{ url_for('static', filename='/download.png') }}" alt="download" width="24"></a>
-            <a href="{{ url_for('client_file_delete', client_id=id, id=f.id) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
+            <a href="{{ url_for('clients_tags_edit', id=t.id) }}"><img src="{{ url_for('static', filename='/edit.png') }}" alt="edit" width="24"></a>
+            <a href="{{ url_for('clients_tags_delete', id=t.id) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
           </td>
         </tr>
       {% endfor %}
@@ -31,7 +31,7 @@
   <ul class="pagination">
     {% if pagination.has_prev %}
       <li class="page-item">
-        <a class="page-link" href="{{ url_for('clients', page=pagination.page-1) }}">&laquo;</a>
+        <a class="page-link" href="{{ url_for('clients_tags', page=pagination.page-1) }}">&laquo;</a>
       </li>
     {% else %}
       <li class="page-item disabled">
@@ -42,7 +42,7 @@
       {% if page %}
         {% if page != pagination.page %}
           <li class="page-item">
-            <a class="page-link" href="{{ url_for('clients', page=page) }}">{{ page }}</a>
+            <a class="page-link" href="{{ url_for('clients_tags', page=page) }}">{{ page }}</a>
           </li>
         {% else %}
           <li class="page-item active">
@@ -57,7 +57,7 @@
     {% endfor %}
     {% if pagination.has_next %}
        <li class="page-item">
-        <a class="page-link" href="{{ url_for('clients', page=pagination.page+1) }}">&raquo;</a>
+        <a class="page-link" href="{{ url_for('clients_tags', page=pagination.page+1) }}">&raquo;</a>
       </li>
     {% else %}
       <li class="page-item disabled">

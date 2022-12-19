@@ -136,6 +136,11 @@ class ClientFileForm(FlaskForm):
     submit = SubmitField('Submit')
 
 
+class ClientTagForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired()])
+    submit = SubmitField('Submit')
+
+
 class ServiceForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     duration = IntegerField('Duration', default=0)
@@ -242,8 +247,8 @@ class ItemFlowForm(FlaskForm):
     quantity = FloatField('Quantity', default=0)
     submit = SubmitField('Submit')
 
-    def __init__(self, source_location, source_item, source_quantity,
-                 *args, **kwargs):
+    def __init__(self, source_location=None, source_item=None,
+                 source_quantity=None, *args, **kwargs):
         super(ItemFlowForm, self).__init__(*args, **kwargs)
         self.source_location = source_location
         self.source_item = source_item

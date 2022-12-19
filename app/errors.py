@@ -1,5 +1,6 @@
 import logging
-from logging.handlers import SMTPHandler
+import os
+from logging.handlers import SMTPHandler, RotatingFileHandler
 
 from flask import render_template
 
@@ -37,3 +38,14 @@ if not app.debug:
             credentials=auth, secure=secure)
         mail_handler.setLevel(logging.ERROR)
         app.logger.addHandler(mail_handler)
+    logs_directory = app.config['LOGS_FOLDER']
+    if not os.path.exists(logs_directory):
+        os.makedirs(logs_directory)
+    file_handler = RotatingFileHandler(os.path.join(logs_directory, 'app.log'),
+                                       maxBytes=1024*1024, backupCount=10)
+    file_handler.setFormatter(logging.Formatter(
+        '%(asctime)s %(levelname)s: %(message)s'))
+    file_handler.setLevel(logging.INFO)
+    app.logger.addHandler(file_handler)
+    app.logger.setLevel(logging.INFO)
+    app.logger.info('Start system')
