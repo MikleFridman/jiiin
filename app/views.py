@@ -49,7 +49,9 @@ def login():
 
 @app.route('/logout/')
 def logout():
+    username = current_user.username
     logout_user()
+    app.logger.info('%s выход из системы', username)
     return redirect(url_for('login'))
 
 
@@ -144,9 +146,9 @@ def staff_create():
 @login_required
 def staff_edit(id):
     url_back = url_for('staff')
-    form = StaffForm()
     staff = Staff.query.filter_by(cid=current_user.cid,
                                   id=id).first_or_404()
+    form = StaffForm(staff.phone)
     if form.validate_on_submit():
         staff.name = form.name.data
         staff.phone = form.phone.data

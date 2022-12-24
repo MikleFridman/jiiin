@@ -92,6 +92,17 @@ class StaffForm(FlaskForm):
     no_active = BooleanField('No active')
     submit = SubmitField('Submit')
 
+    def __init__(self, source_phone=None, *args, **kwargs):
+        super(StaffForm, self).__init__(*args, **kwargs)
+        self.source_phone = source_phone
+
+    def validate_phone(self, field):
+        if field.data != self.source_phone:
+            staff = Staff.query.filter_by(phone=field.data).first()
+            if staff is not None:
+                raise ValidationError('Please use a different phone')
+
+
 
 class StaffScheduleForm(FlaskForm):
     staff = SelectField('Staff', choices=[], coerce=int)
