@@ -487,3 +487,13 @@ class TaskProgress(db.Model):
 
     def __repr__(self):
         return f'{self.task} {self.timestamp}'
+
+
+class Notice(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
+    company = db.relationship('Company', backref='notices')
+    date = db.Column(db.Date, nullable=False)
+    client_id = db.Column(db.Integer, db.ForeignKey('client.id'))
+    client = db.relationship('Client', backref='notices')
+    description = db.Column(db.String(255))

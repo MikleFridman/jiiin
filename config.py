@@ -9,14 +9,14 @@ class Config():
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     BOOTSTRAP_SERVE_LOCAL = True
     BOOTSTRAP_BOOTSWATCH_THEME = 'spacelab'
-    ROWS_PER_PAGE = 3
+    ROWS_PER_PAGE = 10
     LANGUAGES = ['en', 'ru', 'he']
 
     MAIL_SERVER = 'smtp.googlemail.com'
     MAIL_PORT = 587
     MAIL_USE_TLS = True
     MAIL_USERNAME = 'mikle.fridman@gmail.com'
-    MAIL_DEFAULT_SENDER = 'mikle.fridman@gmail.com'
+    MAIL_DEFAULT_SENDER = 'no_reply@jiiin.pro'
     MAIL_PASSWORD = 'xclvwfrftcbcruvi'
     ADMINS = ['mikle.fridman@gmail.com']
     LOGS_FOLDER = (os.environ.get('LOGS_FOLDER') or

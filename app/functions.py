@@ -1,8 +1,9 @@
 import os
 
+from flask_mail import Message
 from sqlalchemy import func
 
-from app import app
+from app import app, mail
 from app.models import *
 
 
@@ -251,3 +252,11 @@ def get_free_time_intervals(location_id, date, staff_id, duration,
         return get_free_time_intervals(location_id, date + timedelta(days=1),
                                        staff_id, duration, fix_date,
                                        except_id)
+
+
+def send_mail_from_site(sender, subject, text):
+    msg = Message(subject=subject,
+                  sender=sender,
+                  recipients=[app.config['MAIL_USERNAME']])
+    msg.body = text
+    mail.send(msg)

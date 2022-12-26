@@ -11,6 +11,23 @@ from app.functions import *
 from app.models import *
 
 
+@app.route('/sendmail/', methods=['GET', 'POST'])
+@login_required
+def sendmail():
+    url_back = url_for('index')
+    form = ContactForm()
+    if form.validate_on_submit():
+        sender = form.name.data, form.email.data
+        subject = f'Feedback from site ({form.email.data})'
+        text = form.text.data
+        send_mail_from_site(sender, subject, text)
+        return render_template('success_sendmail.html')
+    return render_template('data_form.html',
+                           title='Send mail',
+                           form=form,
+                           url_back=url_back)
+
+
 @app.route('/')
 @app.route('/index/')
 @login_required
@@ -1078,3 +1095,86 @@ def item_flow_delete(id):
     flash('Delete item flow {}'.format(id))
     return redirect(url_for('items_flow'))
 # ItemFlow block end
+
+
+# Notice block start
+@app.route('/notices/')
+@login_required
+def notices():
+    page = request.args.get('page', 1, type=int)
+    param = {'cid': current_user.cid}
+    items = Notice.query.filter_by(**param).paginate(
+        page, app.config['ROWS_PER_PAGE'], False)
+
+    return render_template('notice_table.html',
+                           title='Notice',
+                           items=items.items,
+                           pagination=items)
+
+
+@app.route('/notice/create/', methods=['GET', 'POST'])
+@login_required
+def notice_create():
+    url_back = request.args.get('url_back', url_for('notices'))
+    client_id = request.args.get('client_id', None)
+    form = NoticeForm()
+    form.client.choices = get_active_clients()
+    if form.validate_on_submit():
+        notice = Notice(cid=current_user.cid,
+                        client_id=form.client.data,
+                        date=form.date.data,
+                        description=form.description.data)
+        db.session.add(notice)
+        db.session.commit()
+        return redirect(url_back)
+    elif request.method == 'POST':
+        form.client.default = form.client.data
+    else:
+        if client_id:
+            form.client.default = client_id
+            form.process()
+    return render_template('data_form.html',
+                           title='Notice (create)',
+                           form=form,
+                           url_back=url_back)
+
+
+@app.route('/notice/edit/<id>/', methods=['GET', 'POST'])
+@login_required
+def notice_edit(id):
+    url_back = url_for('notices')
+    notice = Notice.query.filter_by(cid=current_user.cid,
+                                    id=id).first_or_404()
+    form = NoticeForm()
+    form.client.choices = get_active_clients()
+    if form.validate_on_submit():
+        notice.client_id = form.client.data
+        notice.date = form.date.data
+        notice.description = form.description.data
+        db.session.commit()
+        return redirect(url_back)
+    elif request.method == 'GET':
+        form.client.default = notice.client_id
+        form.process()
+        form.date.data = notice.date
+        form.description.data = notice.description
+    return render_template('data_form.html',
+                           title='Notice (edit)',
+                           form=form,
+                           url_back=url_back)
+
+
+@app.route('/notice/delete/<id>/')
+@login_required
+def notice_delete(id):
+    url_back = url_for('notices')
+    if not check_permission('Notice', 'delete'):
+        flash('Insufficient access level')
+        return redirect(url_back)
+    notice = Notice.query.filter_by(cid=current_user.cid,
+                                    id=id).first_or_404()
+    db.session.delete(notice)
+    db.session.commit()
+    flash('Delete notice {}'.format(id))
+    return redirect(url_back)
+# Notice block end

@@ -47,6 +47,11 @@
       <div class="d-flex">
           <ul class="navbar-nav me-auto">
             <li class="nav-item">
+                {% if current_user.is_authenticated %}
+                    <a class="nav-link me-2" href="{{ url_for('sendmail') }}">Feedback</a>
+                {% endif %}
+            </li>
+            <li class="nav-item">
               {% if current_user.is_authenticated %}
                 <a class="nav-link me-2" href="{{ url_for('logout') }}">Logout</a>
               {% else %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+  <div class="row">
+    <div class="col-md-4 mb-2">
+      <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('notice_create') }}';">Add new</button>
+    </div>
+  </div>
+  <table id="data" class="table table-hover border-top border-bottom border-light">
+    <thead>
+      <tr class="table-primary border-start border-end border-light text-center">
+        <th class="col-9">Client</th>
+        <th class="col-2">Date</th>
+        <th class="col-1">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for n in items %}
+        <tr class="{{ loop.cycle('table-success', 'table-default') }}  border-start border-end border-light">
+          <td class="col-9 ps-3">
+            {{ n.client }}
+          </td>
+          <td class="col-2 text-center">
+            {{ n.date.strftime('%d.%m.%y') }}
+          </td>
+          <td class="col-1 text-center">
+            <a href="{{ url_for('notice_edit', id=n.id) }}"><img src="{{ url_for('static', filename='/edit.png') }}" alt="edit" width="24"></a>
+            <a href="{{ url_for('notice_delete', id=n.id) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% import '_pagination.html' as forms %}
+{{ forms.render_pagination(pagination, 'notices', **request.args) }}
+{% endblock %}

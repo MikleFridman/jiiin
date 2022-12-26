@@ -45,6 +45,7 @@
                     {% endif %}
                     </div>
                 </div>
+            </div>
         </div>
         <div class="form-group mt-2">
             <div class="form-group col-md-8">
@@ -67,9 +68,18 @@
             </div>
         </div>
         <div class="form-group mt-2">
-            <div class="form-group col-md-4">
+            <div class="form-group col-md-8">
                 <button type="submit" class="btn btn-primary mt-3 mb-2">Submit</button>
                 <button type="button" class="btn btn-secondary mt-3 ms-3 mb-2" onclick="window.location.href='{{ url_back }}'">Back</button>
+                <button type="button" class="btn btn-light mt-3 ms-5 mb-2"
+                        onclick="window.location.href=#">Result
+                </button>
+                <button type="button" class="btn btn-light mt-3 ms-3 mb-2"
+                        onclick="window.location.href=#">Payment
+                </button>
+                <button type="button" class="btn btn-light mt-3 ms-3 mb-2"
+                        onclick="window.location.href='{{ url_for('notice_create', client_id=form.client.data, url_back=request.path) }}'">Notice
+                </button>
             </div>
         </div>
     </form>
