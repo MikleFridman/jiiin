@@ -363,6 +363,7 @@ class StaffSchedule(db.Model):
     date_to = db.Column(db.Date)
     time_from = db.Column(db.Time)
     time_to = db.Column(db.Time)
+    weekdays = db.Column(db.String(7))
     no_active = db.Column(db.Boolean, default=False)
 
 

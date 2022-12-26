@@ -112,7 +112,23 @@ def get_active_staff(queryset=False):
     return list_items
 
 
+def convert_weekdays_to_str(items):
+    if items is None:
+        return []
+    return ''.join([str(index) for index, value in enumerate(items) if value])
+
+
+def convert_str_to_weekdays(string):
+    if string is None or len(string) == 0:
+        return [False for i in range(7)]
+    weekdays = []
+    for i in range(7):
+        weekdays.append(str(i) in string)
+    return weekdays
+
+
 def get_staff_schedule(staff_id, location_id, date):
+    weekday = str(date.isoweekday())
     staff = Staff.query.get(staff_id)
     items = StaffSchedule.query.filter(StaffSchedule.id.in_(
         [x.id for x in staff.calendar]), StaffSchedule.date_from <= date,
@@ -121,6 +137,8 @@ def get_staff_schedule(staff_id, location_id, date):
                                                  cid=current_user.cid).all()
     list_items = []
     for item in items:
+        if weekday not in item.weekdays:
+            continue
         time_from = datetime.combine(date, item.time_from)
         time_to = datetime.combine(date, item.time_to)
         list_items.append((time_from, time_to))

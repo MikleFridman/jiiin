@@ -33,50 +33,13 @@
             {{ sh.time_from.strftime('%H:%M') }} - {{ sh.time_to.strftime('%H:%M') }}
           </td>
           <td class="col-1 text-center">
-            <a href="{{ url_for('staff_schedule_edit', id=sh.id) }}"><img src="{{ url_for('static', filename='/edit.png') }}" alt="edit" width="24"></a>
-            <a href="{{ url_for('staff_schedule_delete', id=sh.id) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
+            <a href="{{ url_for('staff_schedule_edit', staff_id=id, id=sh.id) }}"><img src="{{ url_for('static', filename='/edit.png') }}" alt="edit" width="24"></a>
+            <a href="{{ url_for('staff_schedule_delete', staff_id=id, id=sh.id) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
           </td>
         </tr>
       {% endfor %}
     </tbody>
   </table>
-<div class='d-flex justify-content-end'>
-  <ul class="pagination">
-    {% if pagination.has_prev %}
-      <li class="page-item">
-        <a class="page-link" href="{{ url_for('staff_schedule', page=pagination.page-1) }}">&laquo;</a>
-      </li>
-    {% else %}
-      <li class="page-item disabled">
-        <a class="page-link" href="#">&laquo;</a>
-      </li>
-    {% endif %}
-    {% for page in pagination.iter_pages() %}
-      {% if page %}
-        {% if page != pagination.page %}
-          <li class="page-item">
-            <a class="page-link" href="{{ url_for('staff_schedule', page=page) }}">{{ page }}</a>
-          </li>
-        {% else %}
-          <li class="page-item active">
-            <a class="page-link" href="#">{{ page }}</a>
-          </li>
-        {% endif %}
-      {% else %}
-        <li class="page-item disabled">
-          <a class="page-link" href="#">...</a>
-        </li>
-      {% endif %}
-    {% endfor %}
-    {% if pagination.has_next %}
-       <li class="page-item">
-        <a class="page-link" href="{{ url_for('staff_schedule', page=pagination.page+1) }}">&raquo;</a>
-      </li>
-    {% else %}
-      <li class="page-item disabled">
-        <a class="page-link" href="#">&raquo;</a>
-      </li>
-    {% endif %}
-  </ul>
-</div>
+{% import '_pagination.html' as forms %}
+{{ forms.render_pagination(pagination, 'staff_schedule', **request.args) }}
 {% endblock %}

@@ -9,7 +9,7 @@ class Config():
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     BOOTSTRAP_SERVE_LOCAL = True
     BOOTSTRAP_BOOTSWATCH_THEME = 'spacelab'
-    ROWS_PER_PAGE = 10
+    ROWS_PER_PAGE = 3
     LANGUAGES = ['en', 'ru', 'he']
 
     MAIL_SERVER = 'smtp.googlemail.com'

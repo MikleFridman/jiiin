@@ -36,43 +36,6 @@
       {% endfor %}
     </tbody>
   </table>
-<div class='d-flex justify-content-end'>
-  <ul class="pagination">
-    {% if pagination.has_prev %}
-      <li class="page-item">
-        <a class="page-link" href="{{ url_for('appointments', page=pagination.page-1) }}">&laquo;</a>
-      </li>
-    {% else %}
-      <li class="page-item disabled">
-        <a class="page-link" href="#">&laquo;</a>
-      </li>
-    {% endif %}
-    {% for page in pagination.iter_pages() %}
-      {% if page %}
-        {% if page != pagination.page %}
-          <li class="page-item">
-            <a class="page-link" href="{{ url_for('appointments', page=page) }}">{{ page }}</a>
-          </li>
-        {% else %}
-          <li class="page-item active">
-            <a class="page-link" href="#">{{ page }}</a>
-          </li>
-        {% endif %}
-      {% else %}
-        <li class="page-item disabled">
-          <a class="page-link" href="#">...</a>
-        </li>
-      {% endif %}
-    {% endfor %}
-    {% if pagination.has_next %}
-       <li class="page-item">
-        <a class="page-link" href="{{ url_for('appointments', page=pagination.page+1) }}">&raquo;</a>
-      </li>
-    {% else %}
-      <li class="page-item disabled">
-        <a class="page-link" href="#">&raquo;</a>
-      </li>
-    {% endif %}
-  </ul>
-</div>
+{% import '_pagination.html' as forms %}
+{{ forms.render_pagination(pagination, 'locations', **request.args) }}
 {% endblock %}

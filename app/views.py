@@ -201,6 +201,13 @@ def staff_schedule_create(id):
     form.staff.validate_choice = False
     form.location.choices = get_active_locations()
     if form.validate_on_submit():
+        days = [form.day_0.data,
+                form.day_1.data,
+                form.day_2.data,
+                form.day_3.data,
+                form.day_4.data,
+                form.day_5.data,
+                form.day_6.data]
         schedule = StaffSchedule(
             cid=current_user.cid,
             staff_id=id,
@@ -209,6 +216,7 @@ def staff_schedule_create(id):
             date_to=form.date_to.data,
             time_from=form.time_from.data,
             time_to=form.time_to.data,
+            weekdays=convert_weekdays_to_str(days),
             no_active=form.no_active.data
         )
         db.session.add(schedule)
@@ -225,23 +233,31 @@ def staff_schedule_create(id):
                            url_back=url_back)
 
 
-@app.route('/staff/schedule/edit/<id>', methods=['GET', 'POST'])
+@app.route('/staff/<staff_id>/schedule/edit/<id>', methods=['GET', 'POST'])
 @login_required
-def staff_schedule_edit(id):
+def staff_schedule_edit(staff_id, id):
+    url_back = url_for('staff_schedule', id=staff_id)
     schedule = StaffSchedule.query.filter_by(cid=current_user.cid,
                                              id=id).first_or_404(id)
-    url_back = url_for('staff_schedule', id=schedule.staff_id)
     form = StaffScheduleForm()
     form.staff.choices = get_active_staff()
     form.staff.validate_choice = False
     form.staff.render_kw = {'disabled': 'True'}
     form.location.choices = get_active_locations()
     if form.validate_on_submit():
+        days = [form.day_0.data,
+                form.day_1.data,
+                form.day_2.data,
+                form.day_3.data,
+                form.day_4.data,
+                form.day_5.data,
+                form.day_6.data]
         schedule.location_id = form.location.data
         schedule.date_from = form.date_from.data
         schedule.date_to = form.date_to.data
         schedule.time_from = form.time_from.data
         schedule.time_to = form.time_to.data
+        schedule.weekdays = convert_weekdays_to_str(days)
         schedule.no_active = form.no_active.data
         db.session.commit()
         return redirect(url_back)
@@ -255,21 +271,29 @@ def staff_schedule_edit(id):
             form.time_from.data = schedule.time_from
             form.time_to.data = schedule.time_to
             form.no_active.data = schedule.no_active
+            weekdays = convert_str_to_weekdays(schedule.weekdays)
+            form.day_0.data = weekdays[0]
+            form.day_1.data = weekdays[1]
+            form.day_2.data = weekdays[2]
+            form.day_3.data = weekdays[3]
+            form.day_4.data = weekdays[4]
+            form.day_5.data = weekdays[5]
+            form.day_6.data = weekdays[6]
     return render_template('data_form.html',
                            title='Schedule (edit)',
                            form=form,
                            url_back=url_back)
 
 
-@app.route('/staff/schedule/delete/<id>')
+@app.route('/staff/<staff_id>/schedule/delete/<id>')
 @login_required
-def staff_schedule_delete(id):
+def staff_schedule_delete(staff_id, id):
+    url_back = url_for('staff_schedule', id=staff_id)
     if not check_permission('StaffSchedule', 'delete'):
         flash('Insufficient access level')
-        return redirect(url_for('staff_schedule'))
+        return redirect(url_back)
     schedule = StaffSchedule.query.filter_by(cid=current_user.cid,
                                              id=id).first_or_404()
-    staff_id = schedule.staff_id
     db.session.delete(schedule)
     db.session.commit()
     flash('Delete schedule {}'.format(id))

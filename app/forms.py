@@ -103,7 +103,6 @@ class StaffForm(FlaskForm):
                 raise ValidationError('Please use a different phone')
 
 
-
 class StaffScheduleForm(FlaskForm):
     staff = SelectField('Staff', choices=[], coerce=int)
     location = SelectField('Location', choices=[], coerce=int)
@@ -111,6 +110,13 @@ class StaffScheduleForm(FlaskForm):
     date_to = DateField('Date to', validators=[DataRequired()])
     time_from = TimeField('Time from', validators=[DataRequired()])
     time_to = TimeField('Time to', validators=[DataRequired()])
+    day_0 = BooleanField('Sunday')
+    day_1 = BooleanField('Monday')
+    day_2 = BooleanField('Tuesday')
+    day_3 = BooleanField('Wednesday')
+    day_4 = BooleanField('Thursday')
+    day_5 = BooleanField('Friday')
+    day_6 = BooleanField('Saturday')
     no_active = BooleanField('No active')
 
     def validate_location(self, field):
