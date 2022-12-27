@@ -71,15 +71,17 @@
             <div class="form-group col-md-8">
                 <button type="submit" class="btn btn-primary mt-3 mb-2">Submit</button>
                 <button type="button" class="btn btn-secondary mt-3 ms-3 mb-2" onclick="window.location.href='{{ url_back }}'">Back</button>
-                <button type="button" class="btn btn-light mt-3 ms-5 mb-2"
-                        onclick="window.location.href=#">Result
-                </button>
-                <button type="button" class="btn btn-light mt-3 ms-3 mb-2"
-                        onclick="window.location.href=#">Payment
-                </button>
-                <button type="button" class="btn btn-light mt-3 ms-3 mb-2"
-                        onclick="window.location.href='{{ url_for('notice_create', client_id=form.client.data, url_back=request.path) }}'">Notice
-                </button>
+                {% if id %}
+                    <button type="button" class="btn btn-light mt-3 ms-5 mb-2"
+                            onclick="window.location.href='{{ url_for('appointment_result', appointment_id=id, url_back=request.path) }}'">Result
+                    </button>
+                    <button type="button" class="btn btn-light mt-3 ms-3 mb-2"
+                            onclick="window.location.href=#">Payment
+                    </button>
+                    <button type="button" class="btn btn-light mt-3 ms-3 mb-2"
+                            onclick="window.location.href='{{ url_for('notice_create', client_id=form.client.data, url_back=request.path) }}'">Notice
+                    </button>
+                {% endif %}
             </div>
         </div>
     </form>

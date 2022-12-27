@@ -14,7 +14,7 @@ from app.models import *
 @app.route('/sendmail/', methods=['GET', 'POST'])
 @login_required
 def sendmail():
-    url_back = url_for('index')
+    url_back = url_for('index', **request.args)
     form = ContactForm()
     if form.validate_on_submit():
         sender = form.name.data, form.email.data
@@ -32,12 +32,10 @@ def sendmail():
 @app.route('/index/')
 @login_required
 def index():
-    return render_template('index.html', title='Home')
-
-
-@app.route('/settings/')
-def settings():
-    return render_template('settings.html', title='Home')
+    notices = get_notices()
+    return render_template('index.html',
+                           title='Home',
+                           notices=notices)
 
 
 @app.route('/login/', methods=['GET', 'POST'])
@@ -76,7 +74,7 @@ def logout():
 @app.route('/companies/edit/', methods=['GET', 'POST'])
 @login_required
 def company_edit():
-    url_back = url_for('companies')
+    url_back = url_for('companies', **request.args)
     form = CompanyForm()
     company = current_user.company
     if form.validate_on_submit():
@@ -99,7 +97,7 @@ def company_edit():
 @app.route('/users/edit/<id>/', methods=['GET', 'POST'])
 @login_required
 def user_edit(id):
-    url_back = url_for('index')
+    url_back = url_for('index', **request.args)
     user = current_user
     form = UserFormEdit(user.username, user.email)
     if form.validate_on_submit():
@@ -141,7 +139,7 @@ def staff():
 @app.route('/staff/create/', methods=['GET', 'POST'])
 @login_required
 def staff_create():
-    url_back = url_for('staff')
+    url_back = url_for('staff', **request.args)
     if get_tariff_limit('staff') == 0:
         return redirect(url_for('staff'))
     form = StaffForm()
@@ -162,7 +160,7 @@ def staff_create():
 @app.route('/staff/edit/<id>/', methods=['GET', 'POST'])
 @login_required
 def staff_edit(id):
-    url_back = url_for('staff')
+    url_back = url_for('staff', **request.args)
     staff = Staff.query.filter_by(cid=current_user.cid,
                                   id=id).first_or_404()
     form = StaffForm(staff.phone)
@@ -211,7 +209,7 @@ def staff_schedule(id):
 @app.route('/staff/<id>/schedule/create', methods=['GET', 'POST'])
 @login_required
 def staff_schedule_create(id):
-    url_back = url_for('staff_schedule', id=id)
+    url_back = url_for('staff_schedule', id=id, **request.args)
     form = StaffScheduleForm()
     form.staff.choices = get_active_staff()
     form.staff.render_kw = {'disabled': 'True'}
@@ -253,7 +251,7 @@ def staff_schedule_create(id):
 @app.route('/staff/<staff_id>/schedule/edit/<id>', methods=['GET', 'POST'])
 @login_required
 def staff_schedule_edit(staff_id, id):
-    url_back = url_for('staff_schedule', id=staff_id)
+    url_back = url_for('staff_schedule', id=staff_id, **request.args)
     schedule = StaffSchedule.query.filter_by(cid=current_user.cid,
                                              id=id).first_or_404(id)
     form = StaffScheduleForm()
@@ -305,7 +303,7 @@ def staff_schedule_edit(staff_id, id):
 @app.route('/staff/<staff_id>/schedule/delete/<id>')
 @login_required
 def staff_schedule_delete(staff_id, id):
-    url_back = url_for('staff_schedule', id=staff_id)
+    url_back = url_for('staff_schedule', id=staff_id, **request.args)
     if not check_permission('StaffSchedule', 'delete'):
         flash('Insufficient access level')
         return redirect(url_back)
@@ -335,7 +333,7 @@ def clients():
 @app.route('/clients/create/', methods=['GET', 'POST'])
 @login_required
 def client_create():
-    url_back = url_for('clients')
+    url_back = url_for('clients', **request.args)
     form = ClientForm()
     if form.validate_on_submit():
         client = Client(cid=current_user.cid,
@@ -355,7 +353,7 @@ def client_create():
 @app.route('/clients/edit/<id>/', methods=['GET', 'POST'])
 @login_required
 def client_edit(id):
-    url_back = url_for('clients')
+    url_back = url_for('clients', **request.args)
     form = ClientForm()
     client = Client.query.filter_by(cid=current_user.cid,
                                     id=id).first_or_404()
@@ -405,7 +403,7 @@ def client_files(id):
 @app.route('/clients/<id>/upload_file/', methods=['GET', 'POST'])
 @login_required
 def client_file_upload(id):
-    url_back = url_for('client_files', id=id)
+    url_back = url_for('client_files', id=id, **request.args)
     client = Client.query.filter_by(cid=current_user.cid,
                                     id=id).first_or_404()
     form = ClientFileForm()
@@ -445,7 +443,7 @@ def client_file_upload(id):
 @app.route('/clients/<client_id>/download_file/<id>/')
 @login_required
 def client_file_download(client_id, id):
-    url_back = url_for('client_files', id=client_id)
+    url_back = url_for('client_files', id=client_id, **request.args)
     file = ClientFile.query.filter_by(cid=current_user.cid,
                                       id=id).first()
     return send_file(file.path, as_attachment=True, download_name=file.name)
@@ -454,7 +452,7 @@ def client_file_download(client_id, id):
 @app.route('/clients/<client_id>/delete_file/<id>/')
 @login_required
 def client_file_delete(client_id, id):
-    url_back = url_for('client_files', id=client_id)
+    url_back = url_for('client_files', id=client_id, **request.args)
     if not check_permission('ClientFile', 'delete'):
         flash('Insufficient access level')
         return redirect(url_back)
@@ -490,7 +488,7 @@ def clients_tags():
 @app.route('/clients_tags/create/', methods=['GET', 'POST'])
 @login_required
 def clients_tags_create():
-    url_back = url_for('clients_tags')
+    url_back = url_for('clients_tags', **request.args)
     form = ClientTagForm()
     if form.validate_on_submit():
         tag = ClientTag(cid=current_user.cid,
@@ -510,7 +508,7 @@ def clients_tags_create():
 @app.route('/clients_tags/edit/<id>/', methods=['GET', 'POST'])
 @login_required
 def clients_tags_edit(id):
-    url_back = url_for('clients_tags')
+    url_back = url_for('clients_tags', **request.args)
     tag = ClientTag.query.filter_by(cid=current_user.cid,
                                     id=id).first_or_404()
     form = ClientTagForm()
@@ -529,7 +527,7 @@ def clients_tags_edit(id):
 @app.route('/clients_tags/delete/<id>/')
 @login_required
 def clients_tags_delete(id):
-    url_back = url_for('clients_tags')
+    url_back = url_for('clients_tags', **request.args)
     if not check_permission('ClientTag', 'delete'):
         flash('Insufficient access level')
         return redirect(url_back)
@@ -558,7 +556,7 @@ def services():
 @app.route('/services/create/', methods=['GET', 'POST'])
 @login_required
 def service_create():
-    url_back = url_for('services')
+    url_back = url_for('services', **request.args)
     form = ServiceForm()
     form.location.choices = get_active_locations(multi=True)
     if form.validate_on_submit():
@@ -583,7 +581,7 @@ def service_create():
 @app.route('/services/edit/<id>/', methods=['GET', 'POST'])
 @login_required
 def service_edit(id):
-    url_back = url_for('services')
+    url_back = url_for('services', **request.args)
     form = ServiceForm()
     form.location.choices = get_active_locations(multi=True)
     service = Service.query.filter_by(cid=current_user.cid,
@@ -644,7 +642,7 @@ def locations():
 @app.route('/locations/create/', methods=['GET', 'POST'])
 @login_required
 def location_create():
-    url_back = url_for('locations')
+    url_back = url_for('locations', **request.args)
     if get_tariff_limit('location') == 0:
         return redirect(url_for('locations'))
     form = LocationForm()
@@ -668,7 +666,7 @@ def location_create():
 @app.route('/locations/edit/<id>/', methods=['GET', 'POST'])
 @login_required
 def location_edit(id):
-    url_back = url_for('locations')
+    url_back = url_for('locations', **request.args)
     form = LocationForm()
     location = Location.query.filter_by(cid=current_user.cid,
                                         id=id).first_or_404()
@@ -879,6 +877,7 @@ def appointment_edit(id):
         form.cancel.data = appointment.cancel
     return render_template('appointment_form.html',
                            form=form,
+                           id=id,
                            url_back=url_back)
 
 
@@ -894,6 +893,29 @@ def appointment_delete(id):
     db.session.commit()
     flash('Delete appointment {}'.format(id))
     return redirect(url_for('appointments'))
+
+
+@app.route('/appointments/<appointment_id>/result/', methods=['GET', 'POST'])
+@login_required
+def appointment_result(appointment_id):
+    url_back = request.args.get('url_back', url_for('appointments', **request.args))
+    param = {'cid': current_user.cid,
+             'id': appointment_id}
+    appointment = Appointment.query.filter_by(**param).first_or_404()
+    form = ResultForm()
+    if form.validate_on_submit():
+        appointment.result = form.result.data
+        db.session.commit()
+        return redirect(url_back)
+    elif request.method == 'GET':
+        form.result.data = appointment.result
+    return render_template('data_form.html',
+                           title='Result',
+                           form=form,
+                           url_back=url_back)
+
+
+
 # Appointment block end
 
 
@@ -913,7 +935,7 @@ def items():
 @app.route('/items/create', methods=['GET', 'POST'])
 @login_required
 def item_create():
-    url_back = url_for('items')
+    url_back = url_for('items', **request.args)
     form = ItemForm()
     if form.validate_on_submit():
         item = Item(cid=current_user.cid,
@@ -931,7 +953,7 @@ def item_create():
 @app.route('/items/edit/<id>', methods=['GET', 'POST'])
 @login_required
 def item_edit(id):
-    url_back = url_for('items')
+    url_back = url_for('items', **request.args)
     item = Item.query.filter_by(cid=current_user.cid,
                                 id=id).first_or_404()
     form = ItemForm()
@@ -984,7 +1006,7 @@ def items_flow():
 @app.route('/items_flow/create', methods=['GET', 'POST'])
 @login_required
 def item_flow_create():
-    url_back = url_for('items_flow')
+    url_back = url_for('items_flow', **request.args)
     item_id = request.args.get('item_id')
     form = ItemFlowForm()
     form.location.choices = get_active_locations()
@@ -1102,7 +1124,10 @@ def item_flow_delete(id):
 @login_required
 def notices():
     page = request.args.get('page', 1, type=int)
+    client_id = request.args.get('client_id', None)
     param = {'cid': current_user.cid}
+    if client_id:
+        param['client_id'] = client_id
     items = Notice.query.filter_by(**param).paginate(
         page, app.config['ROWS_PER_PAGE'], False)
 
@@ -1115,7 +1140,7 @@ def notices():
 @app.route('/notice/create/', methods=['GET', 'POST'])
 @login_required
 def notice_create():
-    url_back = request.args.get('url_back', url_for('notices'))
+    url_back = request.args.get('url_back', url_for('notices', **request.args))
     client_id = request.args.get('client_id', None)
     form = NoticeForm()
     form.client.choices = get_active_clients()
@@ -1123,7 +1148,8 @@ def notice_create():
         notice = Notice(cid=current_user.cid,
                         client_id=form.client.data,
                         date=form.date.data,
-                        description=form.description.data)
+                        description=form.description.data,
+                        no_active=form.no_active.data)
         db.session.add(notice)
         db.session.commit()
         return redirect(url_back)
@@ -1142,7 +1168,8 @@ def notice_create():
 @app.route('/notice/edit/<id>/', methods=['GET', 'POST'])
 @login_required
 def notice_edit(id):
-    url_back = url_for('notices')
+    url_back = request.args.get('url_back', url_for('notices',
+                                                    **request.args))
     notice = Notice.query.filter_by(cid=current_user.cid,
                                     id=id).first_or_404()
     form = NoticeForm()
@@ -1151,6 +1178,7 @@ def notice_edit(id):
         notice.client_id = form.client.data
         notice.date = form.date.data
         notice.description = form.description.data
+        notice.no_active = form.no_active.data
         db.session.commit()
         return redirect(url_back)
     elif request.method == 'GET':
@@ -1158,6 +1186,7 @@ def notice_edit(id):
         form.process()
         form.date.data = notice.date
         form.description.data = notice.description
+        form.no_active.data = notice.no_active
     return render_template('data_form.html',
                            title='Notice (edit)',
                            form=form,
@@ -1167,7 +1196,7 @@ def notice_edit(id):
 @app.route('/notice/delete/<id>/')
 @login_required
 def notice_delete(id):
-    url_back = url_for('notices')
+    url_back = url_for('notices', **request.args)
     if not check_permission('Notice', 'delete'):
         flash('Insufficient access level')
         return redirect(url_back)

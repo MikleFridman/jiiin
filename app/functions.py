@@ -260,3 +260,10 @@ def send_mail_from_site(sender, subject, text):
                   recipients=[app.config['MAIL_USERNAME']])
     msg.body = text
     mail.send(msg)
+
+
+def get_notices():
+    param = {'cid': current_user.cid,
+             'date': datetime.utcnow().date(),
+             'no_active': False}
+    return Notice.query.filter_by(**param)

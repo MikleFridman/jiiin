@@ -9,9 +9,10 @@
   <table id="data" class="table table-hover border-top border-bottom border-light">
     <thead>
       <tr class="table-primary border-start border-end border-light text-center">
-        <th class="col-5">Name</th>
+        <th class="col-6">Name</th>
         <th class="col-1">History</th>
         <th class="col-1">Files</th>
+        <th class="col-1">Notices</th>
         <th class="col-2">Phone</th>
         <th class="col-1">Action</th>
       </tr>
@@ -19,7 +20,7 @@
     <tbody>
       {% for c in items %}
         <tr class="{{ loop.cycle('table-success', 'table-default') }}  border-start border-end border-light">
-          <td class="col-5 ps-3">
+          <td class="col-6 ps-3">
             {% if c.no_active %}
               <img src="{{ url_for('static', filename='/hidden.png') }}" alt="edit" width="24">
             {% endif %}
@@ -32,7 +33,12 @@
           </td>
           <td class="col-1 text-center">
             <a href="{{ url_for('client_files', id=c.id) }}">
-              <img class="ms-2" src="{{ url_for('static', filename='/attach.png') }}" alt="table" width="23">
+              <img class="ms-2" src="{{ url_for('static', filename='/attach.png') }}" alt="attach" width="23">
+            </a>
+          </td>
+          <td class="col-1 text-center">
+            <a href="{{ url_for('notices', client_id=c.id) }}">
+              <img class="ms-2" src="{{ url_for('static', filename='/notification.png') }}" alt="notice" width="23">
             </a>
           </td>
           <td class="col-2 text-center">{{ c.phone }}</td>

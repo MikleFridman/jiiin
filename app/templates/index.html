@@ -2,6 +2,26 @@
 
 {% block app_content %}
 <div style="text-align:justify">
-    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer posuere erat a ante.Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+</div>
+<div class="row">
+    <div class="col-md-4 mt-2">
+        <div class="list-group">
+          <a class="list-group-item list-group-item-action active">Notices:</a>
+          {% for n in notices %}
+            <a class="list-group-item list-group-item-action" href="{{ url_for('notice_edit', id=n.id, url_back=url_for('index'))}}">{{ n.client }}</a>
+          {% endfor %}
+        </div>
+    </div>
+    <div class="col-md-4 mt-2">
+        <div class="list-group">
+          <a class="list-group-item list-group-item-action active">Tasks:</a>
+        </div>
+    </div>
+    <div class="col-md-4 mt-2">
+        <div class="list-group">
+          <a class="list-group-item list-group-item-action active">News:</a>
+        </div>
+    </div>
 </div>
 {% endblock %}

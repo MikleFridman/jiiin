@@ -243,6 +243,11 @@ class AppointmentForm(FlaskForm):
             raise ValidationError('Sorry, this time unavailable')
 
 
+class ResultForm(FlaskForm):
+    result = TextAreaField('Result', validators=[Length(max=255)])
+    submit = SubmitField('Submit')
+
+
 class SearchForm(FlaskForm):
     location = SelectField('Location', choices=[], coerce=int)
     staff = SelectField('Staff', choices=[], coerce=int)
@@ -294,4 +299,5 @@ class NoticeForm(FlaskForm):
     client = SelectField('Client', choices=[], coerce=int)
     date = DateField('Date')
     description = TextAreaField('Description', validators=[DataRequired(), Length(max=255)])
+    no_active = BooleanField('No active')
     submit = SubmitField('Submit')

@@ -319,6 +319,7 @@ class Appointment(db.Model):
                                lazy='subquery',
                                backref=db.backref('appointments', lazy=True))
     info = db.Column(db.Text)
+    result = db.Column(db.Text)
     cancel = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
@@ -497,3 +498,4 @@ class Notice(db.Model):
     client_id = db.Column(db.Integer, db.ForeignKey('client.id'))
     client = db.relationship('Client', backref='notices')
     description = db.Column(db.String(255))
+    no_active = db.Column(db.Boolean, default=False)
