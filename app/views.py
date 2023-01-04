@@ -32,10 +32,17 @@ def sendmail():
 @app.route('/index/')
 @login_required
 def index():
+    param = {'cid': current_user.cid}
+    appointments_count = db.session.query(
+        Location, func.count(Appointment.location_id)).join(
+        Location, Appointment.location_id == Location.id).group_by(
+        Appointment.location_id).filter(
+        func.date(Appointment.date_time) == datetime.utcnow().date()
+    ).filter_by(**param).all()
     notices = get_notices()
     return render_template('index.html',
-                           title='Home',
-                           notices=notices)
+                           notices=notices,
+                           appointments_count=appointments_count)
 
 
 @app.route('/login/', methods=['GET', 'POST'])
@@ -876,6 +883,7 @@ def appointment_edit(id):
         form.info.data = appointment.info
         form.cancel.data = appointment.cancel
     return render_template('appointment_form.html',
+                           title='Appointment (edit)',
                            form=form,
                            id=id,
                            url_back=url_back)

@@ -230,7 +230,7 @@ class AppointmentForm(FlaskForm):
         else:
             except_id = None
         intervals = get_free_time_intervals(location, date, staff, duration,
-                                            True, except_id)
+                                            except_id)
         dt = datetime(date.year, date.month,
                       date.day, time.data.hour, time.data.minute)
         check = False

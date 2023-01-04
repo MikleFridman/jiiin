@@ -217,7 +217,8 @@ def get_interval_intersection(list_1, list_2):
 
 
 def get_free_time_intervals(location_id, date, staff_id, duration,
-                            fix_date=False, except_id=None):
+                            except_id=None):
+    staff_intervals = get_staff_schedule(staff_id, location_id, date)
     staff_intervals = get_staff_schedule(staff_id, location_id, date)
     location = Location.query.get_or_404(location_id)
     time_open = datetime.combine(date, location.open)
@@ -241,17 +242,11 @@ def get_free_time_intervals(location_id, date, staff_id, duration,
     interval = time_close - time_from
     if interval >= duration:
         intervals.append((time_from, time_close - duration))
-    if len(intervals) > 0 or fix_date:
-        if get_config_parameter('simple_mode'):
-            return intervals
-        else:
-            free_intervals = get_interval_intersection(intervals,
-                                                       staff_intervals)
-            return free_intervals
+    if get_config_parameter('simple_mode'):
+        return intervals
     else:
-        return get_free_time_intervals(location_id, date + timedelta(days=1),
-                                       staff_id, duration, fix_date,
-                                       except_id)
+        free_intervals = get_interval_intersection(intervals, staff_intervals)
+        return free_intervals
 
 
 def send_mail_from_site(sender, subject, text):

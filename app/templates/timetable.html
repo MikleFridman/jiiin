@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block app_content %}
-  <div class="row justify-content-between">
+  <div class="row">
     <div class="col-md-2 mb-2">
       <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('appointment_create', **request.args) }}';">Add new</button>
     </div>
@@ -15,10 +15,10 @@
     <thead>
       <tr class="table-primary border-start border-end border-light text-center">
         <th class="col-2">Location</th>
-        <th>Date / time</th>
-        <th>Staff</th>
-        <th>Client</th>
-        <th  class="col-1">Services</th>
+        <th class="col-2">Date / time</th>
+        <th class="col-3">Staff</th>
+        <th class="col-3">Client</th>
+        <th class="col-1">Services</th>
         <th class="col-1">Action</th>
       </tr>
     </thead>
@@ -26,9 +26,9 @@
       {% for a in items %}
         <tr class="{{ loop.cycle('table-success', 'table-default') }}  border-start border-end border-light">
           <td class="col-2 ps-3">{{ a.location.short_name() }}</td>
-          <td class="text-center">{{ a.date_time.strftime('%d.%m.%y %H:%M') }} - {{ (a.date_time + a.duration()).strftime('%H:%M') }}</td>
-          <td class="text-center">{{ a.staff.short_name() }}</td>
-          <td class="text-center">{{ a.client.short_name() }}</td>
+          <td class="col-2 text-center">{{ a.date_time.strftime('%d.%m.%y %H:%M') }} - {{ (a.date_time + a.duration()).strftime('%H:%M') }}</td>
+          <td class="col-3 text-center">{{ a.staff.short_name() }}</td>
+          <td class="col-3 text-center">{{ a.client.short_name() }}</td>
           <td class="col-1 text-center">
             <span class="badge bg-primary rounded-pill">{{ a.services|count }}</span>
           </td>
