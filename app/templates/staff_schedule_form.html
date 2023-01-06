@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+{% block app_content %}
+<form class="form-inline" action="" method="post">
+    {{ form.hidden_tag() }}
+    <div class="row mt-1">
+        <div class="col-md-6">
+            <div class="form-group mb-2">
+                {{ form.staff.label(class_="col-form-label") }}
+                {% if form.staff.errors %}
+                    {{ form.staff(class_="form-select is-invalid") }}
+                {% else %}
+                    {{ form.staff(class_="form-select") }}
+                {% endif %}
+            </div>
+            <div class="form-group">
+                {{ form.location.label(class_="col-form-label") }}
+                {% if form.location.errors %}
+                    {{ form.location(class_="form-select is-invalid") }}
+                {% else %}
+                    {{ form.location(class_="form-select") }}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-2">
+        <div class="col-md-3">
+        {{ form.date_from.label(class_="col-form-label") }}
+        {% if form.date_from.errors %}
+            {{ form.date_from(class_="form-control is-invalid") }}
+        {% else %}
+            {{ form.date_from(class_="form-control") }}
+        {% endif %}
+        </div>
+        <div class="col-md-3">
+        {{ form.date_to.label(class_="col-form-label") }}
+        {% if form.date_to.errors %}
+            {{ form.date_to(class_="form-control is-invalid") }}
+        {% else %}
+            {{ form.date_to(class_="form-control") }}
+        {% endif %}
+        </div>
+    </div>
+
+    <div class="row mt-2">
+        <div class="col-md-3">
+        {{ form.time_from.label(class_="col-form-label") }}
+        {% if form.time_from.errors %}
+            {{ form.time_from(class_="form-control is-invalid") }}
+        {% else %}
+            {{ form.time_from(class_="form-control") }}
+        {% endif %}
+        </div>
+        <div class="col-md-3">
+        {{ form.time_to.label(class_="col-form-label") }}
+        {% if form.time_to.errors %}
+            {{ form.time_to(class_="form-control is-invalid") }}
+        {% else %}
+            {{ form.time_to(class_="form-control") }}
+        {% endif %}
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <div class="col-md-6">
+            <div class="form-check-inline">
+            {{ form.day_0(class_="form-check-input") }}
+            {{ form.day_0.label(class_="form-check-label ms-1") }}
+            </div>
+            <div class="form-check-inline ms-1">
+            {{ form.day_1(class_="form-check-input") }}
+            {{ form.day_1.label(class_="form-check-label ms-1") }}
+            </div>
+            <div class="form-check-inline ms-2">
+            {{ form.day_2(class_="form-check-input") }}
+            {{ form.day_2.label(class_="form-check-label ms-1") }}
+            </div>
+            <div class="form-check-inline ms-2">
+            {{ form.day_3(class_="form-check-input") }}
+            {{ form.day_3.label(class_="form-check-label ms-1") }}
+            </div>
+            <div class="form-check-inline ms-2">
+            {{ form.day_4(class_="form-check-input") }}
+            {{ form.day_4.label(class_="form-check-label ms-1") }}
+            </div>
+            <div class="form-check-inline ms-2">
+            {{ form.day_5(class_="form-check-input") }}
+            {{ form.day_5.label(class_="form-check-label ms-1") }}
+            </div>
+            <div class="form-check-inline ms-2">
+            {{ form.day_6(class_="form-check-input") }}
+            {{ form.day_6.label(class_="form-check-label ms-1") }}
+            </div>
+        </div>
+    </div>
+
+    <div class="form-group mt-4">
+        <div class="form-switch">
+            {{ form.no_active(class_="form-check-input") }}
+            {{ form.no_active.label(class_="form-check-label ms-1") }}
+        </div>
+    </div>
+
+    <div class="form-group mt-2">
+        <button type="submit" class="btn btn-primary mt-3 mb-2">Submit</button>
+        <button type="button" class="btn btn-secondary mt-3 ms-3 mb-2" onclick="window.location.href='{{ url_back }}'">Back</button>
+    </div>
+</form>
+
+
+{% endblock %}

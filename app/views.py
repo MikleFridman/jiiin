@@ -249,7 +249,7 @@ def staff_schedule_create(id):
         if request.method == 'POST':
             form.location.default = form.location.data
         form.process()
-    return render_template('data_form.html',
+    return render_template('staff_schedule_form.html',
                            title='Schedule (create)',
                            form=form,
                            url_back=url_back)
@@ -301,7 +301,7 @@ def staff_schedule_edit(staff_id, id):
             form.day_4.data = weekdays[4]
             form.day_5.data = weekdays[5]
             form.day_6.data = weekdays[6]
-    return render_template('data_form.html',
+    return render_template('staff_schedule_form.html',
                            title='Schedule (edit)',
                            form=form,
                            url_back=url_back)
