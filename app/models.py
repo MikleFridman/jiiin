@@ -320,6 +320,8 @@ class Appointment(db.Model):
                                backref=db.backref('appointments', lazy=True))
     info = db.Column(db.Text)
     result = db.Column(db.Text)
+    payment_id = db.Column(db.Integer, db.ForeignKey('item_flow.id'))
+    payment = db.relationship('ItemFlow', backref='appointment')
     cancel = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
@@ -328,6 +330,12 @@ class Appointment(db.Model):
             cancel = '(canceled)'
         return '<Appointment {} {} {}>'.format(self.location_id,
                                                self.date_time, cancel)
+
+    def sum(self):
+        sum = 0
+        for service in self.services:
+            sum += service.price
+        return sum
 
     def duration(self):
         duration = 0

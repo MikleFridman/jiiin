@@ -110,13 +110,13 @@ class StaffScheduleForm(FlaskForm):
     date_to = DateField('Date to', validators=[DataRequired()])
     time_from = TimeField('Time from', validators=[DataRequired()])
     time_to = TimeField('Time to', validators=[DataRequired()])
-    day_0 = BooleanField('Sun')
-    day_1 = BooleanField('Mon')
-    day_2 = BooleanField('Tue')
-    day_3 = BooleanField('Wed')
-    day_4 = BooleanField('Thu')
-    day_5 = BooleanField('Fri')
-    day_6 = BooleanField('Sat')
+    day_0 = BooleanField('Sunday')
+    day_1 = BooleanField('Monday')
+    day_2 = BooleanField('Tuesday')
+    day_3 = BooleanField('Wednesday')
+    day_4 = BooleanField('Thursday')
+    day_5 = BooleanField('Friday')
+    day_6 = BooleanField('Saturday')
     no_active = BooleanField('No active')
 
     def validate_location(self, field):
@@ -300,4 +300,14 @@ class NoticeForm(FlaskForm):
     date = DateField('Date')
     description = TextAreaField('Description', validators=[DataRequired(), Length(max=255)])
     no_active = BooleanField('No active')
+    submit = SubmitField('Submit')
+
+
+class CashFlowForm(FlaskForm):
+    location = SelectField('Location', choices=[], coerce=int)
+    date = DateField('Date')
+    description = StringField('Description', validators=[DataRequired(), Length(max=120)])
+    action = SelectField('Action', choices=[(1, 'Plus'), (-1, 'Minus')],
+                         coerce=int)
+    sum = FloatField('Sum', default=0)
     submit = SubmitField('Submit')

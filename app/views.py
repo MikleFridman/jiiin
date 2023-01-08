@@ -1,3 +1,4 @@
+import app
 import hashlib
 import os.path
 import uuid
@@ -1140,7 +1141,7 @@ def notices():
         page, app.config['ROWS_PER_PAGE'], False)
 
     return render_template('notice_table.html',
-                           title='Notice',
+                           title='Notices',
                            items=items.items,
                            pagination=items)
 
@@ -1215,3 +1216,144 @@ def notice_delete(id):
     flash('Delete notice {}'.format(id))
     return redirect(url_back)
 # Notice block end
+
+
+# CashFlow block start
+@app.route('/cash_flow/')
+@login_required
+def cash_flow():
+    page = request.args.get('page', 1, type=int)
+    param = {'cid': current_user.cid}
+    items = CashFlow.query.filter_by(**param).paginate(
+        page, app.config['ROWS_PER_PAGE'], False)
+
+    return render_template('cash_flow_table.html',
+                           title='Cash flow',
+                           items=items.items,
+                           pagination=items)
+
+
+@app.route('/cash_flow/create', methods=['GET', 'POST'])
+@login_required
+def cash_flow_create():
+    url_back = request.args.get('url_back', url_for('cash_flow',
+                                                    **request.args))
+    appointment_id = request.args.get('appointment_id')
+    appointment = Appointment.query.filter_by(cid=current_user.cid,
+                                              id=appointment_id).first_or_404()
+    if appointment.payment_id:
+        return redirect(url_for('cash_flow_edit', id=appointment.payment_id,
+                                **request.args))
+    form = CashFlowForm()
+    form.location.choices = get_active_locations()
+    if form.validate_on_submit():
+        cash_flow = CashFlow(cid=current_user.cid,
+                             location_id=form.location.data,
+                             date=form.date.data,
+                             description=form.description.data,
+                             sum=form.sum.data * form.action.data)
+        db.session.add(cash_flow)
+        cash = Cash.query.filter_by(cid=current_user.cid,
+                                    location_id=form.location.data
+                                    ).first()
+        if cash:
+            cash.sum += form.sum.data * form.action.data
+        else:
+            cash = Cash(cid=current_user.cid,
+                        location_id=form.location.data,
+                        sum=form.sum.data * form.action.data)
+            db.session.add(cash)
+        appointment.payment_id = cash_flow.id
+        db.session.commit()
+        return redirect(url_back)
+    elif request.method == 'POST':
+        form.location.default = form.location.data
+        form.action.default = form.action.data
+        form.process()
+    else:
+        if appointment:
+            location_id = appointment.location_id
+            description = ' '.join(('#Appointment',
+                                    str(appointment.id),
+                                    str(appointment.date_time)))
+            date = appointment.date_time.date()
+            sum = appointment.sum()
+            form.location.default = location_id
+            form.process()
+            form.date.data = date
+            form.sum.data = sum
+            form.description.data = description
+        else:
+            form.date.data = datetime.now().date()
+    return render_template('data_form.html',
+                           title='Cash flow (create)',
+                           form=form,
+                           url_back=url_back)
+
+
+@app.route('/cash_flow/edit/<id>', methods=['GET', 'POST'])
+@login_required
+def cash_flow_edit(id):
+    url_back = request.args.get('url_back', url_for('cash_flow',
+                                                    **request.args))
+    cash_flow = CashFlow.query.filter_by(cid=current_user.cid,
+                                         id=id).first_or_404()
+    form = CashFlowForm()
+    form.location.choices = get_active_locations()
+    if form.validate_on_submit():
+        current_location = cash_flow.location_id
+        current_sum = cash_flow.sum
+        cash_flow.location_id = form.location.data
+        cash_flow.description = form.description.data
+        cash_flow.date = form.date.data
+        cash_flow.sum = form.sum.data * form.action.data
+        current_cash = Cash.query.filter_by(cid=current_user.cid,
+                                            location_id=current_location
+                                            ).first()
+        current_cash.sum -= current_sum
+        cash = Cash.query.filter_by(cid=current_user.cid,
+                                    location_id=form.location.data
+                                    ).first()
+        if cash:
+            cash.sum += form.sum.data * form.action.data
+        else:
+            cash = Cash(cid=current_user.cid,
+                        location_id=form.location.data,
+                        sum=form.sum.data * form.action.data)
+            db.session.add(cash)
+        db.session.commit()
+        return redirect(url_back)
+    elif request.method == 'POST':
+        form.location.default = form.location.data
+        form.action.default = form.action.data
+        form.process()
+    else:
+        form.location.default = cash_flow.location_id
+        form.process()
+        form.date.data = cash_flow.date
+        form.description.data = cash_flow.description
+        form.sum.data = abs(cash_flow.sum)
+        form.action.data = cash_flow.sum / abs(cash_flow.sum)
+    return render_template('data_form.html',
+                           title='Cash flow (edit)',
+                           form=form,
+                           url_back=url_back)
+
+
+@app.route('/cash_flow/delete/<id>')
+@login_required
+def cash_flow_delete(id):
+    if not check_permission('CashFlow', 'delete'):
+        flash('Insufficient access level')
+        return redirect(url_for('cash_flow'))
+    cash_flow = CashFlow.query.filter_by(cid=current_user.cid,
+                                         id=id).first_or_404()
+    db.session.delete(cash_flow)
+    cash = Cash.query.filter_by(cid=current_user.cid,
+                                location_id=cash_flow.location_id
+                                ).first()
+    cash.sum -= cash_flow.sum
+    db.session.commit()
+    flash('Delete cash flow {}'.format(id))
+    return redirect(url_for('cash_flow'))
+# CashFlow block end
