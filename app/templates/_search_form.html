@@ -1,22 +1,22 @@
 <form method="get">
   <div class="form-group row">
       <div class="col-sm-1 mt-1 text-center">
-          {% if request.args.get('client', '0') != '0' %}
+          {% if request.args.get('client_id', '0') != '0' %}
             <img src="{{ url_for('static', filename='/card.png') }}" alt="card" width="36">
           {% endif %}
       </div>
-      {{ form.location.label(class_="col-sm-1 col-form-label text-end") }}
+      {{ form.location_id.label(class_="col-sm-1 col-form-label text-end") }}
       <div class="col-sm-4">
-        {{ form.location(class_="form-select") }}
+        {{ form.location_id(class_="form-select") }}
       </div>
 
-      {{ form.staff.label(class_="col-sm-1 col-form-label text-end") }}
+      {{ form.staff_id.label(class_="col-sm-1 col-form-label text-end") }}
       <div class="col-sm-4">
-        {{ form.staff(class_="form-select") }}
+        {{ form.staff_id(class_="form-select") }}
       </div>
 
       <div class="d-none">
-        {{ form.client(class_="form-select") }}
+        {{ form.client_id(class_="form-select") }}
       </div>
 
       <div class="col-sm-1 mt-1">

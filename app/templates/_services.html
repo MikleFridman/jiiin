@@ -1,0 +1,15 @@
+  <table id="data" class="table border-top border-bottom border-light">
+    <tbody>
+      {% for s in items %}
+        <tr class="table-default border-start border-end border-light">
+          <td class="ps-3">
+            {% if s.no_active %}
+              <img src="{{ url_for('static', filename='/hidden.png') }}" alt="hidden" width="24">
+            {% endif %}
+            {{ s.name }}
+          </td>
+          <td class="col-2 text-center">{{ s.duration }} min</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>

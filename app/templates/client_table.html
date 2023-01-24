@@ -27,7 +27,7 @@
             {{ c.name }}
           </td>
           <td class="col-1 text-center">
-            <a href="{{ url_for('appointments', client=c.id) }}">
+            <a href="{{ url_for('appointments', client_id=c.id) }}">
               <img class="ms-2" src="{{ url_for('static', filename='/table.png') }}" alt="table" width="24">
             </a>
           </td>

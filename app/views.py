@@ -3,7 +3,7 @@ import hashlib
 import os.path
 import uuid
 
-from flask import render_template, flash, redirect, url_for, request, jsonify, send_file
+from flask import render_template, flash, redirect, url_for, request, jsonify, send_file, session
 from flask_login import login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 
@@ -15,7 +15,7 @@ from app.models import *
 @app.route('/sendmail/', methods=['GET', 'POST'])
 @login_required
 def sendmail():
-    url_back = url_for('index', **request.args)
+    url_back = request.args.get('url_back', url_for('index', **request.args))
     form = ContactForm()
     if form.validate_on_submit():
         sender = form.name.data, form.email.data
@@ -98,6 +98,8 @@ def company_edit():
                            title='Company (edit)',
                            form=form,
                            url_back=url_back)
+
+
 # Company block end
 
 
@@ -127,6 +129,8 @@ def user_edit(id):
                            title='User (edit)',
                            form=form,
                            url_back=url_back)
+
+
 # User block end
 
 
@@ -321,6 +325,8 @@ def staff_schedule_delete(staff_id, id):
     db.session.commit()
     flash('Delete schedule {}'.format(id))
     return redirect(url_for('staff_schedule', id=staff_id))
+
+
 # Staff block end
 
 
@@ -475,6 +481,8 @@ def client_file_delete(client_id, id):
         return redirect(url_back)
     flash('Delete file {}'.format(id))
     return redirect(url_back)
+
+
 # Client block end
 
 
@@ -549,16 +557,43 @@ def clients_tags_delete(id):
 
 
 # Service block start
-@app.route('/services/')
+@app.route('/services/', methods=['GET', 'POST'])
 @login_required
 def services():
     page = request.args.get('page', 1, type=int)
-    items = Service.query.filter_by(cid=current_user.cid).paginate(
+    appointment_id = request.args.get('appointment_id', None, type=int)
+    url_back = request.args.get('url_back', url_for('appointments'))
+    if appointment_id:
+        appointment = Appointment.query.filter_by(
+            cid=current_user.cid, id=appointment_id).first_or_404()
+        session['services'] = [str(s.id) for s in appointment.services]
+    if 'edit' in url_back:
+        url_submit = url_back + '?mod_services=1'
+    else:
+        url_submit = url_for('appointment_create')
+    location_id = request.args.get('location_id', None, type=int)
+    active = request.args.get('active', None, type=int)
+    choice_mode = request.args.get('choice_mode', None, type=int)
+    param = [Service.cid == current_user.cid]
+    if location_id:
+        location = Location.query.filter_by(cid=current_user.cid,
+                                            id=location_id).first_or_404()
+        param.append(Service.id.in_([s.id for s in location.services]))
+    if choice_mode:
+        template = 'service_table_choice.html'
+        active = 1
+    else:
+        template = 'service_table.html'
+    if active:
+        param.append(Service.no_active != True)
+    items = Service.query.filter(*param).paginate(
         page, app.config['ROWS_PER_PAGE'], False)
-    return render_template('service_table.html',
+    return render_template(template,
                            title='Services',
                            items=items.items,
-                           pagination=items)
+                           pagination=items,
+                           url_back=url_back,
+                           url_submit=url_submit)
 
 
 @app.route('/services/create/', methods=['GET', 'POST'])
@@ -714,29 +749,29 @@ def location_delete(id):
 @login_required
 def appointments():
     form = SearchForm()
-    form.location.choices = get_active_locations()
-    form.location.render_kw = {'onchange': 'this.form.submit()'}
-    form.staff.choices = get_active_staff()
-    form.staff.render_kw = {'onchange': 'this.form.submit()'}
-    form.client.choices = get_active_clients()
-    form.client.render_kw = {'onchange': 'this.form.submit()'}
+    form.location_id.choices = get_active_locations()
+    form.location_id.render_kw = {'onchange': 'this.form.submit()'}
+    form.staff_id.choices = get_active_staff()
+    form.staff_id.render_kw = {'onchange': 'this.form.submit()'}
+    form.client_id.choices = get_active_clients()
+    form.client_id.render_kw = {'onchange': 'this.form.submit()'}
     page = request.args.get('page', 1, type=int)
     param = {'cid': current_user.cid}
-    select_location = request.args.get('location', 0, type=int)
-    select_staff = request.args.get('staff', 0, type=int)
-    select_client = request.args.get('client', 0, type=int)
-    if select_location > 0:
-        form.location.default = select_location
+    location_id = request.args.get('location_id', None, type=int)
+    staff_id = request.args.get('staff_id', None, type=int)
+    client_id = request.args.get('client_id', None, type=int)
+    if location_id:
+        form.location_id.default = location_id
         form.process()
-        param['location_id'] = select_location
-    if select_staff > 0:
-        form.staff.default = select_staff
+        param['location_id'] = location_id
+    if staff_id:
+        form.staff_id.default = staff_id
         form.process()
-        param['staff_id'] = select_staff
-    if select_client > 0:
-        form.client.default = select_client
+        param['staff_id'] = staff_id
+    if client_id:
+        form.client_id.default = client_id
         form.process()
-        param['client_id'] = select_client
+        param['client_id'] = client_id
     items = Appointment.query.filter_by(**param).order_by(
         Appointment.date_time.desc(), Appointment.location_id).paginate(
         page, app.config['ROWS_PER_PAGE'], False)
@@ -755,6 +790,12 @@ def appointment_create():
     form.location.choices = get_active_locations()
     form.staff.choices = get_active_staff()
     form.client.choices = get_active_clients()
+    selected_services_id = session.get('services', [])
+    form.duration.data = get_duration(selected_services_id)
+    selected_services = []
+    for service_id in selected_services_id:
+        service = Service.query.get_or_404(service_id)
+        selected_services.append(service)
     if form.validate_on_submit():
         date = form.date.data
         appointment = Appointment(cid=current_user.cid,
@@ -769,23 +810,23 @@ def appointment_create():
                                   info=form.info.data)
         db.session.add(appointment)
         db.session.flush()
-        services = form.service.data
-        for service_id in services:
-            service = Service.query.get_or_404(service_id)
+        # services = form.service.data
+        for service in selected_services:
             appointment.add_service(service)
+        session.pop('services')
         db.session.commit()
         return redirect(url_back)
     elif request.method == 'POST':
         form.location.default = form.location.data
         form.staff.default = form.staff.data
         form.client.default = form.client.data
-        services = form.service.data
-        if form.location.data is not None and form.location.data != 0:
-            form.service.choices = get_active_services(
-                location_id=form.location.data,
-                multi=True)
-        form.service.default = services
-        form.process()
+        # services = form.service.data
+        # if form.location.data is not None and form.location.data != 0:
+        #     form.service.choices = get_active_services(
+        #         location_id=form.location.data,
+        #         multi=True)
+        # form.service.default = services
+        # form.process()
     else:
         if request.args.get('client', None):
             form.client.default = request.args.get('client')
@@ -793,7 +834,47 @@ def appointment_create():
     return render_template('appointment_form.html',
                            title='Appointment (create)',
                            form=form,
+                           items=selected_services,
                            url_back=url_back)
+
+#
+# @app.route('/select_service/<service_id>/')
+# @login_required
+# def select_service(service_id):
+#     url_back = request.args.get('url_back')
+#     mod_services = request.args.get('mod_services')
+#     services_id = session.get('services', [])
+#     if str(service_id) not in services_id:
+#         services_id.append(service_id)
+#         session['services'] = services_id
+#     return redirect(url_for('services',
+#                             choice_mode=1,
+#                             url_back=url_back,
+#                             mod_services=mod_services))
+#
+#
+# @app.route('/unselect_service/<service_id>/')
+# @login_required
+# def unselect_service(service_id):
+#     url_back = request.args.get('url_back')
+#     mod_services = request.args.get('mod_services')
+#     services_id = session.get('services', [])
+#     if str(service_id) in services_id:
+#         services_id.remove(str(service_id))
+#         session['services'] = services_id
+#     return redirect(url_for('services',
+#                             choice_mode=1,
+#                             url_back=url_back,
+#                             mod_services=mod_services))
+
+
+# @app.route('/cancel_services/')
+# @login_required
+# def cancel_services():
+#     url_back = request.args.get('url_back', url_for('appointment_create'))
+#     if 'services' in session:
+#         session.pop('services')
+#     return redirect(url_for('services', choice_mode=1, url_back=url_back))
 
 
 @app.route('/services/<location_id>/')
@@ -829,55 +910,72 @@ def locations_service(service_id):
 def appointment_edit(id):
     appointment = Appointment.query.filter_by(cid=current_user.cid,
                                               id=id).first_or_404()
-    url_back = url_for('appointments', **request.args)
+    param_url = {**request.args}
+    param_url.pop('mod_services', None)
+    url_back = url_for('appointments', **param_url)
+    mod_services = request.args.get('mod_services', None) and 'services' in session
+    if mod_services:
+        selected_services_id = session.get('services')
+        url_select_service = url_for('services',
+                                     choice_mode=1,
+                                     url_back=request.path)
+    else:
+        selected_services_id = [s.id for s in appointment.services]
+        url_select_service = url_for('services',
+                                     choice_mode=1,
+                                     appointment_id=id,
+                                     url_back=request.path)
+    selected_services = []
+    for service_id in selected_services_id:
+        service = Service.query.get_or_404(service_id)
+        selected_services.append(service)
     form = AppointmentForm(appointment)
+    form.duration.data = get_duration(selected_services_id)
     form.location.choices = get_active_locations()
     form.staff.choices = get_active_staff()
     form.client.choices = get_active_clients()
-    form.location.choices = get_active_locations()
     if form.validate_on_submit():
-        date = form.date.data
         appointment.location_id = form.location.data
-        appointment.date_time = datetime(date.year,
-                                         date.month,
-                                         date.day,
+        appointment.date_time = datetime(form.date.data.year,
+                                         form.date.data.month,
+                                         form.date.data.day,
                                          form.time.data.hour,
                                          form.time.data.minute)
         appointment.client_id = form.client.data
         appointment.staff_id = form.staff.data
         appointment.info = form.info.data
         appointment.cancel = form.cancel.data
-        services = form.service.data
+        # services = form.service.data
         appointment.services.clear()
-        for service_id in services:
-            service = Service.query.get_or_404(service_id)
+        for service in selected_services:
             appointment.add_service(service)
+        session.pop('services', None)
         db.session.commit()
         return redirect(url_back)
     elif request.method == 'POST':
         form.location.default = form.location.data
         form.staff.default = form.staff.data
         form.client.default = form.client.data
-        services = form.service.data
-        if form.location.data is not None and form.location.data != 0:
-            form.service.choices = get_active_services(
-                location_id=form.location.data,
-                multi=True)
-            form.service.default = services
-        else:
-            form.service.choices = get_active_services(
-                location_id=appointment.location_id,
-                multi=True)
-            form.service.default = [s.id for s in appointment.services]
+        # services = form.service.data
+        # if form.location.data is not None and form.location.data != 0:
+        #     form.service.choices = get_active_services(
+        #         location_id=form.location.data,
+        #         multi=True)
+        #     form.service.default = services
+        # else:
+        #     form.service.choices = get_active_services(
+        #         location_id=appointment.location_id,
+        #         multi=True)
+        #     form.service.default = [s.id for s in appointment.services]
         form.process()
     else:
         form.location.default = appointment.location_id
         form.staff.default = appointment.staff_id
         form.client.default = appointment.client_id
-        form.service.choices = get_active_services(
-            location_id=appointment.location_id,
-            multi=True)
-        form.service.default = [s.id for s in appointment.services]
+        # form.service.choices = get_active_services(
+        #     location_id=appointment.location_id,
+        #     multi=True)
+        # form.service.default = [s.id for s in appointment.services]
         form.process()
         form.date.data = appointment.date_time.date()
         form.time.data = appointment.date_time.time()
@@ -887,6 +985,8 @@ def appointment_edit(id):
                            title='Appointment (edit)',
                            form=form,
                            id=id,
+                           items=selected_services,
+                           url_select_service=url_select_service,
                            url_back=url_back)
 
 
@@ -922,7 +1022,6 @@ def appointment_result(appointment_id):
                            title='Result',
                            form=form,
                            url_back=url_back)
-
 
 
 # Appointment block end
@@ -991,6 +1090,8 @@ def item_delete(id):
     db.session.commit()
     flash('Delete item {}'.format(id))
     return redirect(url_for('items'))
+
+
 # Item block end
 
 
@@ -1125,6 +1226,8 @@ def item_flow_delete(id):
     db.session.commit()
     flash('Delete item flow {}'.format(id))
     return redirect(url_for('items_flow'))
+
+
 # ItemFlow block end
 
 
@@ -1215,6 +1318,8 @@ def notice_delete(id):
     db.session.commit()
     flash('Delete notice {}'.format(id))
     return redirect(url_back)
+
+
 # Notice block end
 
 
@@ -1357,3 +1462,19 @@ def cash_flow_delete(id):
     flash('Delete cash flow {}'.format(id))
     return redirect(url_for('cash_flow'))
 # CashFlow block end
+
+
+@app.route('/select_service/<service_id>/<selected>/')
+@login_required
+def select_checkbox(service_id, selected):
+    if int(selected) == 1:
+        services_id = session.get('services', [])
+        if str(service_id) not in services_id:
+            services_id.append(service_id)
+            session['services'] = services_id
+    else:
+        services_id = session.get('services', [])
+        if str(service_id) in services_id:
+            services_id.remove(str(service_id))
+            session['services'] = services_id
+    return jsonify(len(services_id))

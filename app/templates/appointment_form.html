@@ -47,18 +47,15 @@
                 </div>
             </div>
         </div>
-        <div class="form-group mt-2">
+        <div class="form-group mt-3">
             <div class="form-group col-md-8">
-            {{ form.service.label(class_="col-form-label") }}
-            {% if form.service.errors %}
-                {{ form.service(class_="form-select is-invalid") }}
-            {% else %}
-                {{ form.service(class_="form-select") }}
-            {% endif %}
+                {{ form.service.label(class_="col-form-label") }}
+                <a href="{{ url_select_service }}"> (select)</a>
+                {% include '_services.html' %}
             </div>
-            <div class="form-group col-md-8 mt-2">
-            {{ form.info.label(class_="col-form-label") }}
-            {{ form.info(class_="form-control") }}
+            <div class="form-group col-md-8 mt-1">
+                {{ form.info.label(class_="col-form-label") }}
+                {{ form.info(class_="form-control") }}
             </div>
         </div>
         <div class="form-group mt-3">
@@ -87,8 +84,8 @@
     </form>
 
 <script>
-    var location_select = document.getElementById("location");
-    var service_select = document.getElementById("service");
+<!--    var location_select = document.getElementById("location");-->
+<!--    var service_select = document.getElementById("service");-->
 
     location_select.onchange = function()  {
         fetch('/services/' + location_select.value).then(function(response) {

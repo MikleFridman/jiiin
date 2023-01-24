@@ -5,7 +5,7 @@ from flask_wtf import FlaskForm
 from wtforms import (StringField, PasswordField, BooleanField,
                      SubmitField, TextAreaField, TelField, IntegerField,
                      FloatField, SelectField, DateField, TimeField,
-                     SelectMultipleField, FileField)
+                     SelectMultipleField, FileField, HiddenField)
 from wtforms.validators import (DataRequired, Email, EqualTo,
                                 ValidationError, Length)
 
@@ -110,13 +110,13 @@ class StaffScheduleForm(FlaskForm):
     date_to = DateField('Date to', validators=[DataRequired()])
     time_from = TimeField('Time from', validators=[DataRequired()])
     time_to = TimeField('Time to', validators=[DataRequired()])
-    day_0 = BooleanField('Sunday')
-    day_1 = BooleanField('Monday')
-    day_2 = BooleanField('Tuesday')
-    day_3 = BooleanField('Wednesday')
-    day_4 = BooleanField('Thursday')
-    day_5 = BooleanField('Friday')
-    day_6 = BooleanField('Saturday')
+    day_6 = BooleanField('Sunday')
+    day_0 = BooleanField('Monday')
+    day_1 = BooleanField('Tuesday')
+    day_2 = BooleanField('Wednesday')
+    day_3 = BooleanField('Thursday')
+    day_4 = BooleanField('Friday')
+    day_5 = BooleanField('Saturday')
     no_active = BooleanField('No active')
 
     def validate_location(self, field):
@@ -195,6 +195,7 @@ class AppointmentForm(FlaskForm):
     staff = SelectField('Staff', choices=[], coerce=int)
     service = SelectMultipleField('Services', choices=[],
                                   validate_choice=False, coerce=int)
+    duration = HiddenField('Duration', default=0)
     info = TextAreaField('Info', validators=[Length(max=200)])
     cancel = BooleanField('Cancel')
     submit = SubmitField('Submit')
@@ -219,7 +220,8 @@ class AppointmentForm(FlaskForm):
         location = self.location.data
         staff = self.staff.data
         services = self.service.data
-        duration = get_duration(services)
+        # duration = get_duration(services)
+        duration = self.duration.data
         date = self.date.data
         if location == 0 or location is None:
             raise ValidationError('Incorrect data')
@@ -249,9 +251,9 @@ class ResultForm(FlaskForm):
 
 
 class SearchForm(FlaskForm):
-    location = SelectField('Location', choices=[], coerce=int)
-    staff = SelectField('Staff', choices=[], coerce=int)
-    client = SelectField('Client', choices=[], coerce=int)
+    location_id = SelectField('Location', choices=[], coerce=int)
+    staff_id = SelectField('Staff', choices=[], coerce=int)
+    client_id = SelectField('Client', choices=[], coerce=int)
 
 
 class ItemForm(FlaskForm):
