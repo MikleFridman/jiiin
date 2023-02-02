@@ -5,6 +5,7 @@
 {% endblock %}
 
 {% block scripts %}
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
 {% endblock %}
 
 {% block navbar %}
@@ -18,36 +19,36 @@
       {% if current_user.is_authenticated %}
           <ul class="navbar-nav me-auto">
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('index') }}">Home
+              <a class="nav-link {% if request.path == url_for('index') %}active{% endif %}" href="{{ url_for('index') }}">Home
                 <span class="visually-hidden">(current)</span>
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('appointments') }}">Timetable</a>
+              <a class="nav-link {% if request.path == url_for('appointments') %}active{% endif %}" href="{{ url_for('appointments') }}">Timetable</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('clients') }}">Clients</a>
+              <a class="nav-link {% if request.path == url_for('clients') %}active{% endif %}" href="{{ url_for('clients') }}">Clients</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('services') }}">Services</a>
+              <a class="nav-link {% if request.path == url_for('notices') %}active{% endif %}" href="{{ url_for('notices') }}">Notices</a>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle {% if request.path == url_for('services') or request.path == url_for('locations') or request.path == url_for('staff') %}active{% endif %}" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Company</a>
+              <div class="dropdown-menu">
+                  <a class="dropdown-item" href="{{ url_for('services') }}">Services</a>
+                <a class="dropdown-item" href="{{ url_for('locations') }}">Locations</a>
+                <a class="dropdown-item" href="{{ url_for('staff') }}">Staff</a>
+              </div>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('locations') }}">Locations</a>
+              <a class="nav-link {% if request.path == url_for('cash_flow') %}active{% endif %}" href="{{ url_for('cash_flow') }}">Cash flow</a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('staff') }}">Staff</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('items') }}">Items</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('items_flow') }}">Items flow</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('notices') }}">Notices</a>
-            </li>
-              <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('cash_flow') }}">Cash flow</a>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle {% if request.path == url_for('items') or request.path == url_for('items_flow') %}active{% endif %}" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Storage</a>
+              <div class="dropdown-menu">
+                <a class="dropdown-item" href="{{ url_for('items') }}">Items</a>
+                <a class="dropdown-item" href="{{ url_for('items_flow') }}">Items flow</a>
+              </div>
             </li>
           </ul>
       {% endif %}
@@ -74,10 +75,10 @@
 {% endblock %}
 
 {% block content %}
+    <script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
     <script>
         function hide_message() {
-        $('#message').fadeOut(5000);
-        document.getElementById('flash-style-load').remove();
+            $('#message').fadeOut(5000);
         }
     </script>
     <div class="container mt-3">
@@ -86,7 +87,9 @@
             {% for message in messages %}
             <div class="alert alert-dismissible alert-warning" role="alert" id="message">
                 {{ message }}
-                <style scoped="scoped" id="flash-style-load" onload="hide_message()"> </style>
+                <script type="text/javascript">
+                   hide_message();
+                </script>
             </div>
             {% endfor %}
             {% endif %}

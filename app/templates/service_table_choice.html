@@ -36,7 +36,7 @@
   {% if session.get('services', []) | count > 0 %}
     <button type="button" id="submit" class="btn btn-primary mt-3" onclick="window.location.href='{{ url_submit }}'">Submit</button>
   {% else %}
-    <button type="button" id="submit" class="btn btn-primary disabled mt-3">Submit</button>
+    <button type="button" id="submit" class="btn btn-primary disabled mt-3" onclick="window.location.href='{{ url_submit }}'">Submit</button>
   {% endif%}
   <button type="button" class="btn btn-secondary mt-3 ms-3" onclick="window.location.href='{{ url_back }}'">Back</button>
 {% import '_pagination.html' as forms %}
