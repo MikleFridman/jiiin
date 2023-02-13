@@ -131,6 +131,8 @@ def user_edit(id):
                            title='User (edit)',
                            form=form,
                            url_back=url_back)
+
+
 # User block end
 
 
@@ -334,6 +336,8 @@ def staff_schedule_delete(staff_id, id):
     db.session.commit()
     flash('Delete schedule {}'.format(id))
     return redirect(url_for('staff_schedule', id=staff_id))
+
+
 # Staff block end
 
 
@@ -393,17 +397,24 @@ def client_edit(id):
                            url_back=url_back)
 
 
-@app.route('/client/delete/<id>/', methods=['GET', 'POST'])
+@app.route('/clients/delete/<id>/', methods=['GET', 'POST'])
 @login_required
 def client_delete(id):
     if not check_permission('Client', 'delete'):
         flash('Insufficient access level')
         return redirect(url_for('clients'))
-    service = Client.query.filter_by(cid=current_user.cid,
-                                     id=id).first_or_404()
-    db.session.delete(service)
-    db.session.commit()
-    flash('Delete client {}'.format(id))
+    client = Client.query.filter_by(cid=current_user.cid,
+                                    id=id).first_or_404()
+    if (len(client.files) > 0 or
+            len(client.appointments) > 0):
+        flash('Unable to delete an object')
+    else:
+        try:
+            db.session.delete(client)
+            db.session.commit()
+            flash('Delete client {}'.format(id))
+        except IntegrityError:
+            flash('Deletion error')
     return redirect(url_for('clients'))
 
 
@@ -488,6 +499,8 @@ def client_file_delete(client_id, id):
         return redirect(url_back)
     flash('Delete file {}'.format(id))
     return redirect(url_back)
+
+
 # Client block end
 
 
@@ -558,6 +571,8 @@ def clients_tags_delete(id):
     db.session.commit()
     flash('Delete tag {}'.format(id))
     return redirect(url_back)
+
+
 # Client tag block end
 
 
@@ -567,6 +582,7 @@ def clients_tags_delete(id):
 def services():
     page = request.args.get('page', 1, type=int)
     appointment_id = request.args.get('appointment_id', None, type=int)
+    client_id = request.args.get('client_id', None, type=int)
     url_back = request.args.get('url_back', url_for('appointments'))
     if appointment_id:
         appointment = Appointment.query.filter_by(
@@ -575,7 +591,8 @@ def services():
     if 'edit' in url_back:
         url_submit = url_back + '?mod_services=1'
     else:
-        url_submit = url_for('appointment_create')
+        url_submit = url_for('appointment_create', client_id=client_id)
+    if url_back == url_for('appointments'):
         session.pop('services', None)
     location_id = request.args.get('location_id', None, type=int)
     active = request.args.get('active', None, type=int)
@@ -659,7 +676,7 @@ def service_edit(id):
                            url_back=url_back)
 
 
-@app.route('/service/delete/<id>/', methods=['GET', 'POST'])
+@app.route('/services/delete/<id>/', methods=['GET', 'POST'])
 @login_required
 def service_delete(id):
     if not check_permission('Service', 'delete'):
@@ -671,6 +688,8 @@ def service_delete(id):
     db.session.commit()
     flash('Delete service {}'.format(id))
     return redirect(url_for('services'))
+
+
 # Service block end
 
 
@@ -747,6 +766,8 @@ def location_delete(id):
     db.session.commit()
     flash('Delete location {}'.format(id))
     return redirect(url_for('locations'))
+
+
 # Location block end
 
 
@@ -795,11 +816,11 @@ def appointment_create():
     url_select_service = url_for('services',
                                  choice_mode=1,
                                  url_back=request.path)
+    selected_services_id = session.get('services')
     form = AppointmentForm()
     form.location.choices = get_active_locations()
     form.staff.choices = get_active_staff()
     form.client.choices = get_active_clients()
-    selected_services_id = session.get('services', [])
     form.duration.data = get_duration(selected_services_id)
     selected_services = []
     for service_id in selected_services_id:
@@ -823,49 +844,22 @@ def appointment_create():
             appointment.add_service(service)
         session.pop('services', None)
         db.session.commit()
-        return redirect(url_back)
+        return redirect(url_for('appointments'))
     elif request.method == 'POST':
         form.location.default = form.location.data
         form.staff.default = form.staff.data
         form.client.default = form.client.data
     else:
-        if request.args.get('client', None):
-            form.client.default = request.args.get('client')
+        if request.args.get('client_id', None):
+            form.client.default = request.args.get('client_id')
             form.process()
+    form.services.data = ','.join(list(str(s) for s in selected_services_id))
     return render_template('appointment_form.html',
                            title='Appointment (create)',
                            form=form,
                            items=selected_services,
                            url_back=url_back,
                            url_select_service=url_select_service)
-
-
-@app.route('/services/<location_id>/')
-@login_required
-def services_location(location_id):
-    if location_id == 0 or location_id is None:
-        return jsonify({'services': []})
-    items = get_active_services(location_id=location_id, queryset=True)
-    services = []
-    for item in items:
-        service = {'id': item.id, 'name': '{} ({} min)'.format(
-            item.name, item.duration)}
-        services.append(service)
-    return jsonify({'services': services})
-
-
-@app.route('/locations/<service_id>/')
-@login_required
-def locations_service(service_id):
-    service = Service.query.get(service_id)
-    items = list(filter(lambda x:
-                        not x.no_active and
-                        x.cid == current_user.cid, service.locations))
-    locations = [{'id': 0, 'name': '-Select-'}]
-    for item in items:
-        location = {'id': item.id, 'name': item.name}
-        locations.append(location)
-    return jsonify({'locations': locations})
 
 
 @app.route('/appointments/edit/<id>/', methods=['GET', 'POST'])
@@ -928,6 +922,7 @@ def appointment_edit(id):
         form.time.data = appointment.date_time.time()
         form.info.data = appointment.info
         form.cancel.data = appointment.cancel
+    form.services.data = ','.join(list(str(s) for s in selected_services_id))
     return render_template('appointment_form.html',
                            title='Appointment (edit)',
                            form=form,
@@ -969,6 +964,8 @@ def appointment_result(appointment_id):
                            title='Result',
                            form=form,
                            url_back=url_back)
+
+
 # Appointment block end
 
 
@@ -1035,6 +1032,8 @@ def item_delete(id):
     db.session.commit()
     flash('Delete item {}'.format(id))
     return redirect(url_for('items'))
+
+
 # Item block end
 
 
@@ -1169,6 +1168,8 @@ def item_flow_delete(id):
     db.session.commit()
     flash('Delete item flow {}'.format(id))
     return redirect(url_for('items_flow'))
+
+
 # ItemFlow block end
 
 
@@ -1190,7 +1191,7 @@ def notices():
                            pagination=items)
 
 
-@app.route('/notice/create/', methods=['GET', 'POST'])
+@app.route('/notices/create/', methods=['GET', 'POST'])
 @login_required
 def notice_create():
     url_back = request.args.get('url_back', url_for('notices', **request.args))
@@ -1218,7 +1219,7 @@ def notice_create():
                            url_back=url_back)
 
 
-@app.route('/notice/edit/<id>/', methods=['GET', 'POST'])
+@app.route('/notices/edit/<id>/', methods=['GET', 'POST'])
 @login_required
 def notice_edit(id):
     url_back = request.args.get('url_back', url_for('notices',
@@ -1246,7 +1247,7 @@ def notice_edit(id):
                            url_back=url_back)
 
 
-@app.route('/notice/delete/<id>/')
+@app.route('/notices/delete/<id>/')
 @login_required
 def notice_delete(id):
     url_back = url_for('notices', **request.args)
@@ -1402,7 +1403,144 @@ def cash_flow_delete(id):
     db.session.commit()
     flash('Delete cash flow {}'.format(id))
     return redirect(url_for('cash_flow'))
+
+
 # CashFlow block end
+
+
+# Tasks block start
+@app.route('/task_statuses/')
+@login_required
+def task_statuses():
+    page = request.args.get('page', 1, type=int)
+    items = TaskStatus.query.filter_by(
+        cid=current_user.cid).paginate(page,
+                                       app.config['ROWS_PER_PAGE'], False)
+    return render_template('task_status_table.html',
+                           title='Task statuses',
+                           items=items.items,
+                           pagination=items)
+
+
+@app.route('/task_statuses/create/', methods=['GET', 'POST'])
+@login_required
+def task_status_create():
+    url_back = url_for('staff', **request.args)
+    if get_tariff_limit('staff') == 0:
+        return redirect(url_for('staff'))
+    form = TaskStatusForm()
+    if form.validate_on_submit():
+        task_status = TaskStatus(cid=current_user.cid,
+                                 name=form.name.data,
+                                 description=form.description.data,
+                                 final=form.final.data)
+        db.session.add(task_status)
+        db.session.commit()
+        return redirect(url_for('task_statuses'))
+    return render_template('data_form.html',
+                           title='Task status (create)',
+                           form=form,
+                           url_back=url_back)
+
+
+@app.route('/task_statuses/edit/<id>/', methods=['GET', 'POST'])
+@login_required
+def task_status_edit(id):
+    url_back = url_for('task_statuses', **request.args)
+    task_status = TaskStatus.query.filter_by(cid=current_user.cid,
+                                             id=id).first_or_404()
+    form = TaskStatusForm()
+    if form.validate_on_submit():
+        task_status.name = form.name.data
+        task_status.description = form.description.data
+        task_status.final = form.final.data
+        db.session.commit()
+        return redirect(url_back)
+    elif request.method == 'GET':
+        form = TaskStatusForm(obj=task_status)
+    return render_template('data_form.html',
+                           title='Task status (edit)',
+                           form=form,
+                           url_back=url_back)
+
+
+@app.route('/task_statuses/delete/<id>/', methods=['GET', 'POST'])
+@login_required
+def task_status_delete(id):
+    if not check_permission('TaskStatus', 'delete'):
+        flash('Insufficient access level')
+        return redirect(url_for('staff'))
+    task_status = TaskStatus.query.filter_by(cid=current_user.cid,
+                                             id=id).first_or_404()
+    if len(task_status.progress) > 0:
+        flash('Unable to delete an object')
+    else:
+        try:
+            db.session.delete(task_status)
+            db.session.commit()
+            flash('Delete task status {}'.format(id))
+        except IntegrityError:
+            flash('Deletion error')
+    return redirect(url_for('task_statuses'))
+
+
+@app.route('/tasks/')
+@login_required
+def tasks():
+    page = request.args.get('page', 1, type=int)
+    param = {'cid': current_user.cid}
+    items = Task.query.filter_by(**param).paginate(
+        page, app.config['ROWS_PER_PAGE'], False)
+    return render_template('task_table.html',
+                           title='Tasks',
+                           items=items.items,
+                           pagination=items)
+
+
+@app.route('/tasks/create', methods=['GET', 'POST'])
+@login_required
+def task_create():
+    url_back = url_for('tasks', **request.args)
+    form = TaskForm()
+    form.staff.choices = get_active_staff()
+    if form.validate_on_submit():
+        task = Task(cid=current_user.cid,
+                    name=form.name.data,
+                    description=form.description.data,
+                    staff_id=form.staff.data,
+                    author_id=current_user.id,
+                    deadline=form.deadline.data)
+        db.session.add(task)
+        db.session.flush()
+        status = TaskStatus.query.get_or_404(1)
+        task_progress = TaskProgress(cid=current_user.cid,
+                                     task_id=task.id,
+                                     staff_id=form.staff.data,
+                                     status_id=status.id)
+        db.session.add(task_progress)
+        db.session.commit()
+        return redirect(url_for('tasks'))
+    elif request.method == 'POST':
+        form.staff.default = form.staff.data
+    return render_template('data_form.html',
+                           title='Task (create)',
+                           form=form,
+                           url_back=url_back)
+
+
+@app.route('/tasks/edit/<id>', methods=['GET', 'POST'])
+@login_required
+def task_edit(id):
+    pass
+
+
+@app.route('/tasks/delete/<id>')
+@login_required
+def task_delete(id):
+    pass
+
+
+# Tasks block end
 
 
 @app.route('/select_service/<service_id>/<selected>/')

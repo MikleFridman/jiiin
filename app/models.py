@@ -186,6 +186,7 @@ class Staff(db.Model):
     name = db.Column(db.String(64), index=True, nullable=False)
     phone = db.Column(db.String(20), index=True, unique=True, nullable=False)
     no_active = db.Column(db.Boolean, default=False)
+    task_progress = db.relationship('TaskProgress', backref='staff', cascade='all, delete')
 
     def __repr__(self):
         active = ''
@@ -453,6 +454,7 @@ class TaskStatus(db.Model):
     name = db.Column(db.String(64), index=True, nullable=False)
     description = db.Column(db.String(255))
     final = db.Column(db.Boolean, default=False)
+    task_progress = db.relationship('TaskProgress', backref='status', cascade='all, delete')
 
 
 class Task(db.Model):
@@ -468,12 +470,13 @@ class Task(db.Model):
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     author = db.relationship('User', backref='tasks')
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow())
+    task_progress = db.relationship('TaskProgress', backref='task', cascade='all, delete')
 
     def __repr__(self):
         return self.name
 
     def current_status(self):
-        pass
+        return 'New'
 
     def current_staff(self):
         pass
@@ -483,13 +486,10 @@ class TaskProgress(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
     task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)
-    task = db.relationship('Task', backref='progress')
     staff_id = db.Column(db.Integer, db.ForeignKey('staff.id'),
                          nullable=False)
-    staff = db.relationship('Staff', backref='tasks_progress')
     status_id = db.Column(db.Integer, db.ForeignKey('task_status.id'),
                           nullable=False)
-    status = db.relationship('TaskStatus', backref='tasks_progress')
     description = db.Column(db.String(255))
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow(),
                           onupdate=datetime.utcnow)

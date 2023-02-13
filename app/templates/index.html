@@ -28,7 +28,7 @@
         <div class="list-group">
           <a href="{{ url_for('appointments') }}" class="list-group-item list-group-item-action active">Appointments:</a>
           {% for ac in appointments_count %}
-            <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="{{ url_for('appointments', location=ac[0].id, url_back=url_for('index'))}}">{{ ac[0] }}
+            <a class="list-group-item list-group-item-action d-flex justify-content-between align-items-center" href="{{ url_for('appointments', location_id=ac[0].id, url_back=url_for('index'))}}">{{ ac[0] }}
             <span class="badge bg-primary rounded-pill">{{ ac[1] }}</span>
             </a>
           {% endfor %}

@@ -1,6 +1,7 @@
 import datetime
 
 import phonenumbers
+from flask import flash
 from flask_wtf import FlaskForm
 from wtforms import (StringField, PasswordField, BooleanField,
                      SubmitField, TextAreaField, TelField, IntegerField,
@@ -196,6 +197,7 @@ class AppointmentForm(FlaskForm):
     service = SelectMultipleField('Services', choices=[],
                                   validate_choice=False, coerce=int)
     duration = HiddenField('Duration', default=0)
+    services = HiddenField('Services', default='')
     info = TextAreaField('Info', validators=[Length(max=200)])
     cancel = BooleanField('Cancel')
     submit = SubmitField('Submit')
@@ -205,22 +207,32 @@ class AppointmentForm(FlaskForm):
         self.appointment = appointment
 
     def validate_location(self, field):
-        if field.data is None or field.data == 0:
+        if self.location.data is None or field.data == 0:
             raise ValidationError('Please, select location')
 
+    def validate_services(self, field):
+        if len(field.data) == 0:
+            raise ValidationError('Please, select services')
+        else:
+            location = Location.query.get_or_404(self.location.data)
+            services_id = [x.id for x in location.services]
+            for s in field.data.split(','):
+                if int(s) not in services_id:
+                    message = f'Service id {s} unavailable in select location'
+                    flash(message)
+                    raise ValidationError(message)
+
     def validate_client(self, field):
-        if field.data is None or field.data == 0:
+        if self.client.data is None or field.data == 0:
             raise ValidationError('Please, select client')
 
     def validate_staff(self, field):
-        if field.data is None or field.data == 0:
+        if self.staff.data is None or field.data == 0:
             raise ValidationError('Please, select staff')
 
     def validate_time(self, time):
         location = self.location.data
         staff = self.staff.data
-        services = self.service.data
-        # duration = get_duration(services)
         duration = self.duration.data
         date = self.date.data
         if location == 0 or location is None:
@@ -313,3 +325,20 @@ class CashFlowForm(FlaskForm):
                          coerce=int)
     sum = FloatField('Sum', default=0)
     submit = SubmitField('Submit')
+
+
+class TaskForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired()])
+    deadline = DateField('Date')
+    staff = SelectField('Staff', choices=[], coerce=int)
+    description = TextAreaField('Description', validators=[Length(max=255)])
+    submit = SubmitField('Submit')
+
+
+class TaskStatusForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired()])
+    description = TextAreaField('Description', validators=[Length(max=255)])
+    final = BooleanField('Final')
+    submit = SubmitField('Submit')
+
+

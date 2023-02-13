@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+  <div class="row">
+    <div class="col-md-4 mb-2">
+      <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('task_create') }}';">Add new</button>
+    </div>
+  </div>
+  <table id="data" class="table table-hover border-top border-bottom border-light">
+    <thead>
+      <tr class="table-primary border-start border-end border-light text-center">
+        <th class="col-5">Name</th>
+        <th class="col-1">Status</th>
+        <th class="col-2">Deadline</th>
+        <th class="col-1">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for t in items %}
+        <tr class="{{ loop.cycle('table-success', 'table-default') }}  border-start border-end border-light">
+          <td class="col-5 ps-3">
+            {% if t.closed %}
+              <img src="{{ url_for('static', filename='/hidden.png') }}" alt="hidden" width="24">
+            {% endif %}
+            {{ t.name }}
+          </td>
+          <td class="col-1 text-center">
+            {{ t.current_status() }}
+          </td>
+          <td class="col-2 text-center">{{ t.deadline.strftime('%d.%m.%y') }}</td>
+          <td class="col-1 text-center">
+            <a href="{{ url_for('task_edit', id=t.id) }}"><img src="{{ url_for('static', filename='/edit.png') }}" alt="edit" width="24"></a>
+            <a href="{{ url_for('task_delete', id=t.id) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% import '_pagination.html' as forms %}
+{{ forms.render_pagination(pagination, 'tasks', **request.args) }}
+{% endblock %}
