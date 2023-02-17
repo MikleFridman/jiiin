@@ -129,6 +129,8 @@ def convert_str_to_weekdays(string):
 
 
 def get_staff_schedule(staff_id, location_id, date):
+    if not staff_id or not location_id or not date:
+        return []
     weekday = str(date.weekday())
     staff = Staff.query.get(staff_id)
     items = StaffSchedule.query.filter(StaffSchedule.id.in_(
@@ -218,6 +220,8 @@ def get_interval_intersection(list_1, list_2):
 
 def get_free_time_intervals(location_id, date, staff_id, duration,
                             except_id=None):
+    if not location_id or not date or not staff_id or not duration:
+        return []
     staff_intervals = get_staff_schedule(staff_id, location_id, date)
     location = Location.query.get_or_404(location_id)
     time_open = datetime.combine(date, location.open)
@@ -231,13 +235,13 @@ def get_free_time_intervals(location_id, date, staff_id, duration,
     intervals = []
     time_from = max(time_open, datetime.now())
     for appointment in timetable:
-        if appointment.time_end() < datetime.now():
+        if appointment.time_end < datetime.now():
             continue
         time_to = appointment.date_time
         interval = time_to - time_from
         if interval >= duration:
             intervals.append((time_from, time_to - duration))
-        time_from = appointment.time_end()
+        time_from = appointment.time_end
     interval = time_close - time_from
     if interval >= duration:
         intervals.append((time_from, time_close - duration))

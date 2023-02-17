@@ -84,8 +84,9 @@ def logout():
 @app.route('/companies/edit/', methods=['GET', 'POST'])
 @login_required
 def company_edit():
-    url_back = url_for('companies', **request.args)
+    url_back = url_for('index', **request.args)
     form = CompanyForm()
+    form.no_active.render_kw = {'disabled': 'True'}
     company = current_user.company
     if form.validate_on_submit():
         company.name = form.name.data
@@ -93,9 +94,10 @@ def company_edit():
         company.info = form.info.data
         company.no_active = form.no_active.data
         db.session.commit()
-        return redirect(url_for('companies'))
+        return redirect(url_for('index'))
     elif request.method == 'GET':
         form = CompanyForm(obj=company)
+        form.no_active.render_kw = {'disabled': 'True'}
     return render_template('data_form.html',
                            title='Company (edit)',
                            form=form,
@@ -616,7 +618,8 @@ def services():
                            items=items.items,
                            pagination=items,
                            url_back=url_back,
-                           url_submit=url_submit)
+                           url_submit=url_submit,
+                           id=appointment_id)
 
 
 @app.route('/services/create/', methods=['GET', 'POST'])
@@ -630,6 +633,7 @@ def service_create():
                           name=form.name.data,
                           duration=form.duration.data,
                           price=form.price.data,
+                          repeat=form.repeat.data,
                           no_active=form.no_active.data)
         db.session.add(service)
         db.session.flush()
@@ -656,6 +660,7 @@ def service_edit(id):
         service.name = form.name.data
         service.duration = form.duration.data
         service.price = form.price.data
+        service.repeat = form.repeat.data
         service.no_active = form.no_active.data
         service.locations.clear()
         for location_id in form.location.data:
@@ -669,6 +674,7 @@ def service_edit(id):
         form.name.data = service.name
         form.duration.data = service.duration
         form.price.data = service.price
+        form.repeat.data = service.repeat
         form.no_active.data = service.no_active
     return render_template('data_form.html',
                            title='Service (edit)',
@@ -688,8 +694,6 @@ def service_delete(id):
     db.session.commit()
     flash('Delete service {}'.format(id))
     return redirect(url_for('services'))
-
-
 # Service block end
 
 
@@ -766,8 +770,6 @@ def location_delete(id):
     db.session.commit()
     flash('Delete location {}'.format(id))
     return redirect(url_for('locations'))
-
-
 # Location block end
 
 
@@ -964,8 +966,6 @@ def appointment_result(appointment_id):
                            title='Result',
                            form=form,
                            url_back=url_back)
-
-
 # Appointment block end
 
 
@@ -1032,8 +1032,6 @@ def item_delete(id):
     db.session.commit()
     flash('Delete item {}'.format(id))
     return redirect(url_for('items'))
-
-
 # Item block end
 
 
@@ -1168,8 +1166,6 @@ def item_flow_delete(id):
     db.session.commit()
     flash('Delete item flow {}'.format(id))
     return redirect(url_for('items_flow'))
-
-
 # ItemFlow block end
 
 
@@ -1196,6 +1192,8 @@ def notices():
 def notice_create():
     url_back = request.args.get('url_back', url_for('notices', **request.args))
     client_id = request.args.get('client_id', None)
+    appointment_id = request.args.get('appointment_id', None)
+    appointment = Appointment.query.get_or_404(appointment_id)
     form = NoticeForm()
     form.client.choices = get_active_clients()
     if form.validate_on_submit():
@@ -1213,6 +1211,10 @@ def notice_create():
         if client_id:
             form.client.default = client_id
             form.process()
+        if appointment:
+            form.date.data = appointment.date_repeat
+            previous_visit = appointment.date_time.date()
+            form.description.data = f'*Previous visit {previous_visit}'
     return render_template('data_form.html',
                            title='Notice (create)',
                            form=form,
@@ -1260,8 +1262,6 @@ def notice_delete(id):
     db.session.commit()
     flash('Delete notice {}'.format(id))
     return redirect(url_back)
-
-
 # Notice block end
 
 
@@ -1324,7 +1324,7 @@ def cash_flow_create():
                                     str(appointment.id),
                                     str(appointment.date_time)))
             date = appointment.date_time.date()
-            sum = appointment.sum()
+            sum = appointment.sum
             form.location.default = location_id
             form.process()
             form.date.data = date
@@ -1403,8 +1403,6 @@ def cash_flow_delete(id):
     db.session.commit()
     flash('Delete cash flow {}'.format(id))
     return redirect(url_for('cash_flow'))
-
-
 # CashFlow block end
 
 
@@ -1538,8 +1536,6 @@ def task_edit(id):
 @login_required
 def task_delete(id):
     pass
-
-
 # Tasks block end
 
 

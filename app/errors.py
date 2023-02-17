@@ -13,7 +13,7 @@ def not_found_error(error):
 
 
 @app.errorhandler(413)
-def not_found_error(error):
+def too_large_error(error):
     return render_template('413.html'), 413
 
 

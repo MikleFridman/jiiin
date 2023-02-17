@@ -38,7 +38,9 @@
   {% else %}
     <button type="button" id="submit" class="btn btn-primary disabled mt-3" onclick="window.location.href='{{ url_submit }}'">Submit</button>
   {% endif%}
-  <button type="button" class="btn btn-secondary mt-3 ms-3" onclick="window.location.href='{{ url_back }}'">Back</button>
+  {% if id%}
+    <button type="button" class="btn btn-secondary mt-3 ms-3" onclick="window.location.href='{{ url_back }}'">Back</button>
+  {% endif%}
 {% import '_pagination.html' as forms %}
 {{ forms.render_pagination(pagination, 'services', **request.args) }}
 

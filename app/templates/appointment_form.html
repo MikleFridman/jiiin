@@ -76,7 +76,7 @@
                             onclick="window.location.href='{{ url_for('cash_flow_create', appointment_id=id, url_back=request.path) }}'">Payment
                     </button>
                     <button type="button" class="btn btn-light mt-3 ms-3 mb-2"
-                            onclick="window.location.href='{{ url_for('notice_create', client_id=form.client.data, url_back=request.path) }}'">Notice
+                            onclick="window.location.href='{{ url_for('notice_create', client_id=form.client.data, url_back=request.path, appointment_id=id) }}'">Notice
                     </button>
                 {% endif %}
             </div>

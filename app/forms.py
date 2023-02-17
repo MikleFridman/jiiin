@@ -39,15 +39,22 @@ class UserForm(FlaskForm):
     password2 = PasswordField('Repeat password', validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField('Submit')
 
+    def __init__(self, original_username, original_email, *args, **kwargs):
+        super(UserForm, self).__init__(*args, **kwargs)
+        self.original_username = original_username
+        self.original_email = original_email
+
     def validate_username(self, username):
-        user = User.query.filter_by(username=username.data).first()
-        if user is not None:
-            raise ValidationError('Please use a different username')
+        if username.data != self.original_username:
+            user = User.query.filter_by(username=username.data).first()
+            if user is not None:
+                raise ValidationError('Please use a different username')
 
     def validate_email(self, email):
-        user = User.query.filter_by(email=email.data).first()
-        if user is not None:
-            raise ValidationError('Please use a different email')
+        if email.data != self.original_email:
+            user = User.query.filter_by(email=email.data).first()
+            if user is not None:
+                raise ValidationError('Please use a different email')
 
 
 class UserFormEdit(UserForm):
@@ -163,6 +170,7 @@ class ServiceForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     duration = IntegerField('Duration', default=0)
     price = FloatField("Price", default=0)
+    repeat = IntegerField('Repeat', default=0)
     location = SelectMultipleField('Locations', choices=[],
                                    validate_choice=False, coerce=int)
     no_active = BooleanField('No active')
@@ -190,8 +198,8 @@ class LocationForm(FlaskForm):
 
 class AppointmentForm(FlaskForm):
     location = SelectField('Location', choices=[], coerce=int)
-    date = DateField('Date', validators=[DataRequired()], format='%Y-%m-%d')
-    time = TimeField('Time', validators=[DataRequired()], format='%H:%M')
+    date = DateField('Date', validators=[], format='%Y-%m-%d')
+    time = TimeField('Time', validators=[], format='%H:%M')
     client = SelectField('Client', choices=[], coerce=int)
     staff = SelectField('Staff', choices=[], coerce=int)
     service = SelectMultipleField('Services', choices=[],
@@ -207,13 +215,16 @@ class AppointmentForm(FlaskForm):
         self.appointment = appointment
 
     def validate_location(self, field):
-        if self.location.data is None or field.data == 0:
+        print('location', field.data)
+        if self.location.data is None or self.location.data == 0:
             raise ValidationError('Please, select location')
 
     def validate_services(self, field):
         if len(field.data) == 0:
             raise ValidationError('Please, select services')
         else:
+            if self.location.data is None or self.location.data == 0:
+                raise ValidationError('Please, select location')
             location = Location.query.get_or_404(self.location.data)
             services_id = [x.id for x in location.services]
             for s in field.data.split(','):
@@ -223,12 +234,18 @@ class AppointmentForm(FlaskForm):
                     raise ValidationError(message)
 
     def validate_client(self, field):
-        if self.client.data is None or field.data == 0:
+        print('client', field.data)
+        if self.client.data is None or self.client.data == 0:
             raise ValidationError('Please, select client')
 
     def validate_staff(self, field):
-        if self.staff.data is None or field.data == 0:
+        print('staff', field.data)
+        if self.staff.data is None or self.staff.data == 0:
             raise ValidationError('Please, select staff')
+
+    def validate_date(self, field):
+        if not self.date.data:
+            raise ValidationError('Please, select date')
 
     def validate_time(self, time):
         location = self.location.data
@@ -245,6 +262,8 @@ class AppointmentForm(FlaskForm):
             except_id = None
         intervals = get_free_time_intervals(location, date, staff, duration,
                                             except_id)
+        if not intervals:
+            raise ValidationError('Sorry, this time unavailable')
         dt = datetime(date.year, date.month,
                       date.day, time.data.hour, time.data.minute)
         check = False

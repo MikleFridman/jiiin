@@ -27,7 +27,7 @@
       {% for a in items %}
         <tr class="{{ loop.cycle('table-success', 'table-default') }}  border-start border-end border-light">
           <td class="col-2 ps-3">{{ a.location.short_name() }}</td>
-          <td class="col-2 text-center">{{ a.date_time.strftime('%d.%m.%y %H:%M') }} - {{ (a.date_time + a.duration()).strftime('%H:%M') }}</td>
+          <td class="col-2 text-center">{{ a.date_time.strftime('%d.%m.%y %H:%M') }} - {{ (a.date_time + a.duration).strftime('%H:%M') }}</td>
           <td class="col-3 text-center">{{ a.staff.short_name() }}</td>
           <td class="col-3 text-center">{{ a.client.short_name() }}</td>
           <td class="col-1 text-center">

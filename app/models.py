@@ -71,6 +71,7 @@ class Tariff(db.Model):
     max_users = db.Column(db.Integer, default=1)
     max_staff = db.Column(db.Integer, default=1)
     default = db.Column(db.Boolean, default=False)
+    companies = db.relationship('Company', backref='tariff')
 
     def __repr__(self):
         return self.name
@@ -82,8 +83,17 @@ class Company(db.Model):
     registration_number = db.Column(db.String(20))
     info = db.Column(db.Text)
     tariff_id = db.Column(db.ForeignKey('tariff.id'), nullable=False)
-    tariff = db.relationship('Tariff', backref='companies')
     no_active = db.Column(db.Boolean, default=False)
+    config = db.relationship('CompanyConfig', backref='company')
+    roles = db.relationship('Role', backref='company')
+    users = db.relationship('User', backref='company')
+    staff = db.relationship('Staff', backref='company')
+    clients = db.relationship('Client', backref='company')
+    services = db.relationship('Service', backref='company')
+    locations = db.relationship('Location', backref='company')
+    notices = db.relationship('Notice', backref='company')
+    tasks = db.relationship('Task', backref='company')
+    appointments = db.relationship('Appointment', backref='company')
 
     def __repr__(self):
         return self.name
@@ -92,7 +102,6 @@ class Company(db.Model):
 class CompanyConfig(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
-    company = db.relationship('Company', backref='config')
     min_time_interval = db.Column(db.Integer, default=15)
     simple_mode = db.Column(db.Boolean, default=False)
 
@@ -127,6 +136,7 @@ class Permission(db.Model):
 
 class Role(db.Model, RoleMixin):
     id = db.Column(db.Integer, primary_key=True)
+    cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
     name = db.Column(db.String(64),
                      index=True, unique=True, nullable=False)
     description = db.Column(db.String(255))
@@ -140,7 +150,6 @@ class Role(db.Model, RoleMixin):
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
-    company = db.relationship('Company', backref='users')
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True, nullable=False)
     password_hash = db.Column(db.String(128))
@@ -182,7 +191,6 @@ class User(db.Model, UserMixin):
 class Staff(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
-    company = db.relationship('Company', backref='staff')
     name = db.Column(db.String(64), index=True, nullable=False)
     phone = db.Column(db.String(20), index=True, unique=True, nullable=False)
     no_active = db.Column(db.Boolean, default=False)
@@ -201,7 +209,6 @@ class Staff(db.Model):
 class Client(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
-    company = db.relationship('Company', backref='clients')
     name = db.Column(db.String(64), index=True, nullable=False)
     phone = db.Column(db.String(20), index=True, unique=True, nullable=False)
     info = db.Column(db.Text)
@@ -250,10 +257,10 @@ class ClientTag(db.Model):
 class Service(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
-    company = db.relationship('Company', backref='services')
     name = db.Column(db.String(120), index=True, nullable=False)
     duration = db.Column(db.Integer)
     price = db.Column(db.Float)
+    repeat = db.Column(db.Integer)
     no_active = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
@@ -269,7 +276,6 @@ class Service(db.Model):
 class Location(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
-    company = db.relationship('Company', backref='locations')
     name = db.Column(db.String(64), index=True, nullable=False)
     address = db.Column(db.String(120))
     phone = db.Column(db.String(20), index=True, unique=True)
@@ -305,7 +311,6 @@ class Location(db.Model):
 class Appointment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
-    company = db.relationship('Company', backref='appointments')
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow(),
                           onupdate=datetime.utcnow)
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'),
@@ -332,20 +337,29 @@ class Appointment(db.Model):
         return '<Appointment {} {} {}>'.format(self.location_id,
                                                self.date_time, cancel)
 
+    @property
     def sum(self):
-        sum = 0
+        cost = 0
         for service in self.services:
-            sum += service.price
-        return sum
+            cost += service.price
+        return cost
 
+    @property
     def duration(self):
         duration = 0
         for service in self.services:
             duration += service.duration
         return timedelta(minutes=duration)
 
+    @property
+    def date_repeat(self):
+        period = min(s.repeat for s in self.services if s.repeat > 0)
+        print(period)
+        return (self.date_time + timedelta(days=period)).date()
+
+    @property
     def time_end(self):
-        return self.date_time + self.duration()
+        return self.date_time + self.duration
 
     def add_service(self, service):
         if not self.is_service(service):
@@ -501,7 +515,6 @@ class TaskProgress(db.Model):
 class Notice(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
-    company = db.relationship('Company', backref='notices')
     date = db.Column(db.Date, nullable=False)
     client_id = db.Column(db.Integer, db.ForeignKey('client.id'))
     client = db.relationship('Client', backref='notices')
