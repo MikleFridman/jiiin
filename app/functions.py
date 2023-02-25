@@ -1,48 +1,18 @@
+import datetime
 import os
+from datetime import datetime, timedelta
 
+from flask_login import current_user
 from flask_mail import Message
 from sqlalchemy import func
 
 from app import app, mail
-from app.models import *
+from .models import Location, User, Staff, Service, Appointment, CompanyConfig
 
 
 def allowed_file_ext(filename):
     allow_ext = app.config['UPLOAD_EXTENSIONS']
     return '.' in filename and os.path.splitext(filename)[1] in allow_ext
-
-
-def check_permission(object_name, access_level):
-    if not current_user.is_authenticated:
-        return False
-    return current_user.get_permissions(object_name).get(access_level, False)
-
-
-def get_company_config():
-    cfg = CompanyConfig.query.filter_by(
-        cid=current_user.cid).first()
-    return cfg
-
-
-def get_config_parameter(name):
-    cfg = get_company_config()
-    if not cfg:
-        return False
-    return getattr(cfg, name, False)
-
-
-def get_active_companies(queryset=False):
-    items = Company.query.filter_by(no_active=False,
-                                    id=current_user.cid).all()
-    if queryset:
-        return items
-    if len(items) == 1:
-        list_items = []
-    else:
-        list_items = [(0, '-Select-')]
-    for item in items:
-        list_items.append((item.id, item.name))
-    return list_items
 
 
 def get_tariff_limit(parameter):
@@ -60,115 +30,8 @@ def get_tariff_limit(parameter):
         return max(0, limit - count)
 
 
-def get_active_locations(queryset=False, multi=False):
-    items = Location.query.filter_by(no_active=False,
-                                     cid=current_user.cid
-                                     ).order_by(Location.name).all()
-    if queryset:
-        return items
-    if multi:
-        list_items = []
-    else:
-        list_items = [(0, '-Select-')]
-    for item in items:
-        list_items.append((item.id, item.name))
-    return list_items
-
-
-def get_active_clients(queryset=False):
-    list_items = [(0, '-Select-')]
-    items = Client.query.filter_by(no_active=False,
-                                   cid=current_user.cid
-                                   ).order_by(Client.name).all()
-    if queryset:
-        return items
-    for item in items:
-        list_items.append((item.id, item.name))
-    return list_items
-
-
-def get_clients_tags(queryset=False, multi=False):
-    items = ClientTag.query.filter_by(cid=current_user.cid
-                                      ).order_by(ClientTag.name).all()
-    if queryset:
-        return items
-    if multi:
-        list_items = []
-    else:
-        list_items = [(0, '-Select-')]
-    for item in items:
-        list_items.append((item.id, item.name))
-    return list_items
-
-
-def get_active_staff(queryset=False):
-    items = Staff.query.filter_by(no_active=False,
-                                  cid=current_user.cid
-                                  ).order_by(Staff.name).all()
-    if queryset:
-        return items
-    list_items = [(0, '-Select-')]
-    for item in items:
-        list_items.append((item.id, item.name))
-    return list_items
-
-
-def convert_weekdays_to_str(items):
-    if items is None:
-        return []
-    return ''.join([str(index) for index, value in enumerate(items) if value])
-
-
-def convert_str_to_weekdays(string):
-    if string is None or len(string) == 0:
-        return [False for i in range(7)]
-    weekdays = []
-    for i in range(7):
-        weekdays.append(str(i) in string)
-    return weekdays
-
-
 def get_staff_schedule(staff_id, location_id, date):
-    if not staff_id or not location_id or not date:
-        return []
-    weekday = str(date.weekday())
-    staff = Staff.query.get(staff_id)
-    items = StaffSchedule.query.filter(StaffSchedule.id.in_(
-        [x.id for x in staff.calendar]), StaffSchedule.date_from <= date,
-        StaffSchedule.date_to >= date).filter_by(location_id=location_id,
-                                                 no_active=False,
-                                                 cid=current_user.cid).all()
-    list_items = []
-    for item in items:
-        if not item.weekdays or weekday not in item.weekdays:
-            continue
-        time_from = datetime.combine(date, item.time_from)
-        time_to = datetime.combine(date, item.time_to)
-        list_items.append((time_from, time_to))
-    list_items.sort(key=lambda x: (x[0].hour, x[0].minute))
-    return list_items
-
-
-def get_active_services(location_id=None, queryset=False, multi=False):
-    if location_id:
-        location = Location.query.get(location_id)
-        items = Service.query.filter(
-            Service.id.in_([x.id for x in location.services])).filter_by(
-            no_active=False, cid=current_user.cid).order_by(Service.name)
-    else:
-        items = Service.query.filter_by(no_active=False,
-                                        cid=current_user.cid
-                                        ).order_by(Service.name).all()
-    if queryset:
-        return items
-    if multi:
-        list_items = []
-    else:
-        list_items = [(0, '-Select-')]
-    for item in items:
-        list_items.append(
-            (item.id, '{} ({} min)'.format(item.name, item.duration)))
-    return list_items
+    return []
 
 
 def get_duration(services):
@@ -177,20 +40,6 @@ def get_duration(services):
         service = Service.query.get_or_404(service_id)
         duration += service.duration
     return timedelta(minutes=duration)
-
-
-def get_active_items(queryset=False, multi=False):
-    items = Item.query.filter_by(cid=current_user.cid
-                                 ).order_by(Item.name).all()
-    if queryset:
-        return items
-    if multi:
-        list_items = []
-    else:
-        list_items = [(0, '-Select-')]
-    for item in items:
-        list_items.append((item.id, item.name))
-    return list_items
 
 
 def get_interval_intersection(list_1, list_2):
@@ -224,8 +73,12 @@ def get_free_time_intervals(location_id, date, staff_id, duration,
         return []
     staff_intervals = get_staff_schedule(staff_id, location_id, date)
     location = Location.query.get_or_404(location_id)
-    time_open = datetime.combine(date, location.open)
-    time_close = datetime.combine(date, location.close)
+    time_open = datetime.strptime('00.00', '%H.%M')
+    time_close = datetime.strptime('00.00', '%H.%M')
+    if location.main_schedule:
+        wt = location.main_schedule.get_work_time(date)
+        time_open = wt['hour_from']
+        time_close = wt['hour_to']
     staff = Staff.query.get_or_404(staff_id)
     timetable = Appointment.query.filter_by(
         cid=current_user.cid, location_id=location.id, cancel=False).filter(
@@ -245,7 +98,7 @@ def get_free_time_intervals(location_id, date, staff_id, duration,
     interval = time_close - time_from
     if interval >= duration:
         intervals.append((time_from, time_close - duration))
-    if get_config_parameter('simple_mode'):
+    if CompanyConfig.get_parameter('simple_mode'):
         return intervals
     else:
         free_intervals = get_interval_intersection(intervals, staff_intervals)
@@ -258,10 +111,3 @@ def send_mail_from_site(sender, subject, text):
                   recipients=[app.config['MAIL_USERNAME']])
     msg.body = text
     mail.send(msg)
-
-
-def get_notices():
-    param = {'cid': current_user.cid,
-             'date': datetime.utcnow().date(),
-             'no_active': False}
-    return Notice.query.filter_by(**param)

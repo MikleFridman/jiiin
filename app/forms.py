@@ -8,8 +8,9 @@ from wtforms import (StringField, PasswordField, BooleanField,
                      FloatField, SelectField, DateField, TimeField,
                      SelectMultipleField, FileField, HiddenField)
 from wtforms.validators import (DataRequired, Email, EqualTo,
-                                ValidationError, Length)
+                                ValidationError, Length, Optional)
 
+from .models import Schedule
 from app.functions import *
 
 
@@ -23,7 +24,25 @@ def validate_phone(form, field):
         raise ValidationError('Invalid phone number')
 
 
-# forms
+class RegisterForm(FlaskForm):
+    company = StringField('Company', validators=[DataRequired()])
+    username = StringField('Username', validators=[DataRequired()])
+    email = StringField('E-mail', validators=[DataRequired(), Email()])
+    password = PasswordField('Password', validators=[DataRequired()])
+    password2 = PasswordField('Repeat password', validators=[DataRequired(), EqualTo('password')])
+    submit = SubmitField('Submit')
+
+    def validate_username(self, username):
+        user = User.query.filter_by(username=username.data).first()
+        if user is not None:
+            raise ValidationError('Please use a different username')
+
+    def validate_email(self, email):
+        user = User.query.filter_by(email=email.data).first()
+        if user is not None:
+            raise ValidationError('Please use a different email')
+
+
 class LoginForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
@@ -31,34 +50,11 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Submit')
 
 
-class UserForm(FlaskForm):
-    cid = SelectField('Company', choices=[], validate_choice=False, coerce=int)
-    username = StringField('Username', validators=[DataRequired()])
-    email = StringField('E-mail', validators=[DataRequired(), Email()])
-    password = PasswordField('Password', validators=[DataRequired()])
-    password2 = PasswordField('Repeat password', validators=[DataRequired(), EqualTo('password')])
-    submit = SubmitField('Submit')
-
-    def __init__(self, original_username, original_email, *args, **kwargs):
-        super(UserForm, self).__init__(*args, **kwargs)
-        self.original_username = original_username
-        self.original_email = original_email
-
-    def validate_username(self, username):
-        if username.data != self.original_username:
-            user = User.query.filter_by(username=username.data).first()
-            if user is not None:
-                raise ValidationError('Please use a different username')
-
-    def validate_email(self, email):
-        if email.data != self.original_email:
-            user = User.query.filter_by(email=email.data).first()
-            if user is not None:
-                raise ValidationError('Please use a different email')
+class UserForm(RegisterForm):
+    company = None
 
 
 class UserFormEdit(UserForm):
-    cid = None
     password_old = PasswordField('Password')
     password = PasswordField('Password new')
     password2 = PasswordField('Repeat password new', validators=[EqualTo('password')])
@@ -90,14 +86,15 @@ class CompanyForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     registration_number = StringField('Registration number')
     info = TextAreaField('Info', validators=[Length(max=200)])
-    no_active = BooleanField('No active')
     submit = SubmitField('Submit')
 
 
 class StaffForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     phone = TelField('Phone', validators=[DataRequired(), validate_phone])
-    no_active = BooleanField('No active')
+    birthday = DateField('Birthday', validators=[Optional()])
+    schedule = SelectField('Schedule', choices=[], coerce=int,
+                           validate_choice=False)
     submit = SubmitField('Submit')
 
     def __init__(self, source_phone=None, *args, **kwargs):
@@ -111,48 +108,25 @@ class StaffForm(FlaskForm):
                 raise ValidationError('Please use a different phone')
 
 
-class StaffScheduleForm(FlaskForm):
-    staff = SelectField('Staff', choices=[], coerce=int)
-    location = SelectField('Location', choices=[], coerce=int)
-    date_from = DateField('Date from', validators=[DataRequired()])
-    date_to = DateField('Date to', validators=[DataRequired()])
-    time_from = TimeField('Time from', validators=[DataRequired()])
-    time_to = TimeField('Time to', validators=[DataRequired()])
-    day_6 = BooleanField('Sunday')
-    day_0 = BooleanField('Monday')
-    day_1 = BooleanField('Tuesday')
-    day_2 = BooleanField('Wednesday')
-    day_3 = BooleanField('Thursday')
-    day_4 = BooleanField('Friday')
-    day_5 = BooleanField('Saturday')
-    no_active = BooleanField('No active')
+class ScheduleForm(FlaskForm):
+    name = StringField('Name', validators=[DataRequired()])
+    submit = SubmitField('Submit')
 
-    def validate_location(self, field):
-        if field.data is None or field.data == 0:
-            raise ValidationError('Please, select location')
 
-    def validate_date_from(self, field):
-        if self.date_to.data <= self.date_from.data:
-            raise ValidationError("Invalid dates")
-
-    def validate_date_to(self, field):
-        if self.date_to.data <= self.date_from.data:
-            raise ValidationError("Invalid dates")
-
-    def validate_time_from(self, field):
-        if self.time_to.data <= self.time_from.data:
-            raise ValidationError("Invalid time")
-
-    def validate_time_to(self, field):
-        if self.time_to.data <= self.time_from.data:
-            raise ValidationError("Invalid time")
+class ScheduleDayForm(FlaskForm):
+    weekday = SelectField('Weekday',
+                          choices=[(i, d) for i, d in enumerate(Schedule.week)],
+                          coerce=int)
+    hour_from = TimeField('From hour')
+    hour_to = TimeField('To hour')
+    submit = SubmitField('Submit')
 
 
 class ClientForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     phone = TelField('Phone', validators=[DataRequired(), validate_phone])
+    birthday = DateField('Birthday', validators=[Optional()])
     info = TextAreaField('Info', validators=[Length(max=200)])
-    no_active = BooleanField('No active')
     submit = SubmitField('Submit')
 
 
@@ -161,7 +135,7 @@ class ClientFileForm(FlaskForm):
     submit = SubmitField('Submit')
 
 
-class ClientTagForm(FlaskForm):
+class TagForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     submit = SubmitField('Submit')
 
@@ -173,7 +147,6 @@ class ServiceForm(FlaskForm):
     repeat = IntegerField('Repeat', default=0)
     location = SelectMultipleField('Locations', choices=[],
                                    validate_choice=False, coerce=int)
-    no_active = BooleanField('No active')
     submit = SubmitField('Submit')
 
 
@@ -181,19 +154,9 @@ class LocationForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     phone = TelField('Phone', validators=[DataRequired()])
     address = StringField('Address', validators=[DataRequired()])
-    open = TimeField('Open', validators=[DataRequired()])
-    close = TimeField('Close', validators=[DataRequired()])
-    # timezone = SelectField('Timezone', choices=[], validate_choice=False, coerce=int)
-    no_active = BooleanField('No active')
+    schedule = SelectField('Schedule', choices=[], coerce=int,
+                           validate_choice=False)
     submit = SubmitField('Submit')
-
-    def validate_open(self, field):
-        if self.close.data <= self.open.data:
-            raise ValidationError("Invalid open-close hours")
-
-    def validate_close(self, field):
-        if self.close.data <= self.open.data:
-            raise ValidationError("Invalid open-close hours")
 
 
 class AppointmentForm(FlaskForm):
@@ -215,7 +178,6 @@ class AppointmentForm(FlaskForm):
         self.appointment = appointment
 
     def validate_location(self, field):
-        print('location', field.data)
         if self.location.data is None or self.location.data == 0:
             raise ValidationError('Please, select location')
 
@@ -234,12 +196,10 @@ class AppointmentForm(FlaskForm):
                     raise ValidationError(message)
 
     def validate_client(self, field):
-        print('client', field.data)
         if self.client.data is None or self.client.data == 0:
             raise ValidationError('Please, select client')
 
     def validate_staff(self, field):
-        print('staff', field.data)
         if self.staff.data is None or self.staff.data == 0:
             raise ValidationError('Please, select staff')
 
@@ -332,7 +292,6 @@ class NoticeForm(FlaskForm):
     client = SelectField('Client', choices=[], coerce=int)
     date = DateField('Date')
     description = TextAreaField('Description', validators=[DataRequired(), Length(max=255)])
-    no_active = BooleanField('No active')
     submit = SubmitField('Submit')
 
 
@@ -342,7 +301,7 @@ class CashFlowForm(FlaskForm):
     description = StringField('Description', validators=[DataRequired(), Length(max=120)])
     action = SelectField('Action', choices=[(1, 'Plus'), (-1, 'Minus')],
                          coerce=int)
-    sum = FloatField('Sum', default=0)
+    cost = FloatField('Sum', default=0)
     submit = SubmitField('Submit')
 
 
@@ -359,5 +318,3 @@ class TaskStatusForm(FlaskForm):
     description = TextAreaField('Description', validators=[Length(max=255)])
     final = BooleanField('Final')
     submit = SubmitField('Submit')
-
-

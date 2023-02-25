@@ -4,7 +4,7 @@
   <div class="row">
     <div class="col-md-2 mb-2">
       <!-- <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('appointment_create', **request.args) }}';">Add new</button> -->
-      <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('services', choice_mode=1, **request.args) }}';">Add new</button>
+      <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('services_table', choice_mode=1, **request.args) }}';">Add new</button>
     </div>
     <div class="col-md-10 mb-2">
       <div class='justify-content-end'>
@@ -26,10 +26,10 @@
     <tbody>
       {% for a in items %}
         <tr class="{{ loop.cycle('table-success', 'table-default') }}  border-start border-end border-light">
-          <td class="col-2 ps-3">{{ a.location.short_name() }}</td>
+          <td class="col-2 ps-3">{{ a.location.name }}</td>
           <td class="col-2 text-center">{{ a.date_time.strftime('%d.%m.%y %H:%M') }} - {{ (a.date_time + a.duration).strftime('%H:%M') }}</td>
-          <td class="col-3 text-center">{{ a.staff.short_name() }}</td>
-          <td class="col-3 text-center">{{ a.client.short_name() }}</td>
+          <td class="col-3 text-center">{{ a.staff.name }}</td>
+          <td class="col-3 text-center">{{ a.client.name }}</td>
           <td class="col-1 text-center">
             <span class="badge bg-primary rounded-pill">{{ a.services|count }}</span>
           </td>
@@ -42,5 +42,5 @@
     </tbody>
   </table>
 {% import '_pagination.html' as forms %}
-{{ forms.render_pagination(pagination, 'appointments', **request.args) }}
+{{ forms.render_pagination(pagination, 'appointments_table', **request.args) }}
 {% endblock %}

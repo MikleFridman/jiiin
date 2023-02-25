@@ -1,5 +1,6 @@
 from flask_login import UserMixin, current_user
 from flask_security import RoleMixin
+from sqlalchemy.orm import declared_attr
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db, login
 from datetime import datetime, timedelta
@@ -36,7 +37,7 @@ roles_users = db.Table('roles_users',
                                  db.Integer,
                                  db.ForeignKey('role.id'),
                                  primary_key=True),
-                       db.Column('user.id',
+                       db.Column('user_id',
                                  db.Integer,
                                  db.ForeignKey('user.id'),
                                  primary_key=True))
@@ -58,85 +59,145 @@ clients_tags = db.Table('clients_tags',
                                   db.Integer,
                                   db.ForeignKey('client.id'),
                                   primary_key=True),
-                        db.Column('client_tag_id',
+                        db.Column('tag_id',
                                   db.Integer,
-                                  db.ForeignKey('client_tag.id'),
+                                  db.ForeignKey('tag.id'),
                                   primary_key=True))
 
+staff_schedules = db.Table('staff_schedules',
+                           db.Column('staff_id',
+                                     db.Integer,
+                                     db.ForeignKey('staff.id'),
+                                     primary_key=True),
+                           db.Column('schedule_id',
+                                     db.Integer,
+                                     db.ForeignKey('schedule.id'),
+                                     primary_key=True))
 
-class Tariff(db.Model):
+locations_schedules = db.Table('locations_schedules',
+                               db.Column('location_id',
+                                         db.Integer,
+                                         db.ForeignKey('location.id'),
+                                         primary_key=True),
+                               db.Column('schedule_id',
+                                         db.Integer,
+                                         db.ForeignKey('schedule.id'),
+                                         primary_key=True))
+
+
+class Entity:
+    sort = 'id'
     id = db.Column(db.Integer, primary_key=True)
+    no_active = db.Column(db.Boolean, default=False)
+    timestamp_create = db.Column(db.DateTime(), default=datetime.utcnow())
+    timestamp_update = db.Column(db.DateTime(), default=datetime.utcnow(),
+                                 onupdate=datetime.utcnow())
+
+    @classmethod
+    def get_subclasses(cls):
+        return list(c.__name__ for c in cls.__subclasses__())
+
+    @classmethod
+    def get_items(cls, tuple_mode=False):
+        items = cls.query.filter_by(no_active=False,
+                                    cid=current_user.cid
+                                    ).order_by(getattr(cls, cls.sort).asc())
+        if tuple_mode:
+            items = [(i.id, i.name) for i in items]
+            items.insert(0, (0, '-Select-'))
+        else:
+            items = [i for i in items]
+        return items
+
+    @classmethod
+    def get_object(cls, id):
+        obj = cls.query.filter_by(no_active=False, cid=current_user.cid,
+                                  id=id).first_or_404()
+        return obj
+
+    def item_delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
+
+class Splitter:
+
+    @declared_attr
+    def cid(self):
+        return db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
+
+
+class Tariff(db.Model, Entity):
     name = db.Column(db.String(64), index=True, nullable=False)
     max_locations = db.Column(db.Integer, default=1)
     max_users = db.Column(db.Integer, default=1)
     max_staff = db.Column(db.Integer, default=1)
     default = db.Column(db.Boolean, default=False)
-    companies = db.relationship('Company', backref='tariff')
 
     def __repr__(self):
         return self.name
 
+    @classmethod
+    def get_tariff_default(cls):
+        return cls.query.filter_by(default=True).first()
 
-class Company(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+
+class Company(db.Model, Entity):
     name = db.Column(db.String(64), index=True, nullable=False)
     registration_number = db.Column(db.String(20))
     info = db.Column(db.Text)
-    tariff_id = db.Column(db.ForeignKey('tariff.id'), nullable=False)
-    no_active = db.Column(db.Boolean, default=False)
-    config = db.relationship('CompanyConfig', backref='company')
-    roles = db.relationship('Role', backref='company')
-    users = db.relationship('User', backref='company')
-    staff = db.relationship('Staff', backref='company')
-    clients = db.relationship('Client', backref='company')
-    services = db.relationship('Service', backref='company')
-    locations = db.relationship('Location', backref='company')
-    notices = db.relationship('Notice', backref='company')
-    tasks = db.relationship('Task', backref='company')
-    appointments = db.relationship('Appointment', backref='company')
+    config = db.relationship('CompanyConfig', backref='company',
+                             uselist=False, cascade='all, delete')
+    roles = db.relationship('Role', backref='company',
+                            cascade='all, delete')
+    users = db.relationship('User', backref='company',
+                            cascade='all, delete')
+    staff = db.relationship('Staff', backref='company',
+                            cascade='all, delete')
+    clients = db.relationship('Client', backref='company',
+                              cascade='all, delete')
+    services = db.relationship('Service', backref='company',
+                               cascade='all, delete')
+    locations = db.relationship('Location', backref='company',
+                                cascade='all, delete')
+    notices = db.relationship('Notice', backref='company',
+                              cascade='all, delete')
+    tasks = db.relationship('Task', backref='company',
+                            cascade='all, delete')
+    appointments = db.relationship('Appointment', backref='company',
+                                   cascade='all, delete')
 
     def __repr__(self):
         return self.name
 
 
-class CompanyConfig(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
+class CompanyConfig(db.Model, Entity, Splitter):
     min_time_interval = db.Column(db.Integer, default=15)
-    simple_mode = db.Column(db.Boolean, default=False)
+    simple_mode = db.Column(db.Boolean, default=True)
+
+    @staticmethod
+    def get_parameter(name):
+        cfg = current_user.company.config
+        if not cfg:
+            return False
+        return getattr(cfg, name, False)
 
 
-class Permission(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+class Permission(db.Model, Entity):
+    sort = 'name'
     object_name = db.Column(db.String(64), index=True, nullable=False)
-    read = db.Column(db.Boolean, default=False)
-    edit = db.Column(db.Boolean, default=False)
     create = db.Column(db.Boolean, default=False)
+    read = db.Column(db.Boolean, default=False)
+    update = db.Column(db.Boolean, default=False)
     delete = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
-        if self.read:
-            read = 'r'
-        else:
-            read = '-'
-        if self.edit:
-            edit = 'e'
-        else:
-            edit = '-'
-        if self.create:
-            create = 'c'
-        else:
-            create = '-'
-        if self.delete:
-            delete = 'd'
-        else:
-            delete = '-'
-        return f'{self.object_name} [ {read} {edit} {create} {delete} ]'
+        return (f'{self.object_name} '
+                f'[ {self.create} {self.read} {self.update} {self.delete} ]')
 
 
-class Role(db.Model, RoleMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
+class Role(db.Model, RoleMixin, Entity, Splitter):
+    sort = 'name'
     name = db.Column(db.String(64),
                      index=True, unique=True, nullable=False)
     description = db.Column(db.String(255))
@@ -147,13 +208,11 @@ class Role(db.Model, RoleMixin):
         return self.name
 
 
-class User(db.Model, UserMixin):
-    id = db.Column(db.Integer, primary_key=True)
-    cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
+class User(db.Model, UserMixin, Entity, Splitter):
+    sort = 'name'
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True, nullable=False)
     password_hash = db.Column(db.String(128))
-    no_active = db.Column(db.Boolean, default=False)
     roles = db.relationship('Role', secondary=roles_users,
                             backref=db.backref('users', lazy='dynamic'))
 
@@ -172,29 +231,31 @@ class User(db.Model, UserMixin):
             permissions += role.permissions
         permissions = list(filter(lambda x: x.object_name == object_name,
                            permissions))
-        read = edit = create = delete = False
+        create = read = update = delete = False
         for item in permissions:
-            if item.read:
-                read = True
-            if item.edit:
-                edit = True
             if item.create:
                 create = True
+            if item.read:
+                read = True
+            if item.update:
+                update = True
             if item.delete:
                 delete = True
-        return {'read': read,
-                'edit': edit,
-                'create': create,
+        return {'create': create,
+                'read': read,
+                'update': update,
                 'delete': delete}
 
 
-class Staff(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
+class Staff(db.Model, Entity, Splitter):
+    sort = 'name'
     name = db.Column(db.String(64), index=True, nullable=False)
-    phone = db.Column(db.String(20), index=True, unique=True, nullable=False)
-    no_active = db.Column(db.Boolean, default=False)
-    task_progress = db.relationship('TaskProgress', backref='staff', cascade='all, delete')
+    phone = db.Column(db.String(16), index=True, unique=True, nullable=False)
+    birthday = db.Column(db.Date)
+    task_progress = db.relationship('TaskProgress', backref='staff',
+                                    cascade='all, delete')
+    schedules = db.relationship('Schedule', secondary=staff_schedules,
+                                backref=db.backref('staff', lazy=True))
 
     def __repr__(self):
         active = ''
@@ -202,20 +263,22 @@ class Staff(db.Model):
             active = '(no active)'
         return '{} {}'.format(self.name, active)
 
-    def short_name(self):
-        return self.name[:25]
+    @property
+    def main_schedule(self):
+        if len(self.schedules) > 0:
+            return self.schedules[0]
 
 
-class Client(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
+class Client(db.Model, Entity, Splitter):
+    sort = 'name'
     name = db.Column(db.String(64), index=True, nullable=False)
-    phone = db.Column(db.String(20), index=True, unique=True, nullable=False)
+    phone = db.Column(db.String(16), index=True, unique=True, nullable=False)
+    birthday = db.Column(db.Date)
     info = db.Column(db.Text)
-    tags = db.relationship('ClientTag', secondary=clients_tags,
+    files = db.relationship('ClientFile', backref='client', cascade='all, delete')
+    tags = db.relationship('Tag', secondary=clients_tags,
                            lazy='subquery',
                            backref=db.backref('clients', lazy=True))
-    no_active = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
         active = ''
@@ -223,23 +286,16 @@ class Client(db.Model):
             active = '(no active)'
         return '{} {}'.format(self.name, active)
 
-    def short_name(self):
-        return self.name[:25]
 
-
-class ClientFile(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
-    client_id = db.Column(db.Integer, db.ForeignKey('client.id'), nullable=False)
-    client = db.relationship('Client', backref='files')
+class ClientFile(db.Model, Entity, Splitter):
+    client_id = db.Column(db.Integer, db.ForeignKey('client.id'),
+                          nullable=False)
     name = db.Column(db.String(64))
     path = db.Column(db.String(128))
     hash = db.Column(db.String(64))
 
 
-class ClientTag(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
+class Tag(db.Model, Entity, Splitter):
     name = db.Column(db.String(64), index=True, nullable=False)
 
     def add_tag(self, tag):
@@ -254,14 +310,12 @@ class ClientTag(db.Model):
         return tag in self.tag
 
 
-class Service(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
+class Service(db.Model, Entity, Splitter):
+    sort = 'name'
     name = db.Column(db.String(120), index=True, nullable=False)
     duration = db.Column(db.Integer)
     price = db.Column(db.Float)
     repeat = db.Column(db.Integer)
-    no_active = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
         active = ''
@@ -273,19 +327,18 @@ class Service(db.Model):
         return self.name[:25]
 
 
-class Location(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
+class Location(db.Model, Entity, Splitter):
     name = db.Column(db.String(64), index=True, nullable=False)
     address = db.Column(db.String(120))
     phone = db.Column(db.String(20), index=True, unique=True)
     open = db.Column(db.Time)
     close = db.Column(db.Time)
     timezone = db.Column(db.Integer, default=0)
-    no_active = db.Column(db.Boolean, default=False)
     services = db.relationship('Service', secondary=services_locations,
                                lazy='subquery',
                                backref=db.backref('locations', lazy=True))
+    schedules = db.relationship('Schedule', secondary=locations_schedules,
+                                backref=db.backref('locations', lazy=True))
 
     def __repr__(self):
         active = ''
@@ -293,8 +346,10 @@ class Location(db.Model):
             active = '(no active)'
         return '{} {}'.format(self.name, active)
 
-    def short_name(self):
-        return self.name[:20]
+    @property
+    def main_schedule(self):
+        if len(self.schedules) > 0:
+            return self.schedules[0]
 
     def add_service(self, service):
         if not self.is_service(service):
@@ -308,9 +363,7 @@ class Location(db.Model):
         return service in self.services
 
 
-class Appointment(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
+class Appointment(db.Model, Entity, Splitter):
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow(),
                           onupdate=datetime.utcnow)
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'),
@@ -327,7 +380,8 @@ class Appointment(db.Model):
     info = db.Column(db.Text)
     result = db.Column(db.Text)
     payment_id = db.Column(db.Integer, db.ForeignKey('cash_flow.id'))
-    payment = db.relationship('CashFlow', backref='appointment')
+    payment = db.relationship('CashFlow', backref='appointment',
+                              cascade='all, delete')
     cancel = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
@@ -338,7 +392,7 @@ class Appointment(db.Model):
                                                self.date_time, cancel)
 
     @property
-    def sum(self):
+    def cost(self):
         cost = 0
         for service in self.services:
             cost += service.price
@@ -354,7 +408,6 @@ class Appointment(db.Model):
     @property
     def date_repeat(self):
         period = min(s.repeat for s in self.services if s.repeat > 0)
-        print(period)
         return (self.date_time + timedelta(days=period)).date()
 
     @property
@@ -373,27 +426,54 @@ class Appointment(db.Model):
         return service in self.services
 
 
-class StaffSchedule(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    cid = db.Column(db.Integer, db.ForeignKey('company.id'),
-                    nullable=False)
-    staff_id = db.Column(db.Integer, db.ForeignKey('staff.id'),
-                         nullable=False)
-    staff = db.relationship('Staff', backref='calendar')
-    location_id = db.Column(db.Integer, db.ForeignKey('location.id'),
-                            nullable=False)
-    location = db.relationship('Location', backref='calendar')
-    date_from = db.Column(db.Date)
-    date_to = db.Column(db.Date)
-    time_from = db.Column(db.Time)
-    time_to = db.Column(db.Time)
-    weekdays = db.Column(db.String(7))
-    no_active = db.Column(db.Boolean, default=False)
+class Schedule(db.Model, Entity, Splitter):
+    week = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday',
+            'Friday', 'Saturday']
+    name = db.Column(db.String(64), index=True, nullable=False)
+    days = db.relationship('ScheduleDay', backref='schedule',
+                           cascade='all, delete')
+
+    def __init__(self, **kwargs):
+        super(Schedule, self).__init__(**kwargs)
+        hour_from = datetime.strptime('09.00', '%H.%M').time()
+        hour_to = datetime.strptime('18.00', '%H.%M').time()
+        for dn in range(0, 7):
+            self.add_day(day_number=dn, hour_from=hour_from, hour_to=hour_to)
+
+    def add_day(self, day_number, hour_from, hour_to):
+        if day_number not in [scd.day_number for scd in self.days]:
+            sd = ScheduleDay(cid=self.cid,
+                             schedule_id=self.id,
+                             name=self.week[day_number],
+                             day_number=day_number,
+                             hour_from=hour_from,
+                             hour_to=hour_to)
+            self.days.append(sd)
+
+    def get_work_time(self, date):
+        day_number = date.weekday()
+        hour_from = hour_to = datetime.strptime('00.00', '%H.%M')
+        for d in self.days:
+            if d.day_number == day_number:
+                hour_from = datetime.combine(date, d.hour_from)
+                hour_to = datetime.combine(date, d.hour_to)
+        return {'hour_from': hour_from, 'hour_to': hour_to}
 
 
-class Item(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
+class ScheduleDay(db.Model, Entity, Splitter):
+    name = db.Column(db.String(64), index=True, nullable=False)
+    schedule_id = db.Column(db.Integer,
+                            db.ForeignKey('schedule.id'), nullable=False)
+    day_number = db.Column(db.Integer)
+    hour_from = db.Column(db.Time)
+    hour_to = db.Column(db.Time)
+
+    @property
+    def weekday(self):
+        return self.name
+
+
+class Item(db.Model, Entity, Splitter):
     name = db.Column(db.String(64), index=True, nullable=False)
     description = db.Column(db.String(255))
 
@@ -417,22 +497,17 @@ class Item(db.Model):
         return sum(list(map(lambda x: x.quantity, counts)))
 
 
-class ItemFlow(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
+class ItemFlow(db.Model, Entity, Splitter):
     date = db.Column(db.Date, nullable=False)
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
     location = db.relationship('Location', backref='item_flow')
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
     item = db.relationship('Item', backref='item_flow')
     quantity = db.Column(db.Integer)
-    sum = db.Column(db.Float)
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow(),
-                          onupdate=datetime.utcnow)
+    cost = db.Column(db.Float)
 
 
-class Storage(db.Model):
-    cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
+class Storage(db.Model, Entity, Splitter):
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'),
                             primary_key=True)
     location = db.relationship('Location', backref='storage')
@@ -442,38 +517,29 @@ class Storage(db.Model):
     quantity = db.Column(db.Integer)
 
 
-class CashFlow(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
+class CashFlow(db.Model, Entity, Splitter):
     date = db.Column(db.Date, nullable=False)
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
     location = db.relationship('Location', backref='cash_flow')
     description = db.Column(db.String(255))
-    sum = db.Column(db.Float)
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow(),
-                          onupdate=datetime.utcnow)
+    cost = db.Column(db.Float)
 
 
-class Cash(db.Model):
-    cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
+class Cash(db.Model, Entity, Splitter):
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'),
                             primary_key=True)
     location = db.relationship('Location', backref='cash')
-    sum = db.Column(db.Float)
+    cost = db.Column(db.Float)
 
 
-class TaskStatus(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
+class TaskStatus(db.Model, Entity, Splitter):
     name = db.Column(db.String(64), index=True, nullable=False)
     description = db.Column(db.String(255))
     final = db.Column(db.Boolean, default=False)
     task_progress = db.relationship('TaskProgress', backref='status', cascade='all, delete')
 
 
-class Task(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
+class Task(db.Model, Entity, Splitter):
     name = db.Column(db.String(64), index=True, nullable=False)
     description = db.Column(db.String(255))
     deadline = db.Column(db.Date)
@@ -483,7 +549,6 @@ class Task(db.Model):
     closed = db.Column(db.Boolean, default=False)
     author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     author = db.relationship('User', backref='tasks')
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow())
     task_progress = db.relationship('TaskProgress', backref='task', cascade='all, delete')
 
     def __repr__(self):
@@ -496,27 +561,27 @@ class Task(db.Model):
         pass
 
 
-class TaskProgress(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
+class TaskProgress(db.Model, Entity, Splitter):
     task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)
     staff_id = db.Column(db.Integer, db.ForeignKey('staff.id'),
                          nullable=False)
     status_id = db.Column(db.Integer, db.ForeignKey('task_status.id'),
                           nullable=False)
     description = db.Column(db.String(255))
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow(),
-                          onupdate=datetime.utcnow)
 
     def __repr__(self):
         return f'{self.task} {self.timestamp}'
 
 
-class Notice(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    cid = db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
+class Notice(db.Model, Entity, Splitter):
     date = db.Column(db.Date, nullable=False)
     client_id = db.Column(db.Integer, db.ForeignKey('client.id'))
     client = db.relationship('Client', backref='notices')
     description = db.Column(db.String(255))
-    no_active = db.Column(db.Boolean, default=False)
+
+    @classmethod
+    def get_notices(cls, date=datetime.utcnow().date()):
+        param = {'cid': current_user.cid,
+                 'date': date,
+                 'no_active': False}
+        return cls.query.filter_by(**param)

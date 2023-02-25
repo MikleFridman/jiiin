@@ -3,10 +3,8 @@ import os
 from dotenv import load_dotenv
 from flask import Flask
 from flask_admin.menu import MenuLink
-from flask_babel import Babel
 from flask_login import LoginManager
 from flask_mail import Mail
-from flask_moment import Moment
 from flask_admin import Admin
 
 from config import Config
@@ -36,8 +34,6 @@ csrf = CSRFProtect()
 csrf.init_app(app)
 login = LoginManager(app)
 login.login_view = 'login'
-moment = Moment(app)
-babel = Babel(app)
 mail = Mail(app)
 
 from app import views, models, errors

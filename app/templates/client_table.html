@@ -27,17 +27,17 @@
             {{ c.name }}
           </td>
           <td class="col-1 text-center">
-            <a href="{{ url_for('appointments', client_id=c.id) }}">
+            <a href="{{ url_for('appointments_table', client_id=c.id) }}">
               <img class="ms-2" src="{{ url_for('static', filename='/table.png') }}" alt="table" width="24">
             </a>
           </td>
           <td class="col-1 text-center">
-            <a href="{{ url_for('client_files', id=c.id) }}">
+            <a href="{{ url_for('client_files_table', id=c.id) }}">
               <img class="ms-2" src="{{ url_for('static', filename='/attach.png') }}" alt="attach" width="23">
             </a>
           </td>
           <td class="col-1 text-center">
-            <a href="{{ url_for('notices', client_id=c.id) }}">
+            <a href="{{ url_for('notices_table', client_id=c.id) }}">
               <img class="ms-2" src="{{ url_for('static', filename='/notification.png') }}" alt="notice" width="23">
             </a>
           </td>
@@ -51,5 +51,5 @@
     </tbody>
   </table>
 {% import '_pagination.html' as forms %}
-{{ forms.render_pagination(pagination, 'clients', **request.args) }}
+{{ forms.render_pagination(pagination, 'clients_table', **request.args) }}
 {% endblock %}

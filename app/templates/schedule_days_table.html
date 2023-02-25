@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+  <div class="row">
+    <div class="col-md-4 mb-2">
+      <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('schedule_day_create', schedule_id=schedule_id, **request.args) }}';">Add new</button>
+    </div>
+  </div>
+  <table id="data" class="table table-hover border-top border-bottom border-light">
+    <thead>
+      <tr class="table-primary border-start border-end border-light text-center">
+        <th class="col-9">Name</th>
+        <th class="col-2">Time</th>
+        <th class="col-1">Action</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for sd in items %}
+        <tr class="{{ loop.cycle('table-success', 'table-default') }}  border-start border-end border-light">
+          <td class="col-9 ps-3">
+            {% if sd.no_active %}
+              <img src="{{ url_for('static', filename='/hidden.png') }}" alt="edit" width="24">
+            {% endif %}
+            {{ sd.name }}
+          </td>
+          <td class="col-2 text-center">
+            {{ sd.hour_from.strftime('%H:%M') }} - {{ sd.hour_to.strftime('%H:%M') }}
+          </td>
+          <td class="col-1 text-center">
+            <a href="{{ url_for('schedule_day_edit', schedule_id=schedule_id, id=sd.id, **request.args) }}"><img src="{{ url_for('static', filename='/edit.png') }}" alt="edit" width="24"></a>
+            <a href="{{ url_for('schedule_day_delete', schedule_id=schedule_id, id=sd.id) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% import '_pagination.html' as forms %}
+{{ forms.render_pagination(pagination, 'schedule_days_table', **request.args) }}
+{% endblock %}

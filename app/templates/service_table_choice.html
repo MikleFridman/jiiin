@@ -42,7 +42,7 @@
     <button type="button" class="btn btn-secondary mt-3 ms-3" onclick="window.location.href='{{ url_back }}'">Back</button>
   {% endif%}
 {% import '_pagination.html' as forms %}
-{{ forms.render_pagination(pagination, 'services', **request.args) }}
+{{ forms.render_pagination(pagination, 'services_table', **request.args) }}
 
 <script>
   function select_checkbox(id, checked)  {

@@ -3,7 +3,7 @@
 {% block app_content %}
   <div class="row">
     <div class="col-md-4 mb-2">
-      <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('clients_tags_create') }}';">Add new</button>
+      <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('tag_create') }}';">Add new</button>
     </div>
   </div>
   <table id="data" class="table table-hover border-top border-bottom border-light">
@@ -20,13 +20,13 @@
             {{ t.name }}
           </td>
           <td class="col-1 text-center">
-            <a href="{{ url_for('clients_tags_edit', id=t.id) }}"><img src="{{ url_for('static', filename='/edit.png') }}" alt="edit" width="24"></a>
-            <a href="{{ url_for('clients_tags_delete', id=t.id) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
+            <a href="{{ url_for('tag_edit', id=t.id) }}"><img src="{{ url_for('static', filename='/edit.png') }}" alt="edit" width="24"></a>
+            <a href="{{ url_for('tag_delete', id=t.id) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
           </td>
         </tr>
       {% endfor %}
     </tbody>
   </table>
 {% import '_pagination.html' as forms %}
-{{ forms.render_pagination(pagination, 'clients_tags', **request.args) }}
+{{ forms.render_pagination(pagination, 'tags_table', **request.args) }}
 {% endblock %}

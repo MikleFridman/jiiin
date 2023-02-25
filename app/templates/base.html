@@ -24,39 +24,40 @@
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link {% if request.path == url_for('appointments') %}active{% endif %}" href="{{ url_for('appointments') }}">Timetable</a>
+              <a class="nav-link {% if request.path == url_for('appointments_table') %}active{% endif %}" href="{{ url_for('appointments_table') }}">Timetable</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link {% if request.path == url_for('clients') %}active{% endif %}" href="{{ url_for('clients') }}">Clients</a>
+              <a class="nav-link {% if request.path == url_for('clients_table') %}active{% endif %}" href="{{ url_for('clients_table') }}">Clients</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link {% if request.path == url_for('notices') %}active{% endif %}" href="{{ url_for('notices') }}">Notices</a>
+              <a class="nav-link {% if request.path == url_for('notices_table') %}active{% endif %}" href="{{ url_for('notices_table') }}">Notices</a>
             </li>
             <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle {% if request.path == url_for('services') or request.path == url_for('locations') or request.path == url_for('staff') %}active{% endif %}" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Company</a>
+              <a class="nav-link dropdown-toggle {% if request.path == url_for('services_table') or request.path == url_for('locations_table') or request.path == url_for('staff_table') %}active{% endif %}" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Company</a>
               <div class="dropdown-menu">
-                  <a class="dropdown-item" href="{{ url_for('services') }}">Services</a>
-                <a class="dropdown-item" href="{{ url_for('locations') }}">Locations</a>
-                <a class="dropdown-item" href="{{ url_for('staff') }}">Staff</a>
+                <a class="dropdown-item" href="{{ url_for('services_table') }}">Services</a>
+                <a class="dropdown-item" href="{{ url_for('locations_table') }}">Locations</a>
+                <a class="dropdown-item" href="{{ url_for('staff_table') }}">Staff</a>
+                  <a class="dropdown-item" href="{{ url_for('schedules_table') }}">Schedules</a>
                 <div class="dropdown-divider"></div>
                 <a class="dropdown-item" href="{{ url_for('company_edit') }}">Settings</a>
               </div>
             </li>
             <li class="nav-item">
-              <a class="nav-link {% if request.path == url_for('cash_flow') %}active{% endif %}" href="{{ url_for('cash_flow') }}">Cash flow</a>
+              <a class="nav-link {% if request.path == url_for('cash_flow_table') %}active{% endif %}" href="{{ url_for('cash_flow_table') }}">Cash flow</a>
             </li>
             <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle {% if request.path == url_for('items') or request.path == url_for('items_flow') %}active{% endif %}" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Storage</a>
+              <a class="nav-link dropdown-toggle {% if request.path == url_for('items_table') or request.path == url_for('items_flow_table') %}active{% endif %}" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Storage</a>
               <div class="dropdown-menu">
-                <a class="dropdown-item" href="{{ url_for('items') }}">Items</a>
-                <a class="dropdown-item" href="{{ url_for('items_flow') }}">Items flow</a>
+                <a class="dropdown-item" href="{{ url_for('items_table') }}">Items</a>
+                <a class="dropdown-item" href="{{ url_for('items_flow_table') }}">Items flow</a>
               </div>
             </li>
             <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle {% if request.path == url_for('tasks') %}active{% endif %}" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Tasks</a>
+              <a class="nav-link dropdown-toggle {% if request.path == url_for('tasks_table') %}active{% endif %}" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Tasks</a>
               <div class="dropdown-menu">
-                  <a class="dropdown-item" href="{{ url_for('tasks') }}">Tasks</a>
-                  <a class="dropdown-item" href="{{ url_for('task_statuses') }}">Task statuses</a>
+                  <a class="dropdown-item" href="{{ url_for('tasks_table') }}">Tasks</a>
+                  <a class="dropdown-item" href="{{ url_for('task_statuses_table') }}">Task statuses</a>
               </div>
             </li>
           </ul>
@@ -69,14 +70,22 @@
                     <a class="nav-link me-2" href="{{ url_for('sendmail', url_back=request.path) }}">Contact us</a>
                 {% endif %}
             </li>
-            <li class="nav-item">
-              {% if current_user.is_authenticated %}
+            {% if current_user.is_authenticated %}
+              <li class="nav-item">
+                <a class="nav-link me-2" href="{{ url_for('user_edit', id=current_user.id) }}">Profile</a>
+              </li>
+              <li class="nav-item">
                 <a class="nav-link me-2" href="{{ url_for('logout') }}">Logout</a>
+              </li>
               {% else %}
-                <a class="nav-link me-2" href="{{ url_for('login') }}">Login</a>
+                <li class="nav-item">
+                  <a class="nav-link me-2" href="{{ url_for('login') }}">Login</a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link me-2" href="{{ url_for('register') }}">Register</a>
+                </li>
               {% endif %}
-            </li>
-          </ul>
+         </ul>
       </div>
     </div>
   </div>

@@ -9,27 +9,21 @@
   <table id="data" class="table table-hover border-top border-bottom border-light">
     <thead>
       <tr class="table-primary border-start border-end border-light text-center">
-        <th class="col-5">Name</th>
-        <th class="col-1">Calendar</th>
-        <th class="col-2">Phone</th>
-        <th class="col-1">Action</th>
+        <th class="col-8 text-center">Name</th>
+        <th class="col-3 text-center">Phone</th>
+        <th class="col-1 text-center">Action</th>
       </tr>
     </thead>
     <tbody>
       {% for st in items %}
         <tr class="{{ loop.cycle('table-success', 'table-default') }}  border-start border-end border-light">
-          <td class="col-5 ps-3">
+          <td class="col-8 ps-3">
             {% if st.no_active %}
               <img src="{{ url_for('static', filename='/hidden.png') }}" alt="hidden" width="24">
             {% endif %}
             {{ st.name }}
           </td>
-          <td class="col-1 text-center">
-            <a href="{{ url_for('staff_schedule', id=st.id) }}">
-              <img class="ms-2" src="{{ url_for('static', filename='/calendar.png') }}" alt="calendar" width="24">
-            </a>
-          </td>
-          <td class="col-2 text-center">{{ st.phone }}</td>
+          <td class="col-3 text-center">{{ st.phone }}</td>
           <td class="col-1 text-center">
             <a href="{{ url_for('staff_edit', id=st.id) }}"><img src="{{ url_for('static', filename='/edit.png') }}" alt="edit" width="24"></a>
             <a href="{{ url_for('staff_delete', id=st.id) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
@@ -39,5 +33,5 @@
     </tbody>
   </table>
 {% import '_pagination.html' as forms %}
-{{ forms.render_pagination(pagination, 'staff', **request.args) }}
+{{ forms.render_pagination(pagination, 'staff_view', **request.args) }}
 {% endblock %}

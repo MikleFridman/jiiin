@@ -3,43 +3,37 @@
 {% block app_content %}
   <div class="row">
     <div class="col-md-4 mb-2">
-      <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('staff_schedule_create', id=id) }}';">Add new</button>
+      <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('schedule_create') }}';">Add new</button>
     </div>
   </div>
   <table id="data" class="table table-hover border-top border-bottom border-light">
     <thead>
       <tr class="table-primary border-start border-end border-light text-center">
-        <th class="col-4">Name</th>
-        <th class="col-3">Location</th>
-        <th class="2">Period</th>
-        <th class="col-2">Time</th>
-        <th class="col-1">Action</th>
+        <th class="col-9 text-center">Name</th>
+        <th class="col-2 text-center">Days</th>
+        <th class="col-1 text-center">Action</th>
       </tr>
     </thead>
     <tbody>
       {% for sh in items %}
         <tr class="{{ loop.cycle('table-success', 'table-default') }}  border-start border-end border-light">
-          <td class="col-4 ps-3">
+          <td class="col-9 ps-3">
             {% if sh.no_active %}
               <img src="{{ url_for('static', filename='/hidden.png') }}" alt="hidden" width="24">
             {% endif %}
-            {{ sh.staff }}
+            {{ sh.name }}
           </td>
-          <td class="col-3 text-center">
-            {{ sh.location }}
-          </td>
-          <td class="col-2 text-center">{{ sh.date_from.strftime('%d.%m.%y') }} - {{ sh.date_to.strftime('%d.%m.%y') }}</td>
           <td class="col-2 text-center">
-            {{ sh.time_from.strftime('%H:%M') }} - {{ sh.time_to.strftime('%H:%M') }}
+            <a href="{{ url_for('schedule_days_table', schedule_id=sh.id) }}"><img src="{{ url_for('static', filename='/calendar.png') }}" alt="calendar" width="24"></a>
           </td>
           <td class="col-1 text-center">
-            <a href="{{ url_for('staff_schedule_edit', staff_id=id, id=sh.id) }}"><img src="{{ url_for('static', filename='/edit.png') }}" alt="edit" width="24"></a>
-            <a href="{{ url_for('staff_schedule_delete', staff_id=id, id=sh.id) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
+            <a href="{{ url_for('schedule_edit', id=sh.id) }}"><img src="{{ url_for('static', filename='/edit.png') }}" alt="edit" width="24"></a>
+            <a href="{{ url_for('schedule_delete', id=sh.id) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
           </td>
         </tr>
       {% endfor %}
     </tbody>
   </table>
 {% import '_pagination.html' as forms %}
-{{ forms.render_pagination(pagination, 'staff_schedule', **request.args) }}
+{{ forms.render_pagination(pagination, 'schedule_table', **request.args) }}
 {% endblock %}

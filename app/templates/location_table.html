@@ -9,10 +9,9 @@
   <table id="data" class="table table-hover border-top border-bottom border-light">
     <thead>
       <tr class="table-primary border-start border-end border-light text-center">
-        <th class="col-2">Name</th>
+        <th class="col-3">Name</th>
         <th class="col-5">Address</th>
         <th>Phone</th>
-        <th>Hours</th>
         <th class="col-1">Action</th>
       </tr>
     </thead>
@@ -23,11 +22,10 @@
             {% if l.no_active %}
               <img src="{{ url_for('static', filename='/hidden.png') }}" alt="hidden" width="24">
             {% endif %}
-            {{ l.short_name() }}
+            {{ l.name }}
           </td>
           <td class="col-4">{{ l.address[:55] }}</td>
           <td class="text-center">{{ l.phone }}</td>
-          <td class="text-center">{{ l.open.strftime('%H:%M') }} - {{ l.close.strftime('%H:%M') }}</td>
           <td class="col-1 text-center">
             <a href="{{ url_for('location_edit', id=l.id) }}"><img src="{{ url_for('static', filename='/edit.png') }}" alt="edit" width="24"></a>
             <a href="{{ url_for('location_delete', id=l.id) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
@@ -37,5 +35,5 @@
     </tbody>
   </table>
 {% import '_pagination.html' as forms %}
-{{ forms.render_pagination(pagination, 'locations', **request.args) }}
+{{ forms.render_pagination(pagination, 'locations_table', **request.args) }}
 {% endblock %}
