@@ -22,7 +22,7 @@
             {{ i.name }}
           </td>
           <td class="col-1 text-center">
-            <a href="{{ url_for('items_flow', item_id=i.id) }}"><img src="{{ url_for('static', filename='/view_list.png') }}" alt="view_list" width="24"></a>
+            <a href="{{ url_for('items_flow_table', item_id=i.id) }}"><img src="{{ url_for('static', filename='/view_list.png') }}" alt="view_list" width="24"></a>
           </td>
           <td class="col-1 text-center">{{ i.get_balance_all()|float }}</td>
           <td class="col-1 text-center">

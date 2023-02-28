@@ -19,7 +19,7 @@ def get_tariff_limit(parameter):
     if parameter == 'location':
         limit = current_user.company.tariff.max_locations
         count = Location.query.filter_by(cid=current_user.cid).count()
-        return max(0, limit-count)
+        return max(0, limit - count)
     elif parameter == 'user':
         limit = current_user.company.tariff.max_users
         count = User.query.filter_by(cid=current_user.cid).count()
@@ -28,10 +28,6 @@ def get_tariff_limit(parameter):
         limit = current_user.company.tariff.max_staff
         count = Staff.query.filter_by(cid=current_user.cid).count()
         return max(0, limit - count)
-
-
-def get_staff_schedule(staff_id, location_id, date):
-    return []
 
 
 def get_duration(services):
@@ -71,7 +67,6 @@ def get_free_time_intervals(location_id, date, staff_id, duration,
                             except_id=None):
     if not location_id or not date or not staff_id or not duration:
         return []
-    staff_intervals = get_staff_schedule(staff_id, location_id, date)
     location = Location.query.get_or_404(location_id)
     time_open = datetime.strptime('00.00', '%H.%M')
     time_close = datetime.strptime('00.00', '%H.%M')
@@ -79,7 +74,14 @@ def get_free_time_intervals(location_id, date, staff_id, duration,
         wt = location.main_schedule.get_work_time(date)
         time_open = wt['hour_from']
         time_close = wt['hour_to']
+    staff_intervals = []
     staff = Staff.query.get_or_404(staff_id)
+    if staff.main_schedule:
+        wts = staff.main_schedule.get_work_time(date)
+        if wts['hour_from'] == wts['hour_to']:
+            staff_intervals = []
+        else:
+            staff_intervals = [(wts['hour_from'], wts['hour_to'])]
     timetable = Appointment.query.filter_by(
         cid=current_user.cid, location_id=location.id, cancel=False).filter(
         func.date(Appointment.date_time) == date,

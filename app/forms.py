@@ -1,5 +1,3 @@
-import datetime
-
 import phonenumbers
 from flask import flash
 from flask_wtf import FlaskForm
@@ -86,6 +84,7 @@ class CompanyForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     registration_number = StringField('Registration number')
     info = TextAreaField('Info', validators=[Length(max=200)])
+    simple_mode = BooleanField('Not use staff schedules')
     submit = SubmitField('Submit')
 
 
@@ -106,6 +105,10 @@ class StaffForm(FlaskForm):
             staff = Staff.query.filter_by(phone=field.data).first()
             if staff is not None:
                 raise ValidationError('Please use a different phone')
+
+
+class StaffFormSimple(StaffForm):
+    schedule = None
 
 
 class ScheduleForm(FlaskForm):
@@ -152,7 +155,7 @@ class ServiceForm(FlaskForm):
 
 class LocationForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
-    phone = TelField('Phone', validators=[DataRequired()])
+    phone = TelField('Phone', validators=[DataRequired(), validate_phone])
     address = StringField('Address', validators=[DataRequired()])
     schedule = SelectField('Schedule', choices=[], coerce=int,
                            validate_choice=False)

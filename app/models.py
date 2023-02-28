@@ -328,6 +328,7 @@ class Service(db.Model, Entity, Splitter):
 
 
 class Location(db.Model, Entity, Splitter):
+    sort = 'name'
     name = db.Column(db.String(64), index=True, nullable=False)
     address = db.Column(db.String(120))
     phone = db.Column(db.String(20), index=True, unique=True)
@@ -364,6 +365,7 @@ class Location(db.Model, Entity, Splitter):
 
 
 class Appointment(db.Model, Entity, Splitter):
+    sort = 'date_time'
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow(),
                           onupdate=datetime.utcnow)
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'),
@@ -427,8 +429,9 @@ class Appointment(db.Model, Entity, Splitter):
 
 
 class Schedule(db.Model, Entity, Splitter):
-    week = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday',
-            'Friday', 'Saturday']
+    sort = 'name'
+    week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday',
+            'Friday', 'Saturday', 'Sunday']
     name = db.Column(db.String(64), index=True, nullable=False)
     days = db.relationship('ScheduleDay', backref='schedule',
                            cascade='all, delete')
@@ -457,6 +460,7 @@ class Schedule(db.Model, Entity, Splitter):
             if d.day_number == day_number:
                 hour_from = datetime.combine(date, d.hour_from)
                 hour_to = datetime.combine(date, d.hour_to)
+                break
         return {'hour_from': hour_from, 'hour_to': hour_to}
 
 
@@ -474,8 +478,11 @@ class ScheduleDay(db.Model, Entity, Splitter):
 
 
 class Item(db.Model, Entity, Splitter):
+    sort = 'name'
     name = db.Column(db.String(64), index=True, nullable=False)
     description = db.Column(db.String(255))
+    storage = db.relationship('Storage', backref='items', cascade='all, delete')
+    item_flow = db.relationship('ItemFlow', backref='items', cascade='all, delete')
 
     def __repr__(self):
         return self.name
@@ -498,11 +505,11 @@ class Item(db.Model, Entity, Splitter):
 
 
 class ItemFlow(db.Model, Entity, Splitter):
+    sort = 'date'
     date = db.Column(db.Date, nullable=False)
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
     location = db.relationship('Location', backref='item_flow')
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
-    item = db.relationship('Item', backref='item_flow')
     quantity = db.Column(db.Integer)
     cost = db.Column(db.Float)
 
@@ -513,11 +520,11 @@ class Storage(db.Model, Entity, Splitter):
     location = db.relationship('Location', backref='storage')
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False,
                         primary_key=True)
-    item = db.relationship('Item', backref='storage')
     quantity = db.Column(db.Integer)
 
 
 class CashFlow(db.Model, Entity, Splitter):
+    sort = 'date'
     date = db.Column(db.Date, nullable=False)
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
     location = db.relationship('Location', backref='cash_flow')
@@ -539,6 +546,21 @@ class TaskStatus(db.Model, Entity, Splitter):
     task_progress = db.relationship('TaskProgress', backref='status', cascade='all, delete')
 
 
+class Notice(db.Model, Entity, Splitter):
+    sort = 'date'
+    date = db.Column(db.Date, nullable=False)
+    client_id = db.Column(db.Integer, db.ForeignKey('client.id'))
+    client = db.relationship('Client', backref='notices')
+    description = db.Column(db.String(255))
+
+    @classmethod
+    def get_notices(cls, date=datetime.utcnow().date()):
+        param = {'cid': current_user.cid,
+                 'date': date,
+                 'no_active': False}
+        return cls.query.filter_by(**param)
+
+
 class Task(db.Model, Entity, Splitter):
     name = db.Column(db.String(64), index=True, nullable=False)
     description = db.Column(db.String(255))
@@ -551,15 +573,6 @@ class Task(db.Model, Entity, Splitter):
     author = db.relationship('User', backref='tasks')
     task_progress = db.relationship('TaskProgress', backref='task', cascade='all, delete')
 
-    def __repr__(self):
-        return self.name
-
-    def current_status(self):
-        return 'New'
-
-    def current_staff(self):
-        pass
-
 
 class TaskProgress(db.Model, Entity, Splitter):
     task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)
@@ -571,17 +584,3 @@ class TaskProgress(db.Model, Entity, Splitter):
 
     def __repr__(self):
         return f'{self.task} {self.timestamp}'
-
-
-class Notice(db.Model, Entity, Splitter):
-    date = db.Column(db.Date, nullable=False)
-    client_id = db.Column(db.Integer, db.ForeignKey('client.id'))
-    client = db.relationship('Client', backref='notices')
-    description = db.Column(db.String(255))
-
-    @classmethod
-    def get_notices(cls, date=datetime.utcnow().date()):
-        param = {'cid': current_user.cid,
-                 'date': date,
-                 'no_active': False}
-        return cls.query.filter_by(**param)

@@ -44,20 +44,13 @@
               </div>
             </li>
             <li class="nav-item">
-              <a class="nav-link {% if request.path == url_for('cash_flow_table') %}active{% endif %}" href="{{ url_for('cash_flow_table') }}">Cash flow</a>
+              <a class="nav-link {% if request.path == url_for('cash_flow_table') %}active{% endif %}" href="{{ url_for('cash_flow_table') }}">Cashbox</a>
             </li>
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle {% if request.path == url_for('items_table') or request.path == url_for('items_flow_table') %}active{% endif %}" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Storage</a>
               <div class="dropdown-menu">
                 <a class="dropdown-item" href="{{ url_for('items_table') }}">Items</a>
                 <a class="dropdown-item" href="{{ url_for('items_flow_table') }}">Items flow</a>
-              </div>
-            </li>
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle {% if request.path == url_for('tasks_table') %}active{% endif %}" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">Tasks</a>
-              <div class="dropdown-menu">
-                  <a class="dropdown-item" href="{{ url_for('tasks_table') }}">Tasks</a>
-                  <a class="dropdown-item" href="{{ url_for('task_statuses_table') }}">Task statuses</a>
               </div>
             </li>
           </ul>

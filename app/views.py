@@ -113,10 +113,13 @@ def company_edit():
         company.name = form.name.data
         company.registration_number = form.registration_number.data
         company.info = form.info.data
+        company.config.simple_mode = form.simple_mode.data
         db.session.commit()
         return redirect(url_for('index'))
     elif request.method == 'GET':
-        form = CompanyForm(obj=company)
+        form = CompanyForm(
+            obj=company,
+            data={'simple_mode': CompanyConfig.get_parameter('simple_mode')})
     return render_template('data_form.html',
                            title='Company (edit)',
                            form=form,
@@ -175,13 +178,21 @@ def staff_table():
 @login_required
 def staff_create():
     url_back = url_for('staff_table', **request.args)
-    form = StaffForm()
+    if CompanyConfig.get_parameter('simple_mode'):
+        form = StaffFormSimple()
+    else:
+        form = StaffForm()
+        form.schedule.choices = Schedule.get_items(True)
     if form.validate_on_submit():
         staff = Staff(cid=current_user.cid,
                       name=form.name.data,
                       phone=form.phone.data,
                       birthday=form.birthday.data)
         db.session.add(staff)
+        if form.schedule.data:
+            db.session.flush()
+            schedule = Schedule.get_object(form.schedule.data)
+            staff.schedules.append(schedule)
         db.session.commit()
         return redirect(url_for('staff_table'))
     return render_template('data_form.html',
@@ -196,15 +207,30 @@ def staff_edit(id):
     url_back = url_for('staff_table', **request.args)
     staff = Staff.query.filter_by(cid=current_user.cid,
                                   id=id).first_or_404()
-    form = StaffForm(staff.phone)
+    if CompanyConfig.get_parameter('simple_mode'):
+        form = StaffFormSimple(staff.phone)
+    else:
+        form = StaffForm(staff.phone)
+        form.schedule.choices = Schedule.get_items(True)
     if form.validate_on_submit():
         staff.name = form.name.data
         staff.phone = form.phone.data
         staff.birthday = form.birthday.data
+        if form.schedule.data:
+            schedule = Schedule.get_object(form.schedule.data)
+            staff.schedules.append(schedule)
         db.session.commit()
         return redirect(url_for('staff_table'))
     elif request.method == 'GET':
-        form = StaffForm(obj=staff)
+        if CompanyConfig.get_parameter('simple_mode'):
+            form = StaffFormSimple(obj=staff)
+        else:
+            if staff.main_schedule:
+                form.schedule.default = staff.main_schedule.id
+                form.process()
+            form.name.data = staff.name
+            form.phone.data = staff.phone
+            form.birthday.data = staff.birthday
     return render_template('data_form.html',
                            title='Staff (edit)',
                            form=form,
@@ -328,8 +354,6 @@ def schedule_day_create(schedule_id):
         db.session.add(schedule_day)
         db.session.commit()
         return redirect(url_back)
-    elif request.method == 'POST':
-        form.weekday.default = form.weekday.data
     return render_template('data_form.html',
                            title='Schedule day (create)',
                            form=form,
@@ -567,13 +591,10 @@ def tag_create():
         db.session.add(tag)
         db.session.commit()
         return redirect(url_back)
-    elif request.method == 'POST':
-        return redirect(url_for('tag_create'))
-    else:
-        return render_template('data_form.html',
-                               title='Tag (create)',
-                               form=form,
-                               url_back=url_back)
+    return render_template('data_form.html',
+                           title='Tag (create)',
+                           form=form,
+                           url_back=url_back)
 
 
 @app.route('/tags/edit/<id>/', methods=['GET', 'POST'])
@@ -642,7 +663,7 @@ def services_table():
     else:
         template = 'service_table.html'
     if active:
-        param.append(Service.no_active != True)
+        param.append(Service.no_active == 0)
     data = Service.query.filter(*param).order_by(Service.name).paginate(
         page, app.config['ROWS_PER_PAGE'], False)
     return render_template(template,
@@ -746,12 +767,17 @@ def locations_table():
 def location_create():
     url_back = url_for('locations_table', **request.args)
     form = LocationForm()
+    form.schedule.choices = Schedule.get_items(True)
     if form.validate_on_submit():
         location = Location(cid=current_user.cid,
                             name=form.name.data,
                             phone=form.phone.data,
                             address=form.address.data)
         db.session.add(location)
+        if form.schedule.data:
+            db.session.flush()
+            schedule = Schedule.get_object(form.schedule.data)
+            location.schedules.append(schedule)
         db.session.commit()
         return redirect(url_for('locations_table'))
     return render_template('data_form.html',
@@ -783,9 +809,6 @@ def location_edit(id):
         form.name.data = location.name
         form.address.data = location.address
         form.phone.data = location.phone
-    else:
-        form.schedule.default = form.schedule.data
-        form.process()
     return render_template('data_form.html',
                            title='Location (edit)',
                            form=form,
@@ -878,11 +901,7 @@ def appointment_create():
         session.pop('services', None)
         db.session.commit()
         return redirect(url_for('appointments_table'))
-    elif request.method == 'POST':
-        form.location.default = form.location.data
-        form.staff.default = form.staff.data
-        form.client.default = form.client.data
-    else:
+    elif request.method == 'GET':
         if request.args.get('client_id', None):
             form.client.default = request.args.get('client_id')
             form.process()
@@ -941,12 +960,7 @@ def appointment_edit(id):
         session.pop('services', None)
         db.session.commit()
         return redirect(url_back)
-    elif request.method == 'POST':
-        form.location.default = form.location.data
-        form.staff.default = form.staff.data
-        form.client.default = form.client.data
-        form.process()
-    else:
+    elif request.method == 'GET':
         form.location.default = appointment.location_id
         form.staff.default = appointment.staff_id
         form.client.default = appointment.client_id
@@ -1106,12 +1120,7 @@ def item_flow_create():
             db.session.add(storage)
         db.session.commit()
         return redirect(url_back)
-    elif request.method == 'POST':
-        form.location.default = form.location.data
-        form.item.default = form.item.data
-        form.action.default = form.action.data
-        form.process()
-    else:
+    elif request.method == 'GET':
         form.item.default = item_id
         form.process()
         form.date.data = datetime.now().date()
@@ -1157,12 +1166,7 @@ def item_flow_edit(id):
             db.session.add(storage)
         db.session.commit()
         return redirect(url_back)
-    elif request.method == 'POST':
-        form.location.default = form.location.data
-        form.item.default = form.item.data
-        form.action.default = form.action.data
-        form.process()
-    else:
+    elif request.method == 'GET':
         form.location.default = item_flow.location_id
         form.item.default = item_flow.item_id
         form.process()
@@ -1215,7 +1219,7 @@ def notice_create():
     url_back = request.args.get('url_back', url_for('notices_table', **request.args))
     client_id = request.args.get('client_id', None)
     appointment_id = request.args.get('appointment_id', None)
-    appointment = Appointment.query.get_or_404(appointment_id)
+    appointment = Appointment.query.get(appointment_id)
     form = NoticeForm()
     form.client.choices = Client.get_items(True)
     if form.validate_on_submit():
@@ -1226,9 +1230,7 @@ def notice_create():
         db.session.add(notice)
         db.session.commit()
         return redirect(url_back)
-    elif request.method == 'POST':
-        form.client.default = form.client.data
-    else:
+    elif request.method == 'GET':
         if client_id:
             form.client.default = client_id
             form.process()
@@ -1329,11 +1331,7 @@ def cash_flow_create():
         appointment.payment_id = cash_flow.id
         db.session.commit()
         return redirect(url_back)
-    elif request.method == 'POST':
-        form.location.default = form.location.data
-        form.action.default = form.action.data
-        form.process()
-    else:
+    elif request.method == 'GET':
         if appointment:
             location_id = appointment.location_id
             description = ' '.join(('#Appointment',
@@ -1386,11 +1384,7 @@ def cash_flow_edit(id):
             db.session.add(cash)
         db.session.commit()
         return redirect(url_back)
-    elif request.method == 'POST':
-        form.location.default = form.location.data
-        form.action.default = form.action.data
-        form.process()
-    else:
+    elif request.method == 'GET':
         form.location.default = cash_flow.location_id
         form.process()
         form.date.data = cash_flow.date
@@ -1526,24 +1520,12 @@ def task_create():
         db.session.add(task_progress)
         db.session.commit()
         return redirect(url_for('tasks_table'))
-    elif request.method == 'POST':
-        form.staff.default = form.staff.data
     return render_template('data_form.html',
                            title='Task (create)',
                            form=form,
                            url_back=url_back)
 
 
-@app.route('/tasks/edit/<id>', methods=['GET', 'POST'])
-@login_required
-def task_edit(id):
-    pass
-
-
-@app.route('/tasks/delete/<id>')
-@login_required
-def task_delete(id):
-    pass
 # Tasks block end
 
 
