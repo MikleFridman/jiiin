@@ -7,25 +7,25 @@
             <div class="form-group col-md-4">
                 {{ form.location.label(class_="col-form-label") }}
                 {% if form.location.errors %}
-                    {{ form.location(class_="form-select is-invalid") }}
+                    {{ form.location(class_="form-select is-invalid", onchange="select_location(this.selectedIndex)") }}
                 {% else %}
-                    {{ form.location(class_="form-select") }}
+                    {{ form.location(class_="form-select", onchange="select_location(this.selectedIndex)") }}
                 {% endif %}
                 <div class="form-group mt-2">
                     {{ form.staff.label(class_="col-form-label") }}
                     {% if form.staff.errors %}
-                        {{ form.staff(class_="form-select is-invalid") }}
+                        {{ form.staff(class_="form-select is-invalid", onchange="select_staff(this.selectedIndex)") }}
                     {% else %}
-                        {{ form.staff(class_="form-select") }}
+                        {{ form.staff(class_="form-select", onchange="select_staff(this.selectedIndex)") }}
                     {% endif %}
                 </div>
             </div>
             <div class="form-group col-md-4">
                 {{ form.client.label(class_="col-form-label") }}
                 {% if form.client.errors %}
-                    {{ form.client(class_="form-select is-invalid") }}
+                    {{ form.client(class_="form-select is-invalid", onchange="select_client(this.selectedIndex)") }}
                 {% else %}
-                    {{ form.client(class_="form-select") }}
+                    {{ form.client(class_="form-select", onchange="select_client(this.selectedIndex)") }}
                 {% endif %}
                 <div class="row mt-2">
                     <div class="col-md-7">
@@ -98,5 +98,27 @@
             })
         });
     }
+</script>
+<script>
+  function select_location(id)  {
+   fetch('/select_location/' + id + '/').then(function(response) {
+   response.json().then(function(data) {
+   })
+   });
+  }
+
+  function select_staff(id)  {
+   fetch('/select_staff/' + id + '/').then(function(response) {
+   response.json().then(function(data) {
+   })
+   });
+  }
+
+  function select_client(id)  {
+   fetch('/select_client/' + id + '/').then(function(response) {
+   response.json().then(function(data) {
+   })
+   });
+  }
 </script>
 {% endblock %}

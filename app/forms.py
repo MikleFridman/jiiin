@@ -8,7 +8,7 @@ from wtforms import (StringField, PasswordField, BooleanField,
 from wtforms.validators import (DataRequired, Email, EqualTo,
                                 ValidationError, Length, Optional)
 
-from .models import Schedule
+from .models import Schedule, Item
 from app.functions import *
 
 

@@ -649,6 +649,9 @@ def services_table():
         url_submit = url_for('appointment_create', client_id=client_id)
     if url_back == url_for('appointments_table'):
         session.pop('services', None)
+        session.pop('location', None)
+        session.pop('staff', None)
+        session.pop('client', None)
     location_id = request.args.get('location_id', None, type=int)
     active = request.args.get('active', None, type=int)
     choice_mode = request.args.get('choice_mode', None, type=int)
@@ -873,6 +876,9 @@ def appointment_create():
                                  choice_mode=1,
                                  url_back=request.path)
     selected_services_id = session.get('services')
+    selected_location_id = session.get('location')
+    selected_staff_id = session.get('staff')
+    selected_client_id = session.get('client')
     form = AppointmentForm()
     form.location.choices = Location.get_items(True)
     form.staff.choices = Staff.get_items(True)
@@ -904,6 +910,15 @@ def appointment_create():
     elif request.method == 'GET':
         if request.args.get('client_id', None):
             form.client.default = request.args.get('client_id')
+            form.process()
+        if selected_location_id:
+            form.location.default = selected_location_id
+            form.process()
+        if selected_staff_id:
+            form.staff.default = selected_staff_id
+            form.process()
+        if selected_client_id:
+            form.client.default = selected_client_id
             form.process()
     form.services.data = ','.join(list(str(s) for s in selected_services_id))
     return render_template('appointment_form.html',
@@ -1413,6 +1428,43 @@ def cash_flow_delete(id):
 # CashFlow block end
 
 
+@app.route('/select_service/<service_id>/<selected>/')
+@login_required
+def select_service(service_id, selected):
+    if int(selected) == 1:
+        services_id = session.get('services', [])
+        if str(service_id) not in services_id:
+            services_id.append(service_id)
+            session['services'] = services_id
+    else:
+        services_id = session.get('services', [])
+        if str(service_id) in services_id:
+            services_id.remove(str(service_id))
+            session['services'] = services_id
+    return jsonify(len(services_id))
+
+
+@app.route('/select_location/<location_id>/')
+@login_required
+def select_location(location_id):
+    session['location'] = location_id
+    return jsonify('Ok')
+
+
+@app.route('/select_staff/<staff_id>/')
+@login_required
+def select_staff(staff_id):
+    session['staff'] = staff_id
+    return jsonify('Ok')
+
+
+@app.route('/select_client/<client_id>/')
+@login_required
+def select_client(client_id):
+    session['client'] = client_id
+    return jsonify('Ok')
+
+
 # Tasks block start
 @app.route('/task_statuses/')
 @login_required
@@ -1527,19 +1579,3 @@ def task_create():
 
 
 # Tasks block end
-
-
-@app.route('/select_service/<service_id>/<selected>/')
-@login_required
-def select_service(service_id, selected):
-    if int(selected) == 1:
-        services_id = session.get('services', [])
-        if str(service_id) not in services_id:
-            services_id.append(service_id)
-            session['services'] = services_id
-    else:
-        services_id = session.get('services', [])
-        if str(service_id) in services_id:
-            services_id.remove(str(service_id))
-            session['services'] = services_id
-    return jsonify(len(services_id))

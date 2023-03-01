@@ -481,8 +481,8 @@ class Item(db.Model, Entity, Splitter):
     sort = 'name'
     name = db.Column(db.String(64), index=True, nullable=False)
     description = db.Column(db.String(255))
-    storage = db.relationship('Storage', backref='items', cascade='all, delete')
-    item_flow = db.relationship('ItemFlow', backref='items', cascade='all, delete')
+    storage = db.relationship('Storage', backref='item', cascade='all, delete')
+    item_flow = db.relationship('ItemFlow', backref='item', cascade='all, delete')
 
     def __repr__(self):
         return self.name
@@ -515,6 +515,8 @@ class ItemFlow(db.Model, Entity, Splitter):
 
 
 class Storage(db.Model, Entity, Splitter):
+    id = None
+    sort = 'location_id'
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'),
                             primary_key=True)
     location = db.relationship('Location', backref='storage')

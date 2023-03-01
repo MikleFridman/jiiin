@@ -20,7 +20,7 @@
       {% for ifl in items %}
         <tr class="{{ loop.cycle('table-success', 'table-default') }}  border-start border-end border-light">
           <td class="col-6 ps-3">
-            {{ ifl.item }}
+            {{ ifl.item.name }}
           </td>
           <td class="col-2 text-center">
             {{ ifl.location }}
