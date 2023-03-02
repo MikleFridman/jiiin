@@ -31,9 +31,9 @@
                     <div class="col-md-7">
                     {{ form.date.label(class_="col-form-label") }}
                     {% if form.date.errors %}
-                        {{ form.date(class_="form-control is-invalid") }}
+                        {{ form.date(class_="form-control is-invalid", onchange="select_date(this.value)") }}
                     {% else %}
-                        {{ form.date(class_="form-control") }}
+                        {{ form.date(class_="form-control", onchange="select_date(this.value)") }}
                     {% endif %}
                     </div>
                     <div class="col-md-5">
@@ -116,6 +116,13 @@
 
   function select_client(id)  {
    fetch('/select_client/' + id + '/').then(function(response) {
+   response.json().then(function(data) {
+   })
+   });
+  }
+
+  function select_date(date)  {
+   fetch('/select_date/' + date + '/').then(function(response) {
    response.json().then(function(data) {
    })
    });

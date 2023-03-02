@@ -652,6 +652,7 @@ def services_table():
         session.pop('location', None)
         session.pop('staff', None)
         session.pop('client', None)
+        session.pop('date', None)
     location_id = request.args.get('location_id', None, type=int)
     active = request.args.get('active', None, type=int)
     choice_mode = request.args.get('choice_mode', None, type=int)
@@ -879,6 +880,7 @@ def appointment_create():
     selected_location_id = session.get('location')
     selected_staff_id = session.get('staff')
     selected_client_id = session.get('client')
+    selected_date = session.get('date')
     form = AppointmentForm()
     form.location.choices = Location.get_items(True)
     form.staff.choices = Staff.get_items(True)
@@ -920,6 +922,8 @@ def appointment_create():
         if selected_client_id:
             form.client.default = selected_client_id
             form.process()
+        if selected_date:
+            form.date.data = datetime.strptime(selected_date, '%Y-%m-%d')
     form.services.data = ','.join(list(str(s) for s in selected_services_id))
     return render_template('appointment_form.html',
                            title='Appointment (create)',
@@ -1462,6 +1466,13 @@ def select_staff(staff_id):
 @login_required
 def select_client(client_id):
     session['client'] = client_id
+    return jsonify('Ok')
+
+
+@app.route('/select_date/<date>/')
+@login_required
+def select_date(date):
+    session['date'] = date
     return jsonify('Ok')
 
 

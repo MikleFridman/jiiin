@@ -211,6 +211,8 @@ class AppointmentForm(FlaskForm):
             raise ValidationError('Please, select date')
 
     def validate_time(self, time):
+        if not time.data:
+            raise ValidationError('Please, select time')
         location = self.location.data
         staff = self.staff.data
         duration = self.duration.data
