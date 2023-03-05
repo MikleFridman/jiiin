@@ -29,7 +29,7 @@
             {{ cfl.date.strftime('%d.%m.%y') }}
           </td>
           <td class="col-1 text-center">
-            {{ cfl.sum|float }}
+            {{ cfl.cost|float }}
           </td>
           <td class="col-1 text-center">
             <a href="{{ url_for('cash_flow_edit', id=cfl.id, **request.args) }}"><img src="{{ url_for('static', filename='/edit.png') }}" alt="edit" width="24"></a>

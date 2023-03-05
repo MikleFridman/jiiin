@@ -2,7 +2,7 @@ from flask_login import UserMixin, current_user
 from flask_security import RoleMixin
 from sqlalchemy.orm import declared_attr
 from werkzeug.security import generate_password_hash, check_password_hash
-from app import db, login
+from app import db, login, app
 from datetime import datetime, timedelta
 
 
@@ -87,6 +87,8 @@ locations_schedules = db.Table('locations_schedules',
 
 class Entity:
     sort = 'id'
+    sort_mode = 'asc'
+    search = []
     id = db.Column(db.Integer, primary_key=True)
     no_active = db.Column(db.Boolean, default=False)
     timestamp_create = db.Column(db.DateTime(), default=datetime.utcnow())
@@ -100,8 +102,11 @@ class Entity:
     @classmethod
     def get_items(cls, tuple_mode=False):
         items = cls.query.filter_by(no_active=False,
-                                    cid=current_user.cid
-                                    ).order_by(getattr(cls, cls.sort).asc())
+                                    cid=current_user.cid)
+        if cls.sort_mode == 'asc':
+            items = items.order_by(getattr(cls, cls.sort).asc())
+        else:
+            items = items.order_by(getattr(cls, cls.sort).desc())
         if tuple_mode:
             items = [(i.id, i.name) for i in items]
             items.insert(0, (0, '-Select-'))
@@ -110,9 +115,22 @@ class Entity:
         return items
 
     @classmethod
+    def get_pagination(cls, page, data_filter=None):
+        param = {'cid': current_user.cid, 'no_active': False}
+        if data_filter:
+            param = {**param, **data_filter}
+        items = cls.query.filter_by(**param)
+        if cls.sort_mode == 'asc':
+            items = items.order_by(getattr(cls, cls.sort).asc())
+        else:
+            items = items.order_by(getattr(cls, cls.sort).desc())
+        items = items.paginate(page, app.config['ROWS_PER_PAGE'], False)
+        return items
+
+    @classmethod
     def get_object(cls, id):
-        obj = cls.query.filter_by(no_active=False, cid=current_user.cid,
-                                  id=id).first_or_404()
+        param = {'cid': current_user.cid, 'no_active': False, 'id': id}
+        obj = cls.query.filter_by(**param).first_or_404()
         return obj
 
     def item_delete(self):
@@ -249,6 +267,7 @@ class User(db.Model, UserMixin, Entity, Splitter):
 
 class Staff(db.Model, Entity, Splitter):
     sort = 'name'
+    search = ['name', 'phone']
     name = db.Column(db.String(64), index=True, nullable=False)
     phone = db.Column(db.String(16), index=True, unique=True, nullable=False)
     birthday = db.Column(db.Date)
@@ -271,11 +290,13 @@ class Staff(db.Model, Entity, Splitter):
 
 class Client(db.Model, Entity, Splitter):
     sort = 'name'
+    search = ['name', 'phone']
     name = db.Column(db.String(64), index=True, nullable=False)
     phone = db.Column(db.String(16), index=True, unique=True, nullable=False)
     birthday = db.Column(db.Date)
     info = db.Column(db.Text)
     files = db.relationship('ClientFile', backref='client', cascade='all, delete')
+    notices = db.relationship('Notice', backref='client', cascade='all, delete')
     tags = db.relationship('Tag', secondary=clients_tags,
                            lazy='subquery',
                            backref=db.backref('clients', lazy=True))
@@ -288,6 +309,7 @@ class Client(db.Model, Entity, Splitter):
 
 
 class ClientFile(db.Model, Entity, Splitter):
+    sort = 'name'
     client_id = db.Column(db.Integer, db.ForeignKey('client.id'),
                           nullable=False)
     name = db.Column(db.String(64))
@@ -296,6 +318,7 @@ class ClientFile(db.Model, Entity, Splitter):
 
 
 class Tag(db.Model, Entity, Splitter):
+    sort = 'name'
     name = db.Column(db.String(64), index=True, nullable=False)
 
     def add_tag(self, tag):
@@ -312,6 +335,7 @@ class Tag(db.Model, Entity, Splitter):
 
 class Service(db.Model, Entity, Splitter):
     sort = 'name'
+    search = ['name']
     name = db.Column(db.String(120), index=True, nullable=False)
     duration = db.Column(db.Integer)
     price = db.Column(db.Float)
@@ -335,6 +359,14 @@ class Location(db.Model, Entity, Splitter):
     open = db.Column(db.Time)
     close = db.Column(db.Time)
     timezone = db.Column(db.Integer, default=0)
+    cash = db.relationship('Cash', backref='location', uselist='False',
+                           cascade='all, delete')
+    cash_flows = db.relationship('CashFlow', backref='location',
+                                 cascade='all, delete')
+    storage = db.relationship('Storage', backref='location', uselist='False',
+                              cascade='all, delete')
+    item_flows = db.relationship('ItemFlow', backref='location',
+                                 cascade='all, delete')
     services = db.relationship('Service', secondary=services_locations,
                                lazy='subquery',
                                backref=db.backref('locations', lazy=True))
@@ -366,6 +398,8 @@ class Location(db.Model, Entity, Splitter):
 
 class Appointment(db.Model, Entity, Splitter):
     sort = 'date_time'
+    sort_mode = 'desc'
+    search = ['location', 'staff', 'client']
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow(),
                           onupdate=datetime.utcnow)
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'),
@@ -382,8 +416,6 @@ class Appointment(db.Model, Entity, Splitter):
     info = db.Column(db.Text)
     result = db.Column(db.Text)
     payment_id = db.Column(db.Integer, db.ForeignKey('cash_flow.id'))
-    payment = db.relationship('CashFlow', backref='appointment',
-                              cascade='all, delete')
     cancel = db.Column(db.Boolean, default=False)
 
     def __repr__(self):
@@ -479,6 +511,7 @@ class ScheduleDay(db.Model, Entity, Splitter):
 
 class Item(db.Model, Entity, Splitter):
     sort = 'name'
+    search = ['name']
     name = db.Column(db.String(64), index=True, nullable=False)
     description = db.Column(db.String(255))
     storage = db.relationship('Storage', backref='item', cascade='all, delete')
@@ -506,9 +539,9 @@ class Item(db.Model, Entity, Splitter):
 
 class ItemFlow(db.Model, Entity, Splitter):
     sort = 'date'
+    sort_mode = 'desc'
     date = db.Column(db.Date, nullable=False)
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
-    location = db.relationship('Location', backref='item_flow')
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
     quantity = db.Column(db.Integer)
     cost = db.Column(db.Float)
@@ -519,7 +552,6 @@ class Storage(db.Model, Entity, Splitter):
     sort = 'location_id'
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'),
                             primary_key=True)
-    location = db.relationship('Location', backref='storage')
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False,
                         primary_key=True)
     quantity = db.Column(db.Integer)
@@ -527,32 +559,28 @@ class Storage(db.Model, Entity, Splitter):
 
 class CashFlow(db.Model, Entity, Splitter):
     sort = 'date'
+    sort_mode = 'desc'
+    search = ['location', 'date']
     date = db.Column(db.Date, nullable=False)
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
-    location = db.relationship('Location', backref='cash_flow')
     description = db.Column(db.String(255))
     cost = db.Column(db.Float)
+    appointment = db.relationship('Appointment', backref='payment',
+                                  uselist='False', cascade='all, delete')
 
 
 class Cash(db.Model, Entity, Splitter):
+    id = None
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'),
                             primary_key=True)
-    location = db.relationship('Location', backref='cash')
     cost = db.Column(db.Float)
-
-
-class TaskStatus(db.Model, Entity, Splitter):
-    name = db.Column(db.String(64), index=True, nullable=False)
-    description = db.Column(db.String(255))
-    final = db.Column(db.Boolean, default=False)
-    task_progress = db.relationship('TaskProgress', backref='status', cascade='all, delete')
 
 
 class Notice(db.Model, Entity, Splitter):
     sort = 'date'
+    sort_mode = 'desc'
     date = db.Column(db.Date, nullable=False)
     client_id = db.Column(db.Integer, db.ForeignKey('client.id'))
-    client = db.relationship('Client', backref='notices')
     description = db.Column(db.String(255))
 
     @classmethod
@@ -561,6 +589,13 @@ class Notice(db.Model, Entity, Splitter):
                  'date': date,
                  'no_active': False}
         return cls.query.filter_by(**param)
+
+
+class TaskStatus(db.Model, Entity, Splitter):
+    name = db.Column(db.String(64), index=True, nullable=False)
+    description = db.Column(db.String(255))
+    final = db.Column(db.Boolean, default=False)
+    task_progress = db.relationship('TaskProgress', backref='status', cascade='all, delete')
 
 
 class Task(db.Model, Entity, Splitter):

@@ -134,7 +134,7 @@ def company_edit():
 @login_required
 def user_edit(id):
     url_back = url_for('index', **request.args)
-    user = User.query.get_or_404(id)
+    user = User.get_object(id)
     form = UserFormEdit(user.username, user.email)
     if form.validate_on_submit():
         user.username = form.username.data
@@ -165,9 +165,7 @@ def user_edit(id):
 @login_required
 def staff_table():
     page = request.args.get('page', 1, type=int)
-    data = Staff.query.filter_by(
-        cid=current_user.cid).order_by(
-        Staff.name.asc()).paginate(page, app.config['ROWS_PER_PAGE'], False)
+    data = Staff.get_pagination(page)
     return render_template('staff_table.html',
                            title='Staff',
                            items=data.items,
@@ -205,8 +203,7 @@ def staff_create():
 @login_required
 def staff_edit(id):
     url_back = url_for('staff_table', **request.args)
-    staff = Staff.query.filter_by(cid=current_user.cid,
-                                  id=id).first_or_404()
+    staff = Staff.get_object(id)
     if CompanyConfig.get_parameter('simple_mode'):
         form = StaffFormSimple(staff.phone)
     else:
@@ -240,8 +237,7 @@ def staff_edit(id):
 @app.route('/staff/delete/<id>/', methods=['GET', 'POST'])
 @login_required
 def staff_delete(id):
-    staff = Staff.query.filter_by(cid=current_user.cid,
-                                  id=id).first_or_404()
+    staff = Staff.get_object(id)
     if (len(staff.calendar) > 0 or
             len(staff.appointments) > 0 or
             len(staff.tasks) > 0 or
@@ -264,10 +260,7 @@ def staff_delete(id):
 @login_required
 def schedules_table():
     page = request.args.get('page', 1, type=int)
-    param = {'cid': current_user.cid, 'no_active': False}
-    data = Schedule.query.filter_by(
-        **param).order_by(Schedule.name.asc()).paginate(
-        page, app.config['ROWS_PER_PAGE'], False)
+    data = Schedule.get_pagination(page)
     return render_template('schedule_table.html',
                            items=data.items,
                            pagination=data)
@@ -294,8 +287,7 @@ def schedule_create():
 @login_required
 def schedule_edit(id):
     url_back = url_for('schedules_table', **request.args)
-    param = {'cid': current_user.cid, 'id': id}
-    schedule = Schedule.query.filter_by(**param).first_or_404()
+    schedule = Schedule.get_object(id)
     form = ScheduleForm()
     if form.validate_on_submit():
         schedule.name = form.name.data
@@ -312,8 +304,7 @@ def schedule_edit(id):
 @app.route('/schedules/delete/<id>', methods=['GET', 'POST'])
 @login_required
 def schedule_delete(id):
-    param = {'cid': current_user.cid, 'id': id}
-    schedule = Schedule.query.filter_by(**param).first_or_404()
+    schedule = Schedule.get_object(id)
     db.session.delete(schedule)
     db.session.commit()
     flash('Delete schedule {}'.format(id))
@@ -324,11 +315,8 @@ def schedule_delete(id):
 @login_required
 def schedule_days_table(schedule_id):
     page = request.args.get('page', 1, type=int)
-    param = {'cid': current_user.cid, 'schedule_id': schedule_id,
-             'no_active': False}
-    data = ScheduleDay.query.filter_by(
-        **param).order_by(ScheduleDay.day_number.asc()).paginate(
-        page, app.config['ROWS_PER_PAGE'], False)
+    param = {'schedule_id': schedule_id}
+    data = ScheduleDay.get_pagination(page, param)
     return render_template('schedule_days_table.html',
                            items=data.items,
                            pagination=data,
@@ -340,8 +328,7 @@ def schedule_days_table(schedule_id):
 def schedule_day_create(schedule_id):
     url_back = url_for('schedule_days_table', schedule_id=schedule_id,
                        **request.args)
-    param = {'cid': current_user.cid, 'id': schedule_id}
-    schedule = Schedule.query.filter_by(**param).first_or_404()
+    schedule = Schedule.get_object(schedule_id)
     form = ScheduleDayForm()
     if form.validate_on_submit():
         day = Schedule.week[form.weekday.data]
@@ -365,8 +352,7 @@ def schedule_day_create(schedule_id):
 def schedule_day_edit(schedule_id, id):
     url_back = url_for('schedule_days_table', schedule_id=schedule_id,
                        **request.args)
-    param = {'cid': current_user.cid, 'id': schedule_id}
-    schedule = Schedule.query.filter_by(**param).first_or_404()
+    schedule = Schedule.get_object(schedule_id)
     param = {'cid': current_user.cid, 'schedule_id': schedule.id, 'id': id}
     schedule_day = ScheduleDay.query.filter_by(**param).first_or_404()
     form = ScheduleDayForm()
@@ -394,8 +380,7 @@ def schedule_day_edit(schedule_id, id):
 def schedule_day_delete(schedule_id, id):
     url_back = url_for('schedule_days_table', schedule_id=schedule_id,
                        **request.args)
-    param = {'cid': current_user.cid, 'id': schedule_id}
-    schedule = Schedule.query.filter_by(**param).first_or_404()
+    schedule = Schedule.get_object(schedule_id)
     param = {'cid': current_user.cid, 'schedule_id': schedule.id, 'id': id}
     schedule_day = ScheduleDay.query.filter_by(**param).first_or_404()
     db.session.delete(schedule_day)
@@ -412,9 +397,7 @@ def schedule_day_delete(schedule_id, id):
 @login_required
 def clients_table():
     page = request.args.get('page', 1, type=int)
-    data = Client.query.filter_by(
-        cid=current_user.cid).paginate(
-        page, app.config['ROWS_PER_PAGE'], False)
+    data = Client.get_pagination(page)
     return render_template('client_table.html',
                            title='Clients',
                            items=data.items,
@@ -446,8 +429,7 @@ def client_create():
 def client_edit(id):
     url_back = url_for('clients_table', **request.args)
     form = ClientForm()
-    client = Client.query.filter_by(cid=current_user.cid,
-                                    id=id).first_or_404()
+    client = Client.get_object(id)
     if form.validate_on_submit():
         client.name = form.name.data
         client.phone = form.phone.data
@@ -466,8 +448,7 @@ def client_edit(id):
 @app.route('/clients/delete/<id>/', methods=['GET', 'POST'])
 @login_required
 def client_delete(id):
-    client = Client.query.filter_by(cid=current_user.cid,
-                                    id=id).first_or_404()
+    client = Client.get_object(id)
     if (len(client.files) > 0 or
             len(client.appointments) > 0):
         flash('Unable to delete an object')
@@ -485,9 +466,8 @@ def client_delete(id):
 @login_required
 def client_files_table(id):
     page = request.args.get('page', 1, type=int)
-    data = ClientFile.query.filter_by(
-        cid=current_user.id, client_id=id).paginate(
-        page, app.config['ROWS_PER_PAGE'], False)
+    param = {'client_id': id}
+    data = ClientFile.get_pagination(page, param)
     return render_template('client_files_table.html',
                            id=id,
                            title='Files',
@@ -499,22 +479,21 @@ def client_files_table(id):
 @login_required
 def client_file_upload(id):
     url_back = url_for('client_files_table', id=id, **request.args)
-    client = Client.query.filter_by(cid=current_user.cid,
-                                    id=id).first_or_404()
+    client = Client.get_object(id)
     if not client:
         return redirect(url_back)
     form = ClientFileForm()
     if request.method == 'POST':
         if 'file' not in request.files:
             flash('No selected file')
-            return redirect(url_for('upload_client_file', id=id))
+            return redirect(url_for('client_file_upload', id=id))
         file = request.files['file']
         if file.filename == '':
             flash('No selected file')
-            return redirect(url_for('upload_client_file', id=id))
+            return redirect(url_for('client_file_upload', id=id))
         if not allowed_file_ext(file.filename):
             flash('Unauthorized file extension')
-            return redirect(url_for('upload_client_file', id=id))
+            return redirect(url_for('client_file_upload', id=id))
         directory = os.path.join(app.config['UPLOAD_FOLDER'],
                                  str(current_user.cid))
         path = os.path.join(directory, str(uuid.uuid4()))
@@ -550,8 +529,7 @@ def client_file_download(client_id, id):
 def client_file_delete(client_id, id):
     url_back = url_for('client_files_table', id=client_id, **request.args)
     try:
-        file = ClientFile.query.filter_by(cid=current_user.cid,
-                                          id=id).first()
+        file = ClientFile.get_object(id)
         os.remove(file.path)
         db.session.delete(file)
         db.session.commit()
@@ -570,9 +548,7 @@ def client_file_delete(client_id, id):
 @login_required
 def tags_table():
     page = request.args.get('page', 1, type=int)
-    data = Tag.query.filter_by(
-        cid=current_user.id).paginate(
-        page, app.config['ROWS_PER_PAGE'], False)
+    data = Tag.get_pagination(page)
     return render_template('tags_table.html',
                            id=id,
                            title='Tags',
@@ -601,8 +577,7 @@ def tag_create():
 @login_required
 def tag_edit(id):
     url_back = url_for('tags_table', **request.args)
-    tag = Tag.query.filter_by(cid=current_user.cid,
-                              id=id).first_or_404()
+    tag = Tag.get_object(id)
     form = TagForm()
     if form.validate_on_submit():
         tag.name = form.name.data
@@ -620,8 +595,7 @@ def tag_edit(id):
 @login_required
 def tag_delete(id):
     url_back = url_for('tags_table', **request.args)
-    tag = Tag.query.filter_by(cid=current_user.cid,
-                              id=id).first_or_404()
+    tag = Tag.get_object(id)
     db.session.delete(tag)
     db.session.commit()
     flash('Delete tag {}'.format(id))
@@ -640,8 +614,7 @@ def services_table():
     client_id = request.args.get('client_id', None, type=int)
     url_back = request.args.get('url_back', url_for('appointments_table'))
     if appointment_id:
-        appointment = Appointment.query.filter_by(
-            cid=current_user.cid, id=appointment_id).first_or_404()
+        appointment = Appointment.get_object(appointment_id)
         session['services'] = [str(s.id) for s in appointment.services]
     if 'edit' in url_back:
         url_submit = url_back + '?mod_services=1'
@@ -653,23 +626,12 @@ def services_table():
         session.pop('staff', None)
         session.pop('client', None)
         session.pop('date', None)
-    location_id = request.args.get('location_id', None, type=int)
-    active = request.args.get('active', None, type=int)
     choice_mode = request.args.get('choice_mode', None, type=int)
-    param = [Service.cid == current_user.cid]
-    if location_id:
-        location = Location.query.filter_by(cid=current_user.cid,
-                                            id=location_id).first_or_404()
-        param.append(Service.id.in_([s.id for s in location.services]))
     if choice_mode:
         template = 'service_table_choice.html'
-        active = 1
     else:
         template = 'service_table.html'
-    if active:
-        param.append(Service.no_active == 0)
-    data = Service.query.filter(*param).order_by(Service.name).paginate(
-        page, app.config['ROWS_PER_PAGE'], False)
+    data = Service.get_pagination(page)
     return render_template(template,
                            title='Services',
                            items=data.items,
@@ -696,7 +658,7 @@ def service_create():
         db.session.add(service)
         db.session.flush()
         for location_id in form.location.data:
-            location = Location.query.get_or_404(location_id)
+            location = Location.get_object(location_id)
             location.add_service(service)
         db.session.commit()
         return redirect(url_for('services_table'))
@@ -714,8 +676,7 @@ def service_edit(id):
     location_list = Location.get_items(True)
     location_list.pop(0)
     form.location.choices = location_list
-    service = Service.query.filter_by(cid=current_user.cid,
-                                      id=id).first_or_404()
+    service = Service.get_object(id)
     if form.validate_on_submit():
         service.name = form.name.data
         service.duration = form.duration.data
@@ -723,7 +684,7 @@ def service_edit(id):
         service.repeat = form.repeat.data
         service.locations.clear()
         for location_id in form.location.data:
-            location = Location.query.get_or_404(location_id)
+            location = Location.get_object(location_id)
             location.add_service(service)
         db.session.commit()
         return redirect(url_for('services_table'))
@@ -743,8 +704,7 @@ def service_edit(id):
 @app.route('/services/delete/<id>/', methods=['GET', 'POST'])
 @login_required
 def service_delete(id):
-    service = Service.query.filter_by(cid=current_user.cid,
-                                      id=id).first_or_404()
+    service = Service.get_object(id)
     db.session.delete(service)
     db.session.commit()
     flash('Delete service {}'.format(id))
@@ -757,9 +717,7 @@ def service_delete(id):
 @login_required
 def locations_table():
     page = request.args.get('page', 1, type=int)
-    data = Location.query.filter_by(
-        cid=current_user.cid).paginate(
-        page, app.config['ROWS_PER_PAGE'], False)
+    data = Location.get_pagination(page)
     return render_template('location_table.html',
                            title='Locations',
                            items=data.items,
@@ -822,8 +780,7 @@ def location_edit(id):
 @app.route('/locations/delete/<id>/', methods=['GET', 'POST'])
 @login_required
 def location_delete(id):
-    location = Location.query.filter_by(cid=current_user.cid,
-                                        id=id).first_or_404()
+    location = Location.get_object(id)
     db.session.delete(location)
     db.session.commit()
     flash('Delete location {}'.format(id))
@@ -843,7 +800,7 @@ def appointments_table():
     form.client_id.choices = Client.get_items(True)
     form.client_id.render_kw = {'onchange': 'this.form.submit()'}
     page = request.args.get('page', 1, type=int)
-    param = {'cid': current_user.cid}
+    param = {}
     location_id = request.args.get('location_id', None, type=int)
     staff_id = request.args.get('staff_id', None, type=int)
     client_id = request.args.get('client_id', None, type=int)
@@ -859,9 +816,7 @@ def appointments_table():
         form.client_id.default = client_id
         form.process()
         param['client_id'] = client_id
-    data = Appointment.query.filter_by(**param).order_by(
-        Appointment.date_time.desc(), Appointment.location_id).paginate(
-        page, app.config['ROWS_PER_PAGE'], False)
+    data = Appointment.get_pagination(page, param)
     return render_template('timetable.html',
                            title='Appointments',
                            items=data.items,
@@ -888,15 +843,14 @@ def appointment_create():
     form.duration.data = get_duration(selected_services_id)
     selected_services = []
     for service_id in selected_services_id:
-        service = Service.query.get_or_404(service_id)
+        service = Service.get_object(service_id)
         selected_services.append(service)
     if form.validate_on_submit():
-        date = form.date.data
         appointment = Appointment(cid=current_user.cid,
                                   location_id=form.location.data,
-                                  date_time=datetime(date.year,
-                                                     date.month,
-                                                     date.day,
+                                  date_time=datetime(form.date.data.year,
+                                                     form.date.data.month,
+                                                     form.date.data.day,
                                                      form.time.data.hour,
                                                      form.time.data.minute),
                                   client_id=form.client.data,
@@ -936,8 +890,7 @@ def appointment_create():
 @app.route('/appointments/edit/<id>/', methods=['GET', 'POST'])
 @login_required
 def appointment_edit(id):
-    appointment = Appointment.query.filter_by(cid=current_user.cid,
-                                              id=id).first_or_404()
+    appointment = Appointment.get_object(id)
     param_url = {**request.args}
     param_url.pop('mod_services', None)
     url_back = url_for('appointments_table', **param_url)
@@ -955,7 +908,7 @@ def appointment_edit(id):
                                      url_back=request.path)
     selected_services = []
     for service_id in selected_services_id:
-        service = Service.query.get_or_404(service_id)
+        service = Service.get_object(service_id)
         selected_services.append(service)
     form = AppointmentForm(appointment)
     form.duration.data = get_duration(selected_services_id)
@@ -972,7 +925,6 @@ def appointment_edit(id):
         appointment.client_id = form.client.data
         appointment.staff_id = form.staff.data
         appointment.info = form.info.data
-        appointment.cancel = form.cancel.data
         appointment.services.clear()
         for service in selected_services:
             appointment.add_service(service)
@@ -987,7 +939,6 @@ def appointment_edit(id):
         form.date.data = appointment.date_time.date()
         form.time.data = appointment.date_time.time()
         form.info.data = appointment.info
-        form.cancel.data = appointment.cancel
     form.services.data = ','.join(list(str(s) for s in selected_services_id))
     return render_template('appointment_form.html',
                            title='Appointment (edit)',
@@ -1001,8 +952,7 @@ def appointment_edit(id):
 @app.route('/appointments/delete/<id>/', methods=['GET', 'POST'])
 @login_required
 def appointment_delete(id):
-    appointment = Appointment.query.filter_by(cid=current_user.cid,
-                                              id=id).first_or_404()
+    appointment = Appointment.get_object(id)
     db.session.delete(appointment)
     db.session.commit()
     flash('Delete appointment {}'.format(id))
@@ -1013,9 +963,7 @@ def appointment_delete(id):
 @login_required
 def appointment_result(appointment_id):
     url_back = request.args.get('url_back', url_for('appointments_table', **request.args))
-    param = {'cid': current_user.cid,
-             'id': appointment_id}
-    appointment = Appointment.query.filter_by(**param).first_or_404()
+    appointment = Appointment.get_object(appointment_id)
     form = ResultForm()
     if form.validate_on_submit():
         appointment.result = form.result.data
@@ -1035,8 +983,7 @@ def appointment_result(appointment_id):
 @login_required
 def items_table():
     page = request.args.get('page', 1, type=int)
-    data = Item.query.filter_by(cid=current_user.cid).paginate(
-        page, app.config['ROWS_PER_PAGE'], False)
+    data = Item.get_pagination(page)
     return render_template('item_table.html',
                            title='Items',
                            items=data.items,
@@ -1065,8 +1012,7 @@ def item_create():
 @login_required
 def item_edit(id):
     url_back = url_for('items_table', **request.args)
-    item = Item.query.filter_by(cid=current_user.cid,
-                                id=id).first_or_404()
+    item = Item.get_object(id)
     form = ItemForm()
     if form.validate_on_submit():
         item.name = form.name.data
@@ -1084,8 +1030,7 @@ def item_edit(id):
 @app.route('/items/delete/<id>')
 @login_required
 def item_delete(id):
-    item = Item.query.filter_by(cid=current_user.cid,
-                                id=id).first_or_404()
+    item = Item.get_object(id)
     db.session.delete(item)
     db.session.commit()
     flash('Delete item {}'.format(id))
@@ -1098,12 +1043,11 @@ def item_delete(id):
 @login_required
 def items_flow_table():
     page = request.args.get('page', 1, type=int)
-    param = {'cid': current_user.cid}
+    param = {}
     select_item = request.args.get('item_id', 0, type=int)
     if select_item > 0:
         param['item_id'] = select_item
-    data = ItemFlow.query.filter_by(**param).paginate(
-        page, app.config['ROWS_PER_PAGE'], False)
+    data = ItemFlow.get_pagination(page, param)
 
     return render_template('item_flow_table.html',
                            title='Items flow',
@@ -1153,8 +1097,7 @@ def item_flow_create():
 @login_required
 def item_flow_edit(id):
     url_back = url_for('items_flow_table', **request.args)
-    item_flow = ItemFlow.query.filter_by(cid=current_user.cid,
-                                         id=id).first_or_404()
+    item_flow = ItemFlow.get_object(id)
     form = ItemFlowForm(item_flow.location_id,
                         item_flow.item_id,
                         item_flow.quantity)
@@ -1201,8 +1144,7 @@ def item_flow_edit(id):
 @app.route('/items_flow/delete/<id>')
 @login_required
 def item_flow_delete(id):
-    item_flow = ItemFlow.query.filter_by(cid=current_user.cid,
-                                         id=id).first_or_404()
+    item_flow = ItemFlow.get_object(id)
     db.session.delete(item_flow)
     storage = Storage.query.filter_by(cid=current_user.cid,
                                       location_id=item_flow.location_id,
@@ -1220,11 +1162,10 @@ def item_flow_delete(id):
 def notices_table():
     page = request.args.get('page', 1, type=int)
     client_id = request.args.get('client_id', None)
-    param = {'cid': current_user.cid}
+    param = {}
     if client_id:
         param['client_id'] = client_id
-    data = Notice.query.filter_by(**param).paginate(
-        page, app.config['ROWS_PER_PAGE'], False)
+    data = Notice.get_pagination(page, param)
 
     return render_template('notice_table.html',
                            title='Notices',
@@ -1268,8 +1209,7 @@ def notice_create():
 def notice_edit(id):
     url_back = request.args.get('url_back', url_for('notices_table',
                                                     **request.args))
-    notice = Notice.query.filter_by(cid=current_user.cid,
-                                    id=id).first_or_404()
+    notice = Notice.get_object(id)
     form = NoticeForm()
     form.client.choices = Client.get_items(True)
     if form.validate_on_submit():
@@ -1293,8 +1233,7 @@ def notice_edit(id):
 @login_required
 def notice_delete(id):
     url_back = url_for('notices_table', **request.args)
-    notice = Notice.query.filter_by(cid=current_user.cid,
-                                    id=id).first_or_404()
+    notice = Notice.get_object(id)
     db.session.delete(notice)
     db.session.commit()
     flash('Delete notice {}'.format(id))
@@ -1307,9 +1246,7 @@ def notice_delete(id):
 @login_required
 def cash_flow_table():
     page = request.args.get('page', 1, type=int)
-    param = {'cid': current_user.cid}
-    data = CashFlow.query.filter_by(**param).paginate(
-        page, app.config['ROWS_PER_PAGE'], False)
+    data = CashFlow.get_pagination(page)
 
     return render_template('cash_flow_table.html',
                            title='Cash flow',
@@ -1347,7 +1284,8 @@ def cash_flow_create():
                         location_id=form.location.data,
                         cost=form.cost.data * form.action.data)
             db.session.add(cash)
-        appointment.payment_id = cash_flow.id
+        if appointment:
+            appointment.payment_id = cash_flow.id
         db.session.commit()
         return redirect(url_back)
     elif request.method == 'GET':
@@ -1376,8 +1314,7 @@ def cash_flow_create():
 def cash_flow_edit(id):
     url_back = request.args.get('url_back', url_for('cash_flow_table',
                                                     **request.args))
-    cash_flow = CashFlow.query.filter_by(cid=current_user.cid,
-                                         id=id).first_or_404()
+    cash_flow = CashFlow.get_object(id)
     form = CashFlowForm()
     form.location.choices = Location.get_items(True)
     if form.validate_on_submit():
@@ -1419,8 +1356,7 @@ def cash_flow_edit(id):
 @app.route('/cash_flow/delete/<id>')
 @login_required
 def cash_flow_delete(id):
-    cash_flow = CashFlow.query.filter_by(cid=current_user.cid,
-                                         id=id).first_or_404()
+    cash_flow = CashFlow.get_object(id)
     db.session.delete(cash_flow)
     cash = Cash.query.filter_by(cid=current_user.cid,
                                 location_id=cash_flow.location_id
@@ -1481,9 +1417,7 @@ def select_date(date):
 @login_required
 def task_statuses_table():
     page = request.args.get('page', 1, type=int)
-    data = TaskStatus.query.filter_by(
-        cid=current_user.cid).paginate(page,
-                                       app.config['ROWS_PER_PAGE'], False)
+    data = TaskStatus.get_pagination(page)
     return render_template('task_status_table.html',
                            title='Task statuses',
                            items=data.items,
@@ -1513,8 +1447,7 @@ def task_status_create():
 @login_required
 def task_status_edit(id):
     url_back = url_for('task_statuses_table', **request.args)
-    task_status = TaskStatus.query.filter_by(cid=current_user.cid,
-                                             id=id).first_or_404()
+    task_status = TaskStatus.get_object(id)
     form = TaskStatusForm()
     if form.validate_on_submit():
         task_status.name = form.name.data
@@ -1533,8 +1466,7 @@ def task_status_edit(id):
 @app.route('/task_statuses/delete/<id>/', methods=['GET', 'POST'])
 @login_required
 def task_status_delete(id):
-    task_status = TaskStatus.query.filter_by(cid=current_user.cid,
-                                             id=id).first_or_404()
+    task_status = TaskStatus.get_object(id)
     if len(task_status.progress) > 0:
         flash('Unable to delete an object')
     else:
@@ -1551,9 +1483,7 @@ def task_status_delete(id):
 @login_required
 def tasks_table():
     page = request.args.get('page', 1, type=int)
-    param = {'cid': current_user.cid}
-    data = Task.query.filter_by(**param).paginate(
-        page, app.config['ROWS_PER_PAGE'], False)
+    data = Task.get_pagination(page)
     return render_template('task_table.html',
                            title='Tasks',
                            items=data.items,

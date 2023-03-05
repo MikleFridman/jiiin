@@ -173,7 +173,6 @@ class AppointmentForm(FlaskForm):
     duration = HiddenField('Duration', default=0)
     services = HiddenField('Services', default='')
     info = TextAreaField('Info', validators=[Length(max=200)])
-    cancel = BooleanField('Cancel')
     submit = SubmitField('Submit')
 
     def __init__(self, appointment=None, *args, **kwargs):
@@ -181,14 +180,14 @@ class AppointmentForm(FlaskForm):
         self.appointment = appointment
 
     def validate_location(self, field):
-        if self.location.data is None or self.location.data == 0:
+        if not self.location.data:
             raise ValidationError('Please, select location')
 
     def validate_services(self, field):
         if len(field.data) == 0:
             raise ValidationError('Please, select services')
         else:
-            if self.location.data is None or self.location.data == 0:
+            if not self.location.data:
                 raise ValidationError('Please, select location')
             location = Location.query.get_or_404(self.location.data)
             services_id = [x.id for x in location.services]
@@ -199,11 +198,11 @@ class AppointmentForm(FlaskForm):
                     raise ValidationError(message)
 
     def validate_client(self, field):
-        if self.client.data is None or self.client.data == 0:
+        if not self.client.data:
             raise ValidationError('Please, select client')
 
     def validate_staff(self, field):
-        if self.staff.data is None or self.staff.data == 0:
+        if not self.staff.data:
             raise ValidationError('Please, select staff')
 
     def validate_date(self, field):
@@ -308,6 +307,10 @@ class CashFlowForm(FlaskForm):
                          coerce=int)
     cost = FloatField('Sum', default=0)
     submit = SubmitField('Submit')
+
+    def validate_location(self, field):
+        if not self.location.data:
+            raise ValidationError('Please, select location')
 
 
 class TaskForm(FlaskForm):
