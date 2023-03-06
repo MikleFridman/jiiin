@@ -10,6 +10,13 @@ from app import app, mail
 from .models import Location, User, Staff, Service, Appointment, CompanyConfig
 
 
+def get_languages():
+    languages = [('', '-Select-')]
+    for language, description in app.config['LANGUAGES'].items():
+        languages.append((language, description))
+    return languages
+
+
 def allowed_file_ext(filename):
     allow_ext = app.config['UPLOAD_EXTENSIONS']
     return '.' in filename and os.path.splitext(filename)[1] in allow_ext
@@ -33,7 +40,7 @@ def get_tariff_limit(parameter):
 def get_duration(services):
     duration = 0
     for service_id in services:
-        service = Service.query.get_or_404(service_id)
+        service = Service.get_object(service_id)
         duration += service.duration
     return timedelta(minutes=duration)
 

@@ -5,13 +5,13 @@
             <img src="{{ url_for('static', filename='/card.png') }}" alt="card" width="36">
           {% endif %}
       </div>
-      {{ form.location_id.label(class_="col-sm-1 col-form-label text-end") }}
-      <div class="col-sm-4">
+      {{ form.location_id.label(class_="col-sm-2 col-form-label text-end") }}
+      <div class="col-sm-3">
         {{ form.location_id(class_="form-select") }}
       </div>
 
-      {{ form.staff_id.label(class_="col-sm-1 col-form-label text-end") }}
-      <div class="col-sm-4">
+      {{ form.staff_id.label(class_="col-sm-2 col-form-label text-end") }}
+      <div class="col-sm-3">
         {{ form.staff_id(class_="form-select") }}
       </div>
 

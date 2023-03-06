@@ -2,7 +2,7 @@ import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 
-class Config():
+class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY') or '69d5708f91ffe3d0e6bfeb7be62858c0a1b83aa1'
     SQLALCHEMY_DATABASE_URI = (os.environ.get('DATABASE_URL') or
                                'sqlite:///' + os.path.join(basedir, 'app.db'))
@@ -10,7 +10,8 @@ class Config():
     BOOTSTRAP_SERVE_LOCAL = True
     BOOTSTRAP_BOOTSWATCH_THEME = 'spacelab'
     ROWS_PER_PAGE = 10
-    LANGUAGES = ['en', 'ru', 'he']
+    LANGUAGES = {'en': 'english', 'ru': 'русский'}
+    BABEL_DEFAULT_LOCALE = 'en'
 
     MAIL_SERVER = 'smtp.googlemail.com'
     MAIL_PORT = 587

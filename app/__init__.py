@@ -3,6 +3,7 @@ import os
 from dotenv import load_dotenv
 from flask import Flask
 from flask_admin.menu import MenuLink
+from flask_babel import Babel, lazy_gettext as _l
 from flask_login import LoginManager
 from flask_mail import Mail
 from flask_admin import Admin
@@ -33,8 +34,10 @@ bootstrap = Bootstrap(app)
 csrf = CSRFProtect()
 csrf.init_app(app)
 login = LoginManager(app)
+login.login_message = _l('Please log in to access this page')
 login.login_view = 'login'
 mail = Mail(app)
+babel = Babel(app)
 
 from app import views, models, errors
 from app.models import *
@@ -48,3 +51,10 @@ admin.add_view(MyModelView(Role, db.session))
 admin.add_view(MyModelView(Permission, db.session))
 with app.test_request_context():
     admin.add_link(MenuLink(name='Go to site', url=url_for('index')))
+
+
+@babel.localeselector
+def get_locale():
+    if current_user.is_authenticated and current_user.language:
+        return current_user.language
+    return request.accept_languages.best_match(app.config['LANGUAGES'].keys())

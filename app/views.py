@@ -15,10 +15,10 @@ from app.models import *
 
 
 @app.route('/sendmail/', methods=['GET', 'POST'])
-@login_required
 def sendmail():
     url_back = request.args.get('url_back', url_for('index', **request.args))
     form = ContactForm()
+    form.text.render_kw = {'rows': 6}
     if form.validate_on_submit():
         sender = form.name.data, form.email.data
         subject = f'Feedback from site ({form.email.data})'
@@ -33,25 +33,17 @@ def sendmail():
 
 @app.route('/')
 @app.route('/index/')
-@login_required
 def index():
-    param = {'cid': current_user.cid}
-    appointments_count = db.session.query(
-        Location, func.count(Appointment.location_id)).join(
-        Location, Appointment.location_id == Location.id).group_by(
-        Appointment.location_id).filter(
-        func.date(Appointment.date_time) == datetime.utcnow().date()
-    ).filter_by(**param).all()
-    notice_list = Notice.get_notices()
-    return render_template('index.html',
-                           notices=notice_list,
-                           appointments_count=appointments_count)
+    if current_user.is_authenticated:
+        return redirect(url_for('appointments_table'))
+    return render_template('index.html')
 
 
 @app.route('/register/', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
+    url_back = url_for('index')
     form = RegisterForm()
     if form.validate_on_submit():
         company = Company(name=form.company.data)
@@ -68,7 +60,8 @@ def register():
         db.session.commit()
         return redirect(url_for('login'))
     return render_template('data_form.html',
-                           form=form)
+                           form=form,
+                           url_back=url_back)
 
 
 @app.route('/login/', methods=['GET', 'POST'])
@@ -113,13 +106,17 @@ def company_edit():
         company.name = form.name.data
         company.registration_number = form.registration_number.data
         company.info = form.info.data
+        company.config.default_time_from = form.default_time_from.data
+        company.config.default_time_to = form.default_time_to.data
         company.config.simple_mode = form.simple_mode.data
         db.session.commit()
         return redirect(url_for('index'))
     elif request.method == 'GET':
         form = CompanyForm(
             obj=company,
-            data={'simple_mode': CompanyConfig.get_parameter('simple_mode')})
+            data={'simple_mode': CompanyConfig.get_parameter('simple_mode'),
+                  'default_time_from': CompanyConfig.get_parameter('default_time_from'),
+                  'default_time_to': CompanyConfig.get_parameter('default_time_to')})
     return render_template('data_form.html',
                            title='Company (edit)',
                            form=form,
@@ -139,6 +136,10 @@ def user_edit(id):
     if form.validate_on_submit():
         user.username = form.username.data
         user.email = form.email.data
+        if form.language.data:
+            user.language = form.language.data
+        else:
+            user.language = None
         if form.password.data.strip() != '':
             if not user.check_password(form.password_old.data):
                 flash('Invalid password')
@@ -151,6 +152,7 @@ def user_edit(id):
     elif request.method == 'GET':
         form.username.data = user.username
         form.email.data = user.email
+        form.language.data = user.language
     return render_template('data_form.html',
                            title='User (edit)',
                            form=form,
@@ -216,6 +218,8 @@ def staff_edit(id):
         if form.schedule.data:
             schedule = Schedule.get_object(form.schedule.data)
             staff.schedules.append(schedule)
+        else:
+            staff.schedules.clear()
         db.session.commit()
         return redirect(url_for('staff_table'))
     elif request.method == 'GET':
@@ -762,6 +766,8 @@ def location_edit(id):
         if form.schedule.data:
             schedule = Schedule.get_object(form.schedule.data)
             location.schedules.append(schedule)
+        else:
+            location.schedules.clear()
         db.session.commit()
         return redirect(url_for('locations_table'))
     elif request.method == 'GET':

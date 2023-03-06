@@ -191,6 +191,8 @@ class Company(db.Model, Entity):
 
 class CompanyConfig(db.Model, Entity, Splitter):
     min_time_interval = db.Column(db.Integer, default=15)
+    default_time_from = db.Column(db.Time, default=datetime.strptime('09:00', '%H:%M').time())
+    default_time_to = db.Column(db.Time, default=datetime.strptime('18:00', '%H:%M').time())
     simple_mode = db.Column(db.Boolean, default=True)
 
     @staticmethod
@@ -231,6 +233,7 @@ class User(db.Model, UserMixin, Entity, Splitter):
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True, nullable=False)
     password_hash = db.Column(db.String(128))
+    language = db.Column(db.String(2))
     roles = db.relationship('Role', secondary=roles_users,
                             backref=db.backref('users', lazy='dynamic'))
 
@@ -470,8 +473,8 @@ class Schedule(db.Model, Entity, Splitter):
 
     def __init__(self, **kwargs):
         super(Schedule, self).__init__(**kwargs)
-        hour_from = datetime.strptime('09.00', '%H.%M').time()
-        hour_to = datetime.strptime('18.00', '%H.%M').time()
+        hour_from = current_user.company.config.default_time_from
+        hour_to = current_user.company.config.default_time_to
         for dn in range(0, 7):
             self.add_day(day_number=dn, hour_from=hour_from, hour_to=hour_to)
 
