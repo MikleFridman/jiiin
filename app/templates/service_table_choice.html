@@ -34,12 +34,12 @@
   </table>
   <div id="services-count">Selected services: {{ session.get('services', []) | count }}</div>
   {% if session.get('services', []) | count > 0 %}
-    <button type="button" id="submit" class="btn btn-primary mt-3" onclick="window.location.href='{{ url_submit }}'">Submit</button>
+    <button type="button" id="submit" class="btn btn-primary mt-3" onclick="window.location.href='{{ url_submit }}'">{{ _('Submit') }}</button>
   {% else %}
-    <button type="button" id="submit" class="btn btn-primary disabled mt-3" onclick="window.location.href='{{ url_submit }}'">Submit</button>
+    <button type="button" id="submit" class="btn btn-primary disabled mt-3" onclick="window.location.href='{{ url_submit }}'">{{ _('Submit') }}</button>
   {% endif%}
   {% if id%}
-    <button type="button" class="btn btn-secondary mt-3 ms-3" onclick="window.location.href='{{ url_back }}'">Back</button>
+    <button type="button" class="btn btn-secondary mt-3 ms-3" onclick="window.location.href='{{ url_back }}'">{{ _('Back') }}</button>
   {% endif%}
 {% import '_pagination.html' as forms %}
 {{ forms.render_pagination(pagination, 'services_table', **request.args) }}

@@ -113,7 +113,7 @@ class StaffFormSimple(StaffForm):
 
 
 class ScheduleForm(FlaskForm):
-    name = StringField(_l('Name'), validators=[DataRequired()])
+    name = StringField(_l('Title'), validators=[DataRequired()])
     submit = SubmitField(_l('Submit'))
 
 
@@ -168,7 +168,7 @@ class AppointmentForm(FlaskForm):
     date = DateField(_l('Date'), validators=[], format='%Y-%m-%d')
     time = TimeField(_l('Time'), validators=[], format='%H:%M')
     client = SelectField(_l('Client'), choices=[], coerce=int)
-    staff = SelectField(_l('Staff'), choices=[], coerce=int)
+    staff = SelectField(_l('Worker'), choices=[], coerce=int)
     service = SelectMultipleField(_l('Services'), choices=[],
                                   validate_choice=False, coerce=int)
     duration = HiddenField(_l('Duration'), default=0)
@@ -194,9 +194,11 @@ class AppointmentForm(FlaskForm):
             services_id = [x.id for x in location.services]
             for s in field.data.split(','):
                 if int(s) not in services_id:
-                    message = f'Service id {s} unavailable in select location'
-                    flash(message)
-                    raise ValidationError(message)
+                    service = Service.get_object(s)
+                    msg = _l('Service %(sn)s unavailable in select location',
+                             sn=service.name)
+                    flash(msg)
+                    raise ValidationError(msg)
 
     def validate_client(self, field):
         if not self.client.data:
@@ -248,7 +250,7 @@ class ResultForm(FlaskForm):
 
 class SearchForm(FlaskForm):
     location_id = SelectField(_l('Location'), choices=[], coerce=int)
-    staff_id = SelectField(_l('Staff'), choices=[], coerce=int)
+    staff_id = SelectField(_l('Worker'), choices=[], coerce=int)
     client_id = SelectField(_l('Client'), choices=[], coerce=int)
 
 
@@ -262,7 +264,7 @@ class ItemFlowForm(FlaskForm):
     location = SelectField(_l('Location'), choices=[], coerce=int)
     date = DateField(_l('Date'))
     item = SelectField(_l('Item'), choices=[], coerce=int)
-    action = SelectField(_l('Action'), choices=[(1, 'Plus'), (-1, 'Minus')],
+    action = SelectField(_l('Operation'), choices=[(1, 'Plus'), (-1, 'Minus')],
                          coerce=int)
     quantity = FloatField(_l('Quantity'), default=0)
     submit = SubmitField(_l('Submit'))
@@ -283,7 +285,8 @@ class ItemFlowForm(FlaskForm):
                 self.source_item == self.item.data):
             count -= self.source_quantity
         if field.data > count:
-            raise ValidationError(f'Quantity exceeds available ({count})')
+            raise ValidationError(_l('Quantity exceeds available %(count)s',
+                                     count=count))
 
 
 class ContactForm(FlaskForm):
@@ -306,7 +309,7 @@ class CashFlowForm(FlaskForm):
     date = DateField(_l('Date'))
     description = StringField(_l('Description'), validators=[DataRequired(),
                                                              Length(max=120)])
-    action = SelectField(_l('Action'), choices=[(1, 'Plus'), (-1, 'Minus')],
+    action = SelectField(_l('Operation'), choices=[(1, 'Plus'), (-1, 'Minus')],
                          coerce=int)
     cost = FloatField(_l('Sum'), default=0)
     submit = SubmitField(_l('Submit'))
@@ -319,7 +322,7 @@ class CashFlowForm(FlaskForm):
 class TaskForm(FlaskForm):
     name = StringField('Name', validators=[DataRequired()])
     deadline = DateField('Date')
-    staff = SelectField('Staff', choices=[], coerce=int)
+    staff = SelectField('Worker', choices=[], coerce=int)
     description = TextAreaField('Description', validators=[Length(max=255)])
     submit = SubmitField('Submit')
 

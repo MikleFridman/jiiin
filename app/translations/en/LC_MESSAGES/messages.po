@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-03-06 17:44+0200\n"
+"POT-Creation-Date: 2023-03-07 18:36+0200\n"
 "PO-Revision-Date: 2023-03-06 16:13+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -30,7 +30,7 @@ msgstr ""
 msgid "Username"
 msgstr ""
 
-#: app/forms.py:29 app/forms.py:291
+#: app/forms.py:29 app/forms.py:294
 msgid "E-mail"
 msgstr ""
 
@@ -45,8 +45,10 @@ msgstr ""
 #: app/forms.py:32 app/forms.py:49 app/forms.py:89 app/forms.py:98
 #: app/forms.py:117 app/forms.py:126 app/forms.py:134 app/forms.py:139
 #: app/forms.py:144 app/forms.py:154 app/forms.py:163 app/forms.py:177
-#: app/forms.py:246 app/forms.py:258 app/forms.py:268 app/forms.py:293
-#: app/forms.py:301 app/forms.py:312 app/templates/data_form.html:25
+#: app/forms.py:248 app/forms.py:260 app/forms.py:270 app/forms.py:296
+#: app/forms.py:304 app/forms.py:315 app/templates/appointment_form.html:63
+#: app/templates/data_form.html:25 app/templates/staff_schedule_form.html:106
+#: app/templates/upload_form.html:25
 msgid "Submit"
 msgstr ""
 
@@ -98,8 +100,8 @@ msgstr ""
 msgid "Not use staff schedules"
 msgstr ""
 
-#: app/forms.py:93 app/forms.py:116 app/forms.py:130 app/forms.py:143
-#: app/forms.py:148 app/forms.py:158 app/forms.py:290
+#: app/forms.py:93 app/forms.py:130 app/forms.py:143 app/forms.py:148
+#: app/forms.py:293
 msgid "Name"
 msgstr ""
 
@@ -117,6 +119,10 @@ msgstr ""
 
 #: app/forms.py:108
 msgid "Please use a different phone"
+msgstr ""
+
+#: app/forms.py:116 app/forms.py:158 app/forms.py:258
+msgid "Title"
 msgstr ""
 
 #: app/forms.py:121
@@ -151,11 +157,11 @@ msgstr ""
 msgid "Address"
 msgstr ""
 
-#: app/forms.py:167 app/forms.py:250 app/forms.py:262 app/forms.py:305
+#: app/forms.py:167 app/forms.py:252 app/forms.py:264 app/forms.py:308
 msgid "Location"
 msgstr ""
 
-#: app/forms.py:168 app/forms.py:263 app/forms.py:298 app/forms.py:306
+#: app/forms.py:168 app/forms.py:265 app/forms.py:301 app/forms.py:309
 msgid "Date"
 msgstr ""
 
@@ -163,19 +169,19 @@ msgstr ""
 msgid "Time"
 msgstr ""
 
-#: app/forms.py:170 app/forms.py:252 app/forms.py:297
+#: app/forms.py:170 app/forms.py:254 app/forms.py:300
 msgid "Client"
 msgstr ""
 
-#: app/forms.py:171 app/forms.py:251 app/templates/base.html:46
-msgid "Staff"
+#: app/forms.py:171 app/forms.py:253
+msgid "Worker"
 msgstr ""
 
 #: app/forms.py:172 app/forms.py:175 app/templates/base.html:45
 msgid "Services"
 msgstr ""
 
-#: app/forms.py:185 app/forms.py:192 app/forms.py:316
+#: app/forms.py:185 app/forms.py:192 app/forms.py:319
 msgid "Please select location"
 msgstr ""
 
@@ -183,60 +189,83 @@ msgstr ""
 msgid "Please select services"
 msgstr ""
 
-#: app/forms.py:203
+#: app/forms.py:198
+#, python-format
+msgid "Service %(sn)s unavailable in select location"
+msgstr ""
+
+#: app/forms.py:205
 msgid "Please select client"
 msgstr ""
 
-#: app/forms.py:207
+#: app/forms.py:209
 msgid "Please select staff"
 msgstr ""
 
-#: app/forms.py:211
+#: app/forms.py:213
 msgid "Please select date"
 msgstr ""
 
-#: app/forms.py:215
+#: app/forms.py:217
 msgid "Please select time"
 msgstr ""
 
-#: app/forms.py:221 app/forms.py:223
+#: app/forms.py:223 app/forms.py:225
 msgid "Incorrect data"
 msgstr ""
 
-#: app/forms.py:231 app/forms.py:241
+#: app/forms.py:233 app/forms.py:243
 msgid "This time unavailable"
 msgstr ""
 
-#: app/forms.py:245
+#: app/forms.py:247 app/templates/appointment_form.html:71
 msgid "Result"
 msgstr ""
 
-#: app/forms.py:256
-msgid "Title"
-msgstr ""
-
-#: app/forms.py:264
+#: app/forms.py:266
 msgid "Item"
 msgstr ""
 
-#: app/forms.py:265 app/forms.py:309
-msgid "Action"
+#: app/forms.py:267 app/forms.py:312
+msgid "Operation"
 msgstr ""
 
-#: app/forms.py:267
+#: app/forms.py:269
 msgid "Quantity"
 msgstr ""
 
-#: app/forms.py:292
+#: app/forms.py:288
+#, python-format
+msgid "Quantity exceeds available %(count)s"
+msgstr ""
+
+#: app/forms.py:295
 msgid "Text"
 msgstr ""
 
-#: app/forms.py:299 app/forms.py:307
+#: app/forms.py:302 app/forms.py:310
 msgid "Description"
 msgstr ""
 
-#: app/forms.py:311
+#: app/forms.py:314
 msgid "Sum"
+msgstr ""
+
+#: app/templates/appointment_form.html:64 app/templates/data_form.html:26
+#: app/templates/staff_schedule_form.html:107 app/templates/upload_form.html:26
+msgid "Back"
+msgstr ""
+
+#: app/templates/appointment_form.html:67
+msgid "More actions"
+msgstr ""
+
+#: app/templates/appointment_form.html:72
+msgid "Payment"
+msgstr ""
+
+#: app/templates/appointment_form.html:73
+msgid "Notice"
 msgstr ""
 
 #: app/templates/base.html:22
@@ -267,6 +296,10 @@ msgstr ""
 msgid "Schedules"
 msgstr ""
 
+#: app/templates/base.html:46
+msgid "Staff"
+msgstr ""
+
 #: app/templates/base.html:48
 msgid "Settings"
 msgstr ""
@@ -283,7 +316,31 @@ msgstr ""
 msgid "Register"
 msgstr ""
 
-#: app/templates/data_form.html:26
-msgid "Back"
+#: app/templates/cash_flow_table.html:6 app/templates/client_files_table.html:6
+#: app/templates/client_table.html:6 app/templates/item_flow_table.html:6
+#: app/templates/item_table.html:6 app/templates/location_table.html:6
+#: app/templates/notice_table.html:6 app/templates/schedule_days_table.html:6
+#: app/templates/schedule_table.html:6 app/templates/service_table.html:6
+#: app/templates/staff_table.html:6 app/templates/tags_table.html:6
+#: app/templates/timetable.html:6
+msgid "Add new"
 msgstr ""
+
+#~ msgid "Action"
+#~ msgstr ""
+
+#~ msgid "Service id \"%(s)\" unavailable in select location"
+#~ msgstr ""
+
+#~ msgid "Service \"%(s)\" unavailable in select location"
+#~ msgstr ""
+
+#~ msgid "Service %(s) unavailable in select location"
+#~ msgstr ""
+
+#~ msgid "Service %sn unavailable in select location"
+#~ msgstr ""
+
+#~ msgid "Quantity exceeds available %(count)"
+#~ msgstr ""
 

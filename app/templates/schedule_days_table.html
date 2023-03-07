@@ -3,7 +3,7 @@
 {% block app_content %}
   <div class="row">
     <div class="col-md-4 mb-2">
-      <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('schedule_day_create', schedule_id=schedule_id, **request.args) }}';">Add new</button>
+      <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('schedule_day_create', schedule_id=schedule_id, **request.args) }}';">{{ _('Add new') }}</button>
     </div>
   </div>
   <table id="data" class="table table-hover border-top border-bottom border-light">
