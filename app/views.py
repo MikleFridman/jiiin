@@ -6,6 +6,7 @@ import os.path
 import uuid
 
 from flask import render_template, redirect, url_for, request, jsonify, send_file, session
+from flask_babel import _
 from flask_login import login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 
@@ -26,7 +27,7 @@ def sendmail():
         send_mail_from_site(sender, subject, text)
         return render_template('success_sendmail.html')
     return render_template('data_form.html',
-                           title='Send mail',
+                           title=_('Send mail'),
                            form=form,
                            url_back=url_back)
 
@@ -118,7 +119,7 @@ def company_edit():
                   'default_time_from': CompanyConfig.get_parameter('default_time_from'),
                   'default_time_to': CompanyConfig.get_parameter('default_time_to')})
     return render_template('data_form.html',
-                           title='Company (edit)',
+                           title=_('Company (edit)'),
                            form=form,
                            url_back=url_back)
 
@@ -144,7 +145,7 @@ def user_edit(id):
             if not user.check_password(form.password_old.data):
                 flash('Invalid password')
                 return render_template('data_form.html',
-                                       title='User (edit)',
+                                       title=_('User (edit)'),
                                        form=form)
             user.set_password(form.password.data)
         db.session.commit()
@@ -154,7 +155,7 @@ def user_edit(id):
         form.email.data = user.email
         form.language.data = user.language
     return render_template('data_form.html',
-                           title='User (edit)',
+                           title=_('User (edit)'),
                            form=form,
                            url_back=url_back)
 
@@ -169,7 +170,7 @@ def staff_table():
     page = request.args.get('page', 1, type=int)
     data = Staff.get_pagination(page)
     return render_template('staff_table.html',
-                           title='Staff',
+                           title=_('Staff'),
                            items=data.items,
                            pagination=data)
 
@@ -196,7 +197,7 @@ def staff_create():
         db.session.commit()
         return redirect(url_for('staff_table'))
     return render_template('data_form.html',
-                           title='Staff (create)',
+                           title=_('Staff (create)'),
                            form=form,
                            url_back=url_back)
 
@@ -233,7 +234,7 @@ def staff_edit(id):
             form.phone.data = staff.phone
             form.birthday.data = staff.birthday
     return render_template('data_form.html',
-                           title='Staff (edit)',
+                           title=_('Staff (edit)'),
                            form=form,
                            url_back=url_back)
 
@@ -266,6 +267,7 @@ def schedules_table():
     page = request.args.get('page', 1, type=int)
     data = Schedule.get_pagination(page)
     return render_template('schedule_table.html',
+                           title=_('Schedules'),
                            items=data.items,
                            pagination=data)
 
@@ -282,7 +284,7 @@ def schedule_create():
         db.session.commit()
         return redirect(url_back)
     return render_template('data_form.html',
-                           title='Schedule (create)',
+                           title=_('Schedule (create)'),
                            form=form,
                            url_back=url_back)
 
@@ -300,7 +302,7 @@ def schedule_edit(id):
     elif request.method == 'GET':
         form = ScheduleForm(obj=schedule)
     return render_template('data_form.html',
-                           title='Schedule (edit)',
+                           title=_('Schedule (edit)'),
                            form=form,
                            url_back=url_back)
 
@@ -322,6 +324,7 @@ def schedule_days_table(schedule_id):
     param = {'schedule_id': schedule_id}
     data = ScheduleDay.get_pagination(page, param)
     return render_template('schedule_days_table.html',
+                           title=_('Schedule_days'),
                            items=data.items,
                            pagination=data,
                            schedule_id=schedule_id)
@@ -346,7 +349,7 @@ def schedule_day_create(schedule_id):
         db.session.commit()
         return redirect(url_back)
     return render_template('data_form.html',
-                           title='Schedule day (create)',
+                           title=_('Schedule day (create)'),
                            form=form,
                            url_back=url_back)
 
@@ -374,7 +377,7 @@ def schedule_day_edit(schedule_id, id):
         form.hour_from.data = schedule_day.hour_from
         form.hour_to.data = schedule_day.hour_to
     return render_template('data_form.html',
-                           title='Schedule day (edit)',
+                           title=_('Schedule day (edit)'),
                            form=form,
                            url_back=url_back)
 
@@ -403,7 +406,7 @@ def clients_table():
     page = request.args.get('page', 1, type=int)
     data = Client.get_pagination(page)
     return render_template('client_table.html',
-                           title='Clients',
+                           title=_('Clients'),
                            items=data.items,
                            pagination=data)
 
@@ -423,7 +426,7 @@ def client_create():
         db.session.commit()
         return redirect(url_for('clients_table'))
     return render_template('data_form.html',
-                           title='Client (create)',
+                           title=_('Client (create)'),
                            form=form,
                            url_back=url_back)
 
@@ -444,7 +447,7 @@ def client_edit(id):
     elif request.method == 'GET':
         form = ClientForm(obj=client)
     return render_template('data_form.html',
-                           title='Client (edit)',
+                           title=_('Client (edit)'),
                            form=form,
                            url_back=url_back)
 
@@ -474,7 +477,7 @@ def client_files_table(id):
     data = ClientFile.get_pagination(page, param)
     return render_template('client_files_table.html',
                            id=id,
-                           title='Files',
+                           title=_('Files'),
                            items=data.items,
                            pagination=data)
 
@@ -515,7 +518,7 @@ def client_file_upload(id):
         db.session.commit()
         return redirect(url_back)
     return render_template('upload_form.html',
-                           title='File upload',
+                           title=_('File upload'),
                            form=form,
                            url_back=url_back)
 
@@ -555,7 +558,7 @@ def tags_table():
     data = Tag.get_pagination(page)
     return render_template('tags_table.html',
                            id=id,
-                           title='Tags',
+                           title=_('Tags'),
                            items=data.items,
                            pagination=data)
 
@@ -572,7 +575,7 @@ def tag_create():
         db.session.commit()
         return redirect(url_back)
     return render_template('data_form.html',
-                           title='Tag (create)',
+                           title=_('Tag (create)'),
                            form=form,
                            url_back=url_back)
 
@@ -590,7 +593,7 @@ def tag_edit(id):
     elif request.method == 'GET':
         form = TagForm(obj=tag)
     return render_template('data_form.html',
-                           title='Tag (edit)',
+                           title=_('Tag (edit)'),
                            form=form,
                            url_back=url_back)
 
@@ -637,7 +640,7 @@ def services_table():
         template = 'service_table.html'
     data = Service.get_pagination(page)
     return render_template(template,
-                           title='Services',
+                           title=_('Services'),
                            items=data.items,
                            pagination=data,
                            url_back=url_back,
@@ -667,7 +670,7 @@ def service_create():
         db.session.commit()
         return redirect(url_for('services_table'))
     return render_template('data_form.html',
-                           title='Service (create)',
+                           title=_('Service (create)'),
                            form=form,
                            url_back=url_back)
 
@@ -700,7 +703,7 @@ def service_edit(id):
         form.price.data = service.price
         form.repeat.data = service.repeat
     return render_template('data_form.html',
-                           title='Service (edit)',
+                           title=_('Service (edit)'),
                            form=form,
                            url_back=url_back)
 
@@ -723,7 +726,7 @@ def locations_table():
     page = request.args.get('page', 1, type=int)
     data = Location.get_pagination(page)
     return render_template('location_table.html',
-                           title='Locations',
+                           title=_('Locations'),
                            items=data.items,
                            pagination=data)
 
@@ -747,7 +750,7 @@ def location_create():
         db.session.commit()
         return redirect(url_for('locations_table'))
     return render_template('data_form.html',
-                           title='Location (create)',
+                           title=_('Location (create)'),
                            form=form,
                            url_back=url_back)
 
@@ -778,7 +781,7 @@ def location_edit(id):
         form.address.data = location.address
         form.phone.data = location.phone
     return render_template('data_form.html',
-                           title='Location (edit)',
+                           title=_('Location (edit)'),
                            form=form,
                            url_back=url_back)
 
@@ -824,7 +827,7 @@ def appointments_table():
         param['client_id'] = client_id
     data = Appointment.get_pagination(page, param)
     return render_template('timetable.html',
-                           title='Appointments',
+                           title=_('Appointments'),
                            items=data.items,
                            pagination=data,
                            form=form)
@@ -886,7 +889,7 @@ def appointment_create():
             form.date.data = datetime.strptime(selected_date, '%Y-%m-%d')
     form.services.data = ','.join(list(str(s) for s in selected_services_id))
     return render_template('appointment_form.html',
-                           title='Appointment (create)',
+                           title=_('Appointment (create)'),
                            form=form,
                            items=selected_services,
                            url_back=url_back,
@@ -947,7 +950,7 @@ def appointment_edit(id):
         form.info.data = appointment.info
     form.services.data = ','.join(list(str(s) for s in selected_services_id))
     return render_template('appointment_form.html',
-                           title='Appointment (edit)',
+                           title=_('Appointment (edit)'),
                            form=form,
                            id=id,
                            items=selected_services,
@@ -978,7 +981,7 @@ def appointment_result(appointment_id):
     elif request.method == 'GET':
         form.result.data = appointment.result
     return render_template('data_form.html',
-                           title='Result',
+                           title=_('Result'),
                            form=form,
                            url_back=url_back)
 # Appointment block end
@@ -991,7 +994,7 @@ def items_table():
     page = request.args.get('page', 1, type=int)
     data = Item.get_pagination(page)
     return render_template('item_table.html',
-                           title='Items',
+                           title=_('Items'),
                            items=data.items,
                            pagination=data)
 
@@ -1009,7 +1012,7 @@ def item_create():
         db.session.commit()
         return redirect(url_back)
     return render_template('data_form.html',
-                           title='Item (create)',
+                           title=_('Item (create)'),
                            form=form,
                            url_back=url_back)
 
@@ -1028,7 +1031,7 @@ def item_edit(id):
     else:
         form = ItemForm(obj=item)
     return render_template('data_form.html',
-                           title='Item (edit)',
+                           title=_('Item (edit)'),
                            form=form,
                            url_back=url_back)
 
@@ -1056,7 +1059,7 @@ def items_flow_table():
     data = ItemFlow.get_pagination(page, param)
 
     return render_template('item_flow_table.html',
-                           title='Items flow',
+                           title=_('Items flow'),
                            items=data.items,
                            pagination=data)
 
@@ -1094,7 +1097,7 @@ def item_flow_create():
         form.process()
         form.date.data = datetime.now().date()
     return render_template('data_form.html',
-                           title='Item flow (create)',
+                           title=_('Item flow (create)'),
                            form=form,
                            url_back=url_back)
 
@@ -1142,7 +1145,7 @@ def item_flow_edit(id):
         form.quantity.data = abs(item_flow.quantity)
         form.action.data = item_flow.quantity / abs(item_flow.quantity)
     return render_template('data_form.html',
-                           title='Item flow (edit)',
+                           title=_('Item flow (edit)'),
                            form=form,
                            url_back=url_back)
 
@@ -1174,7 +1177,7 @@ def notices_table():
     data = Notice.get_pagination(page, param)
 
     return render_template('notice_table.html',
-                           title='Notices',
+                           title=_('Notices'),
                            items=data.items,
                            pagination=data)
 
@@ -1205,7 +1208,7 @@ def notice_create():
             previous_visit = appointment.date_time.date()
             form.description.data = f'*Previous visit {previous_visit}'
     return render_template('data_form.html',
-                           title='Notice (create)',
+                           title=_('Notice (create)'),
                            form=form,
                            url_back=url_back)
 
@@ -1230,7 +1233,7 @@ def notice_edit(id):
         form.date.data = notice.date
         form.description.data = notice.description
     return render_template('data_form.html',
-                           title='Notice (edit)',
+                           title=_('Notice (edit)'),
                            form=form,
                            url_back=url_back)
 
@@ -1255,7 +1258,7 @@ def cash_flow_table():
     data = CashFlow.get_pagination(page)
 
     return render_template('cash_flow_table.html',
-                           title='Cash flow',
+                           title=_('Cash flow'),
                            items=data.items,
                            pagination=data)
 
@@ -1310,7 +1313,7 @@ def cash_flow_create():
         else:
             form.date.data = datetime.now().date()
     return render_template('data_form.html',
-                           title='Cash flow (create)',
+                           title=_('Cash flow (create)'),
                            form=form,
                            url_back=url_back)
 
@@ -1354,7 +1357,7 @@ def cash_flow_edit(id):
         form.cost.data = abs(cash_flow.cost)
         form.action.data = cash_flow.cost / abs(cash_flow.cost)
     return render_template('data_form.html',
-                           title='Cash flow (edit)',
+                           title=_('Cash flow (edit)'),
                            form=form,
                            url_back=url_back)
 

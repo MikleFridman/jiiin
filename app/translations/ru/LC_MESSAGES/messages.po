@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-03-07 18:36+0200\n"
+"POT-Creation-Date: 2023-03-08 20:28+0200\n"
 "PO-Revision-Date: 2023-03-06 15:40+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -101,12 +101,14 @@ msgstr "График (по умолчанию) до"
 msgid "Not use staff schedules"
 msgstr "Не использовать графики сотрудников"
 
-#: app/forms.py:93 app/forms.py:130 app/forms.py:143 app/forms.py:148
-#: app/forms.py:293
+#: app/forms.py:93 app/forms.py:130 app/forms.py:148 app/forms.py:293
+#: app/templates/client_table.html:12 app/templates/staff_table.html:12
 msgid "Name"
 msgstr "Имя"
 
 #: app/forms.py:94 app/forms.py:131 app/forms.py:159
+#: app/templates/client_table.html:16 app/templates/location_table.html:14
+#: app/templates/staff_table.html:13
 msgid "Phone"
 msgstr "Телефон"
 
@@ -122,11 +124,15 @@ msgstr "График"
 msgid "Please use a different phone"
 msgstr "Указанный телефон уже используется"
 
-#: app/forms.py:116 app/forms.py:158 app/forms.py:258
+#: app/forms.py:116 app/forms.py:143 app/forms.py:158 app/forms.py:258
+#: app/templates/client_files_table.html:12 app/templates/item_table.html:12
+#: app/templates/location_table.html:12 app/templates/schedule_table.html:12
+#: app/templates/service_table.html:12
+#: app/templates/service_table_choice.html:8 app/templates/tags_table.html:12
 msgid "Title"
 msgstr "Наименование"
 
-#: app/forms.py:121
+#: app/forms.py:121 app/templates/schedule_days_table.html:12
 msgid "Weekday"
 msgstr "День недели"
 
@@ -151,34 +157,41 @@ msgid "Repeat"
 msgstr "Повтор"
 
 #: app/forms.py:152 app/templates/base.html:44
+#: app/templates/service_table.html:13
 msgid "Locations"
 msgstr "Филиалы"
 
-#: app/forms.py:160
+#: app/forms.py:160 app/templates/location_table.html:13
 msgid "Address"
 msgstr "Адрес"
 
 #: app/forms.py:167 app/forms.py:252 app/forms.py:264 app/forms.py:308
+#: app/templates/cash_flow_table.html:13 app/templates/item_flow_table.html:13
+#: app/templates/timetable.html:17
 msgid "Location"
 msgstr "Филиал"
 
 #: app/forms.py:168 app/forms.py:265 app/forms.py:301 app/forms.py:309
+#: app/templates/cash_flow_table.html:14 app/templates/item_flow_table.html:14
+#: app/templates/notice_table.html:13
 msgid "Date"
 msgstr "Дата"
 
-#: app/forms.py:169
+#: app/forms.py:169 app/templates/schedule_days_table.html:13
 msgid "Time"
 msgstr "Время"
 
 #: app/forms.py:170 app/forms.py:254 app/forms.py:300
+#: app/templates/notice_table.html:12 app/templates/timetable.html:20
 msgid "Client"
 msgstr "Клиент"
 
-#: app/forms.py:171 app/forms.py:253
+#: app/forms.py:171 app/forms.py:253 app/templates/timetable.html:19
 msgid "Worker"
 msgstr "Сотрудник"
 
 #: app/forms.py:172 app/forms.py:175 app/templates/base.html:45
+#: app/templates/timetable.html:21
 msgid "Services"
 msgstr "Услуги"
 
@@ -223,7 +236,7 @@ msgstr "Это время недоступно"
 msgid "Result"
 msgstr "Результат"
 
-#: app/forms.py:266
+#: app/forms.py:266 app/templates/item_flow_table.html:12
 msgid "Item"
 msgstr "Товар"
 
@@ -244,15 +257,52 @@ msgstr "Количество превышает доступное %(count)s"
 msgid "Text"
 msgstr "Текст"
 
-#: app/forms.py:302 app/forms.py:310
+#: app/forms.py:302 app/forms.py:310 app/templates/cash_flow_table.html:12
 msgid "Description"
 msgstr "Описание"
 
-#: app/forms.py:314
+#: app/forms.py:314 app/templates/cash_flow_table.html:15
 msgid "Sum"
 msgstr "Сумма"
 
+#: app/models.py:114
+msgid "-Select-"
+msgstr "-Выберите-"
+
+#: app/models.py:470
+msgid "Monday"
+msgstr "Понедельник"
+
+#: app/models.py:470
+msgid "Tuesday"
+msgstr "Вторник"
+
+#: app/models.py:470
+msgid "Wednesday"
+msgstr "Среда"
+
+#: app/models.py:470
+msgid "Thursday"
+msgstr "Четверг"
+
+#: app/models.py:471
+msgid "Friday"
+msgstr "Пятница"
+
+#: app/models.py:471
+msgid "Saturday"
+msgstr "Суббота"
+
+#: app/models.py:471
+msgid "Sunday"
+msgstr "Воскресенье"
+
+#: app/templates/appointment_form.html:53
+msgid "select"
+msgstr "выбрать"
+
 #: app/templates/appointment_form.html:64 app/templates/data_form.html:26
+#: app/templates/service_table_choice.html:42
 #: app/templates/staff_schedule_form.html:107 app/templates/upload_form.html:26
 msgid "Back"
 msgstr "Назад"
@@ -285,7 +335,7 @@ msgstr "Расписание"
 msgid "Clients"
 msgstr "Клиенты"
 
-#: app/templates/base.html:35
+#: app/templates/base.html:35 app/templates/client_table.html:15
 msgid "Notices"
 msgstr "Напоминания"
 
@@ -299,7 +349,7 @@ msgstr "Графики"
 
 #: app/templates/base.html:46
 msgid "Staff"
-msgstr "Персонал"
+msgstr "Сотрудники"
 
 #: app/templates/base.html:48
 msgid "Settings"
@@ -326,4 +376,36 @@ msgstr "Зарегистрироваться"
 #: app/templates/timetable.html:6
 msgid "Add new"
 msgstr "Создать"
+
+#: app/templates/client_table.html:13
+msgid "History"
+msgstr "История"
+
+#: app/templates/client_table.html:14
+msgid "Files"
+msgstr "Файлы"
+
+#: app/templates/item_flow_table.html:15 app/templates/item_table.html:14
+msgid "Qty"
+msgstr "Кол-во"
+
+#: app/templates/item_table.html:13
+msgid "Flow"
+msgstr "Движение"
+
+#: app/templates/schedule_table.html:13
+msgid "Days"
+msgstr "Дни"
+
+#: app/templates/service_table_choice.html:37
+#: app/templates/service_table_choice.html:39
+msgid "Select"
+msgstr "Выбрать"
+
+#: app/templates/timetable.html:18
+msgid "Date / time"
+msgstr "Дата / время"
+
+#~ msgid "Action"
+#~ msgstr "Действия"
 

@@ -5,7 +5,7 @@
     <thead>
       <tr class="table-primary border-start border-end border-light text-center">
         <th class="col-1"></th>
-        <th>Name</th>
+        <th>{{ _('Title') }}</th>
         <th class="col-1"><img class="ms-2" src="{{ url_for('static', filename='/time.png') }}" alt="time" width="22"></th>
         <th class="col-2"><img class="ms-2" src="{{ url_for('static', filename='/price.png') }}" alt="price" width="21"></th>
       </tr>
@@ -34,9 +34,9 @@
   </table>
   <div id="services-count">Selected services: {{ session.get('services', []) | count }}</div>
   {% if session.get('services', []) | count > 0 %}
-    <button type="button" id="submit" class="btn btn-primary mt-3" onclick="window.location.href='{{ url_submit }}'">{{ _('Submit') }}</button>
+    <button type="button" id="submit" class="btn btn-primary mt-3" onclick="window.location.href='{{ url_submit }}'">{{ _('Select') }}</button>
   {% else %}
-    <button type="button" id="submit" class="btn btn-primary disabled mt-3" onclick="window.location.href='{{ url_submit }}'">{{ _('Submit') }}</button>
+    <button type="button" id="submit" class="btn btn-primary disabled mt-3" onclick="window.location.href='{{ url_submit }}'">{{ _('Select') }}</button>
   {% endif%}
   {% if id%}
     <button type="button" class="btn btn-secondary mt-3 ms-3" onclick="window.location.href='{{ url_back }}'">{{ _('Back') }}</button>

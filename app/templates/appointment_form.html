@@ -50,7 +50,7 @@
         <div class="form-group mt-3">
             <div class="form-group col-md-8">
                 {{ form.service.label(class_="col-form-label") }}
-                <a href="{{ url_select_service }}"> (select)</a>
+                <a href="{{ url_select_service }}"> ({{ _('select') }})</a>
                 {% include '_services.html' %}
             </div>
             <div class="form-group col-md-8 mt-1">

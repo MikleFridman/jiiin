@@ -1,3 +1,4 @@
+from flask_babel import lazy_gettext as _l
 from flask_login import UserMixin, current_user
 from flask_security import RoleMixin
 from sqlalchemy.orm import declared_attr
@@ -109,7 +110,7 @@ class Entity:
             items = items.order_by(getattr(cls, cls.sort).desc())
         if tuple_mode:
             items = [(i.id, i.name) for i in items]
-            items.insert(0, (0, '-Select-'))
+            items.insert(0, (0, _l('-Select-')))
         else:
             items = [i for i in items]
         return items
@@ -465,8 +466,8 @@ class Appointment(db.Model, Entity, Splitter):
 
 class Schedule(db.Model, Entity, Splitter):
     sort = 'name'
-    week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday',
-            'Friday', 'Saturday', 'Sunday']
+    week = [_l('Monday'), _l('Tuesday'), _l('Wednesday'), _l('Thursday'),
+            _l('Friday'), _l('Saturday'), _l('Sunday')]
     name = db.Column(db.String(64), index=True, nullable=False)
     days = db.relationship('ScheduleDay', backref='schedule',
                            cascade='all, delete')

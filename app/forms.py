@@ -140,7 +140,7 @@ class ClientFileForm(FlaskForm):
 
 
 class TagForm(FlaskForm):
-    name = StringField(_l('Name'), validators=[DataRequired()])
+    name = StringField(_l('Title'), validators=[DataRequired()])
     submit = SubmitField(_l('Submit'))
 
 
