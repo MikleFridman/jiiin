@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-03-08 20:28+0200\n"
+"POT-Creation-Date: 2023-03-09 11:23+0200\n"
 "PO-Revision-Date: 2023-03-06 15:40+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -157,7 +157,7 @@ msgid "Repeat"
 msgstr "Повтор"
 
 #: app/forms.py:152 app/templates/base.html:44
-#: app/templates/service_table.html:13
+#: app/templates/service_table.html:13 app/views.py:725
 msgid "Locations"
 msgstr "Филиалы"
 
@@ -191,7 +191,7 @@ msgid "Worker"
 msgstr "Сотрудник"
 
 #: app/forms.py:172 app/forms.py:175 app/templates/base.html:45
-#: app/templates/timetable.html:21
+#: app/templates/timetable.html:21 app/views.py:639
 msgid "Services"
 msgstr "Услуги"
 
@@ -232,7 +232,7 @@ msgstr "Некорректные данные"
 msgid "This time unavailable"
 msgstr "Это время недоступно"
 
-#: app/forms.py:247 app/templates/appointment_form.html:71
+#: app/forms.py:247 app/templates/appointment_form.html:71 app/views.py:980
 msgid "Result"
 msgstr "Результат"
 
@@ -265,37 +265,194 @@ msgstr "Описание"
 msgid "Sum"
 msgstr "Сумма"
 
-#: app/models.py:114
+#: app/models.py:113
 msgid "-Select-"
 msgstr "-Выберите-"
 
-#: app/models.py:470
+#: app/models.py:486
 msgid "Monday"
 msgstr "Понедельник"
 
-#: app/models.py:470
+#: app/models.py:486
 msgid "Tuesday"
 msgstr "Вторник"
 
-#: app/models.py:470
+#: app/models.py:486
 msgid "Wednesday"
 msgstr "Среда"
 
-#: app/models.py:470
+#: app/models.py:486
 msgid "Thursday"
 msgstr "Четверг"
 
-#: app/models.py:471
+#: app/models.py:487
 msgid "Friday"
 msgstr "Пятница"
 
-#: app/models.py:471
+#: app/models.py:487
 msgid "Saturday"
 msgstr "Суббота"
 
-#: app/models.py:471
+#: app/models.py:487
 msgid "Sunday"
 msgstr "Воскресенье"
+
+#: app/views.py:30
+msgid "Send mail"
+msgstr "Отправить письмо"
+
+#: app/views.py:122
+msgid "Company (edit)"
+msgstr "Данные компании"
+
+#: app/views.py:148 app/views.py:158
+msgid "User (edit)"
+msgstr "Профиль (редактировать)"
+
+#: app/templates/base.html:46 app/views.py:173
+msgid "Staff"
+msgstr "Сотрудники"
+
+#: app/views.py:200
+msgid "Staff (create)"
+msgstr "Сотрудник (создать)"
+
+#: app/views.py:237
+msgid "Staff (edit)"
+msgstr "Сотрудник (редактировать)"
+
+#: app/templates/base.html:43 app/views.py:270
+msgid "Schedules"
+msgstr "Графики"
+
+#: app/views.py:287
+msgid "Schedule (create)"
+msgstr "График (создать)"
+
+#: app/views.py:305
+msgid "Schedule (edit)"
+msgstr "График (редактировать)"
+
+#: app/views.py:327
+msgid "Schedule_days"
+msgstr "Дни"
+
+#: app/views.py:350
+msgid "Schedule day (create)"
+msgstr "День (создать)"
+
+#: app/views.py:376
+msgid "Schedule day (edit)"
+msgstr "День (редактировать)"
+
+#: app/templates/base.html:32 app/views.py:405
+msgid "Clients"
+msgstr "Клиенты"
+
+#: app/views.py:425
+msgid "Client (create)"
+msgstr "Клиент (создать)"
+
+#: app/views.py:446
+msgid "Client (edit)"
+msgstr "Клиент (редактировать)"
+
+#: app/templates/client_table.html:14 app/views.py:476
+msgid "Files"
+msgstr "Файлы"
+
+#: app/views.py:517
+msgid "File upload"
+msgstr "Загрузка файла"
+
+#: app/views.py:557
+msgid "Tags"
+msgstr "Метки"
+
+#: app/views.py:574
+msgid "Tag (create)"
+msgstr "Метка (создать)"
+
+#: app/views.py:592
+msgid "Tag (edit)"
+msgstr "Метка (редактировать)"
+
+#: app/views.py:669
+msgid "Service (create)"
+msgstr "Услуга (создать)"
+
+#: app/views.py:702
+msgid "Service (edit)"
+msgstr "Услуга (редактировать)"
+
+#: app/views.py:749
+msgid "Location (create)"
+msgstr "Филиал (создать)"
+
+#: app/views.py:780
+msgid "Location (edit)"
+msgstr "Филиал (редактировать)"
+
+#: app/views.py:826
+msgid "Appointments"
+msgstr "Записи"
+
+#: app/views.py:888
+msgid "Appointment (create)"
+msgstr "Запись (создать)"
+
+#: app/views.py:949
+msgid "Appointment (edit)"
+msgstr "Запись (редактировать)"
+
+#: app/views.py:993
+msgid "Items"
+msgstr "Материалы"
+
+#: app/views.py:1011
+msgid "Item (creat)"
+msgstr "Материалы (создать)"
+
+#: app/views.py:1030
+msgid "Item (edit)"
+msgstr "Материал (редактировать)"
+
+#: app/views.py:1058
+msgid "Items flow"
+msgstr "Движение материалов"
+
+#: app/views.py:1095
+msgid "Item flow (create)"
+msgstr "Движение материалов (создать)"
+
+#: app/views.py:1141
+msgid "Item flow (edit)"
+msgstr "Движение материалов (редактировать)"
+
+#: app/templates/base.html:35 app/templates/client_table.html:15
+#: app/views.py:1172
+msgid "Notices"
+msgstr "Напоминания"
+
+#: app/views.py:1203
+msgid "Notice (create)"
+msgstr "Напоминание (создать)"
+
+#: app/views.py:1228
+msgid "Notice (edit)"
+msgstr "Напоминание (редактировать)"
+
+#: app/views.py:1253
+msgid "Cash flow"
+msgstr "Движение денег"
+
+#: app/views.py:1306
+msgid "Cash flow (create)"
+msgstr "Движение денег (создать)"
+
+#: app/views.py:1348
+msgid "Cash flow (edit)"
+msgstr "Движение денег (редактирование)"
 
 #: app/templates/appointment_form.html:53
 msgid "select"
@@ -331,25 +488,9 @@ msgstr "Обратная связь"
 msgid "Timetable"
 msgstr "Расписание"
 
-#: app/templates/base.html:32
-msgid "Clients"
-msgstr "Клиенты"
-
-#: app/templates/base.html:35 app/templates/client_table.html:15
-msgid "Notices"
-msgstr "Напоминания"
-
 #: app/templates/base.html:38
 msgid "Cash desk"
 msgstr "Касса"
-
-#: app/templates/base.html:43
-msgid "Schedules"
-msgstr "Графики"
-
-#: app/templates/base.html:46
-msgid "Staff"
-msgstr "Сотрудники"
 
 #: app/templates/base.html:48
 msgid "Settings"
@@ -380,10 +521,6 @@ msgstr "Создать"
 #: app/templates/client_table.html:13
 msgid "History"
 msgstr "История"
-
-#: app/templates/client_table.html:14
-msgid "Files"
-msgstr "Файлы"
 
 #: app/templates/item_flow_table.html:15 app/templates/item_table.html:14
 msgid "Qty"

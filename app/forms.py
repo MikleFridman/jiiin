@@ -249,9 +249,10 @@ class ResultForm(FlaskForm):
 
 
 class SearchForm(FlaskForm):
-    location_id = SelectField(_l('Location'), choices=[], coerce=int)
-    staff_id = SelectField(_l('Worker'), choices=[], coerce=int)
-    client_id = SelectField(_l('Client'), choices=[], coerce=int)
+    pass
+    # location_id = SelectField(_l('Location'), choices=[], coerce=int)
+    # staff_id = SelectField(_l('Worker'), choices=[], coerce=int)
+    # client_id = SelectField(_l('Client'), choices=[], coerce=int)
 
 
 class ItemForm(FlaskForm):

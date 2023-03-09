@@ -1,3 +1,4 @@
+from flask import abort
 from flask_babel import lazy_gettext as _l
 from flask_login import UserMixin, current_user
 from flask_security import RoleMixin
@@ -96,6 +97,16 @@ class Entity:
     timestamp_update = db.Column(db.DateTime(), default=datetime.utcnow(),
                                  onupdate=datetime.utcnow())
 
+    @staticmethod
+    def get_class(class_name):
+        cls_name = class_name.strip()
+        cls_name = cls_name.replace('_', ' ').title()
+        cls_name = cls_name.replace(' ', '')
+        if cls_name in globals():
+            return globals()[cls_name]
+        else:
+            abort(500)
+
     @classmethod
     def get_subclasses(cls):
         return list(c.__name__ for c in cls.__subclasses__())
@@ -129,9 +140,22 @@ class Entity:
         return items
 
     @classmethod
-    def get_object(cls, id):
+    def get_object(cls, id, mode_404=True):
         param = {'cid': current_user.cid, 'no_active': False, 'id': id}
-        obj = cls.query.filter_by(**param).first_or_404()
+        if mode_404:
+            obj = cls.query.filter_by(**param).first_or_404()
+        else:
+            obj = cls.query.filter_by(**param).first()
+        return obj
+
+    @classmethod
+    def find_object(cls, data_filter, mode_404=False):
+        param = {'cid': current_user.cid, 'no_active': False, **data_filter}
+        print(param)
+        if mode_404:
+            obj = cls.query.filter_by(**param).first_or_404()
+        else:
+            obj = cls.query.filter_by(**param).first()
         return obj
 
     def item_delete(self):
@@ -240,6 +264,10 @@ class User(db.Model, UserMixin, Entity, Splitter):
 
     def __repr__(self):
         return self.username
+
+    @classmethod
+    def find_user(cls, username):
+        return cls.query.filter_by(username=username).first()
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -363,6 +391,8 @@ class Location(db.Model, Entity, Splitter):
     open = db.Column(db.Time)
     close = db.Column(db.Time)
     timezone = db.Column(db.Integer, default=0)
+    appointments = db.relationship('Appointment', backref='location',
+                                   cascade='all, delete')
     cash = db.relationship('Cash', backref='location', uselist='False',
                            cascade='all, delete')
     cash_flows = db.relationship('CashFlow', backref='location',
@@ -403,12 +433,13 @@ class Location(db.Model, Entity, Splitter):
 class Appointment(db.Model, Entity, Splitter):
     sort = 'date_time'
     sort_mode = 'desc'
-    search = ['location', 'staff', 'client']
+    search = [('location_id', 'Location', Location),
+              ('staff_id', 'Worker', Staff),
+              ('client_id', 'Client', Client)]
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow(),
                           onupdate=datetime.utcnow)
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'),
                             nullable=False)
-    location = db.relationship('Location', backref='appointments')
     date_time = db.Column(db.DateTime, nullable=False)
     client_id = db.Column(db.Integer, db.ForeignKey('client.id'))
     client = db.relationship('Client', backref='appointments')
@@ -483,7 +514,6 @@ class Schedule(db.Model, Entity, Splitter):
         if day_number not in [scd.day_number for scd in self.days]:
             sd = ScheduleDay(cid=self.cid,
                              schedule_id=self.id,
-                             name=self.week[day_number],
                              day_number=day_number,
                              hour_from=hour_from,
                              hour_to=hour_to)
@@ -501,7 +531,7 @@ class Schedule(db.Model, Entity, Splitter):
 
 
 class ScheduleDay(db.Model, Entity, Splitter):
-    name = db.Column(db.String(64), index=True, nullable=False)
+    sort = 'day_number'
     schedule_id = db.Column(db.Integer,
                             db.ForeignKey('schedule.id'), nullable=False)
     day_number = db.Column(db.Integer)
@@ -510,7 +540,7 @@ class ScheduleDay(db.Model, Entity, Splitter):
 
     @property
     def weekday(self):
-        return self.name
+        return Schedule.week[self.day_number]
 
 
 class Item(db.Model, Entity, Splitter):

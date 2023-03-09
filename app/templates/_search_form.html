@@ -1,26 +1,30 @@
-<form method="get">
-  <div class="form-group row">
-      <div class="col-sm-1 mt-1 text-center">
-          {% if request.args.get('client_id', '0') != '0' %}
-            <img src="{{ url_for('static', filename='/card.png') }}" alt="card" width="36">
-          {% endif %}
-      </div>
-      {{ form.location_id.label(class_="col-sm-2 col-form-label text-end") }}
-      <div class="col-sm-3">
-        {{ form.location_id(class_="form-select") }}
-      </div>
-
-      {{ form.staff_id.label(class_="col-sm-2 col-form-label text-end") }}
-      <div class="col-sm-3">
-        {{ form.staff_id(class_="form-select") }}
-      </div>
-
-      <div class="d-none">
-        {{ form.client_id(class_="form-select") }}
-      </div>
-
-      <div class="col-sm-1 mt-1">
-          <a href="{{ url_for('appointments_table') }}"><img src="{{ url_for('static', filename='/refresh.png') }}" alt="edit" width="32"></a>
-      </div>
-  </div>
-</form>
+{% import 'bootstrap/wtf.html' as wtf %}
+{% block app_content %}
+<div class="col-md-5 mb-2">
+    <div class="accordion" id="accordionFilter">
+        <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+              <button class="accordion-button collapsed p-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                  {{ _('Click here to expand filter') }}
+              </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionFilter" style="">
+              <div class="accordion-body mb-0 pb-1">
+                <form action="" method="GET">
+                    {% for field in form if field.widget.input_type != 'hidden' %}
+                    <div class="row mb-1">
+                        {{ field.label(class_="col-4 col-form-label") }}
+                        <div class="col-8">
+                            {{ field(class_="form-control") }}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <button type="submit" class="btn btn-primary mt-3 mb-2">{{ _('Select') }}</button>
+                    <button type="button" class="btn btn-secondary mt-3 ms-3 mb-2" onclick="window.location.href='{{ request.path }}'">{{ _('Reset') }}</button>
+                </form>
+              </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

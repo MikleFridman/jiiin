@@ -21,7 +21,7 @@
             {% if sd.no_active %}
               <img src="{{ url_for('static', filename='/hidden.png') }}" alt="edit" width="24">
             {% endif %}
-            {{ _(sd.name) }}
+            {{ _(sd.weekday) }}
           </td>
           <td class="col-2 text-center">
             {{ sd.hour_from.strftime('%H:%M') }} - {{ sd.hour_to.strftime('%H:%M') }}

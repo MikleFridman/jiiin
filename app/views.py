@@ -6,7 +6,7 @@ import os.path
 import uuid
 
 from flask import render_template, redirect, url_for, request, jsonify, send_file, session
-from flask_babel import _
+from flask_babel import _, lazy_gettext as _l
 from flask_login import login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 
@@ -71,7 +71,7 @@ def login():
         return redirect(url_for('index'))
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()
+        user = User.find_user(form.username.data)
         if user is None or not user.check_password(form.password.data):
             flash('Invalid username or password')
             return redirect(url_for('login'))
@@ -338,10 +338,8 @@ def schedule_day_create(schedule_id):
     schedule = Schedule.get_object(schedule_id)
     form = ScheduleDayForm()
     if form.validate_on_submit():
-        day = Schedule.week[form.weekday.data]
         schedule_day = ScheduleDay(cid=current_user.cid,
                                    schedule_id=schedule.id,
-                                   name=day,
                                    day_number=form.weekday.data,
                                    hour_from=form.hour_from.data,
                                    hour_to=form.hour_to.data)
@@ -360,12 +358,10 @@ def schedule_day_edit(schedule_id, id):
     url_back = url_for('schedule_days_table', schedule_id=schedule_id,
                        **request.args)
     schedule = Schedule.get_object(schedule_id)
-    param = {'cid': current_user.cid, 'schedule_id': schedule.id, 'id': id}
-    schedule_day = ScheduleDay.query.filter_by(**param).first_or_404()
+    param = {'schedule_id': schedule.id, 'id': id}
+    schedule_day = ScheduleDay.find_object(param, True)
     form = ScheduleDayForm()
     if form.validate_on_submit():
-        day = Schedule.week[form.weekday.data]
-        schedule_day.name = day
         schedule_day.day_number = form.weekday.data
         schedule_day.hour_from = form.hour_from.data
         schedule_day.hour_to = form.hour_to.data
@@ -388,8 +384,8 @@ def schedule_day_delete(schedule_id, id):
     url_back = url_for('schedule_days_table', schedule_id=schedule_id,
                        **request.args)
     schedule = Schedule.get_object(schedule_id)
-    param = {'cid': current_user.cid, 'schedule_id': schedule.id, 'id': id}
-    schedule_day = ScheduleDay.query.filter_by(**param).first_or_404()
+    param = {'schedule_id': schedule.id, 'id': id}
+    schedule_day = ScheduleDay.find_object(param, True)
     db.session.delete(schedule_day)
     db.session.commit()
     flash('Delete schedule day {}'.format(id))
@@ -526,8 +522,8 @@ def client_file_upload(id):
 @app.route('/clients/<client_id>/download_file/<id>/')
 @login_required
 def client_file_download(client_id, id):
-    file = ClientFile.query.filter_by(cid=current_user.cid,
-                                      id=id, client_id=client_id).first()
+    param = {'id': id, 'client_id': client_id}
+    file = ClientFile.find_object(param, True)
     return send_file(file.path, as_attachment=True, download_name=file.name)
 
 
@@ -801,33 +797,23 @@ def location_delete(id):
 @app.route('/appointments/')
 @login_required
 def appointments_table():
-    form = SearchForm()
-    form.location_id.choices = Location.get_items(True)
-    form.location_id.render_kw = {'onchange': 'this.form.submit()'}
-    form.staff_id.choices = Staff.get_items(True)
-    form.staff_id.render_kw = {'onchange': 'this.form.submit()'}
-    form.client_id.choices = Client.get_items(True)
-    form.client_id.render_kw = {'onchange': 'this.form.submit()'}
     page = request.args.get('page', 1, type=int)
+    for search_attr, search_name, search_object in Appointment.search:
+        setattr(SearchForm, search_attr, SelectField(_l(search_name),
+                                                     choices=[], coerce=int))
+    form = SearchForm(request.form)
     param = {}
-    location_id = request.args.get('location_id', None, type=int)
-    staff_id = request.args.get('staff_id', None, type=int)
-    client_id = request.args.get('client_id', None, type=int)
-    if location_id:
-        form.location_id.default = location_id
-        form.process()
-        param['location_id'] = location_id
-    if staff_id:
-        form.staff_id.default = staff_id
-        form.process()
-        param['staff_id'] = staff_id
-    if client_id:
-        form.client_id.default = client_id
-        form.process()
-        param['client_id'] = client_id
+    for search_attr, search_name, search_object in Appointment.search:
+        if issubclass(search_object, Entity):
+            form[search_attr].choices = search_object.get_items(True)
+        request_arg = request.args.get(search_attr, None, type=int)
+        if request_arg:
+            param[search_attr] = request_arg
+            form[search_attr].default = request_arg
+            form.process()
     data = Appointment.get_pagination(page, param)
     return render_template('timetable.html',
-                           title=_('Appointments'),
+                           title=_('Timetable'),
                            items=data.items,
                            pagination=data,
                            form=form)
@@ -1079,9 +1065,8 @@ def item_flow_create():
                              item_id=form.item.data,
                              quantity=form.quantity.data * form.action.data)
         db.session.add(item_flow)
-        storage = Storage.query.filter_by(cid=current_user.cid,
-                                          location_id=form.location.data,
-                                          item_id=form.item.data).first()
+        param = {'location_id': form.location.data, 'item_id': form.item.data}
+        storage = Storage.find_object(param)
         if storage:
             storage.quantity += form.quantity.data * form.action.data
         else:
@@ -1120,13 +1105,11 @@ def item_flow_edit(id):
         item_flow.date = form.date.data
         item_flow.item_id = form.item.data
         item_flow.quantity = form.quantity.data * form.action.data
-        current_storage = Storage.query.filter_by(cid=current_user.cid,
-                                                  location_id=current_location,
-                                                  item_id=current_item).first()
+        param = {'location_id': current_location, 'item_id': current_item}
+        current_storage = Storage.find_object(param, True)
         current_storage.quantity -= current_quantity
-        storage = Storage.query.filter_by(cid=current_user.cid,
-                                          location_id=form.location.data,
-                                          item_id=form.item.data).first()
+        param = {'location_id': form.location.data, 'item_id': form.item.data}
+        storage = Storage.find_object(param)
         if storage:
             storage.quantity += form.quantity.data * form.action.data
         else:
@@ -1155,9 +1138,8 @@ def item_flow_edit(id):
 def item_flow_delete(id):
     item_flow = ItemFlow.get_object(id)
     db.session.delete(item_flow)
-    storage = Storage.query.filter_by(cid=current_user.cid,
-                                      location_id=item_flow.location_id,
-                                      item_id=item_flow.item_id).first()
+    param = {'location_id': item_flow.location_id, 'item_id': item_flow.item_id}
+    storage = Storage.find_object(param)
     storage.quantity -= item_flow.quantity
     db.session.commit()
     flash('Delete item flow {}'.format(id))
@@ -1188,7 +1170,7 @@ def notice_create():
     url_back = request.args.get('url_back', url_for('notices_table', **request.args))
     client_id = request.args.get('client_id', None)
     appointment_id = request.args.get('appointment_id', None)
-    appointment = Appointment.query.get(appointment_id)
+    appointment = Appointment.get_object(appointment_id, False)
     form = NoticeForm()
     form.client.choices = Client.get_items(True)
     if form.validate_on_submit():
@@ -1269,8 +1251,7 @@ def cash_flow_create():
     url_back = request.args.get('url_back', url_for('cash_flow_table',
                                                     **request.args))
     appointment_id = request.args.get('appointment_id')
-    appointment = Appointment.query.filter_by(cid=current_user.cid,
-                                              id=appointment_id).first()
+    appointment = Appointment.get_object(appointment_id, False)
     if appointment and appointment.payment_id:
         return redirect(url_for('cash_flow_edit', id=appointment.payment_id,
                                 **request.args))
@@ -1283,9 +1264,8 @@ def cash_flow_create():
                              description=form.description.data,
                              cost=form.cost.data * form.action.data)
         db.session.add(cash_flow)
-        cash = Cash.query.filter_by(cid=current_user.cid,
-                                    location_id=form.location.data
-                                    ).first()
+        param = {'location_id': form.location.data}
+        cash = Cash.find_object(param)
         if cash:
             cash.cost += form.cost.data * form.action.data
         else:
@@ -1333,13 +1313,11 @@ def cash_flow_edit(id):
         cash_flow.description = form.description.data
         cash_flow.date = form.date.data
         cash_flow.cost = form.cost.data * form.action.data
-        current_cash = Cash.query.filter_by(cid=current_user.cid,
-                                            location_id=current_location
-                                            ).first()
+        param = {'location_id': current_location}
+        current_cash = Cash.find_object(param, True)
         current_cash.cost -= current_cost
-        cash = Cash.query.filter_by(cid=current_user.cid,
-                                    location_id=form.location.data
-                                    ).first()
+        param = {'location_id': form.location.data}
+        cash = Cash.find_object(param)
         if cash:
             cash.cost += form.cost.data * form.action.data
         else:
@@ -1367,9 +1345,8 @@ def cash_flow_edit(id):
 def cash_flow_delete(id):
     cash_flow = CashFlow.get_object(id)
     db.session.delete(cash_flow)
-    cash = Cash.query.filter_by(cid=current_user.cid,
-                                location_id=cash_flow.location_id
-                                ).first()
+    param = {'location_id': cash_flow.location_id}
+    cash = Cash.find_object(param, True)
     cash.cost -= cash_flow.cost
     db.session.commit()
     flash('Delete cash flow {}'.format(id))
