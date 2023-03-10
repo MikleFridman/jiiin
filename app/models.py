@@ -127,11 +127,13 @@ class Entity:
         return items
 
     @classmethod
-    def get_pagination(cls, page, data_filter=None):
+    def get_pagination(cls, page, data_filter=None, data_search=None):
         param = {'cid': current_user.cid, 'no_active': False}
         if data_filter:
             param = {**param, **data_filter}
         items = cls.query.filter_by(**param)
+        if data_search:
+            items = items.filter(*data_search)
         if cls.sort_mode == 'asc':
             items = items.order_by(getattr(cls, cls.sort).asc())
         else:
@@ -151,7 +153,6 @@ class Entity:
     @classmethod
     def find_object(cls, data_filter, mode_404=False):
         param = {'cid': current_user.cid, 'no_active': False, **data_filter}
-        print(param)
         if mode_404:
             obj = cls.query.filter_by(**param).first_or_404()
         else:
@@ -299,7 +300,8 @@ class User(db.Model, UserMixin, Entity, Splitter):
 
 class Staff(db.Model, Entity, Splitter):
     sort = 'name'
-    search = ['name', 'phone']
+    search = [('name', 'Name', str),
+              ('phone', 'Phone', str)]
     name = db.Column(db.String(64), index=True, nullable=False)
     phone = db.Column(db.String(16), index=True, unique=True, nullable=False)
     birthday = db.Column(db.Date)
@@ -322,7 +324,8 @@ class Staff(db.Model, Entity, Splitter):
 
 class Client(db.Model, Entity, Splitter):
     sort = 'name'
-    search = ['name', 'phone']
+    search = [('name', 'Name', str),
+              ('phone', 'Phone', str)]
     name = db.Column(db.String(64), index=True, nullable=False)
     phone = db.Column(db.String(16), index=True, unique=True, nullable=False)
     birthday = db.Column(db.Date)
@@ -367,7 +370,7 @@ class Tag(db.Model, Entity, Splitter):
 
 class Service(db.Model, Entity, Splitter):
     sort = 'name'
-    search = ['name']
+    search = [('name', 'Title', str)]
     name = db.Column(db.String(120), index=True, nullable=False)
     duration = db.Column(db.Integer)
     price = db.Column(db.Float)

@@ -15,6 +15,41 @@ from app.functions import *
 from app.models import *
 
 
+def set_filter(class_object):
+    for search_attr, search_name, search_object in class_object.search:
+        if issubclass(search_object, Entity):
+            choices = search_object.get_items(True)
+            setattr(SearchForm, search_attr, SelectField(_l(search_name),
+                                                         choices=[*choices],
+                                                         coerce=int))
+        else:
+            setattr(SearchForm, search_attr, StringField(_l(search_name)))
+    return SearchForm(request.form)
+
+
+def clear_filter(class_object):
+    for search_attr, search_name, search_object in class_object.search:
+        if hasattr(SearchForm, search_attr):
+            delattr(SearchForm, search_attr)
+
+
+def get_filter_parameters(form, class_object):
+    filter_param = {}
+    search_param = []
+    for search_attr, search_name, search_object in class_object.search:
+        request_arg = request.args.get(search_attr, None, type=str)
+        if request_arg and not request_arg == '0':
+            if issubclass(search_object, Entity):
+                filter_param[search_attr] = request_arg
+                form[search_attr].default = request_arg
+                form.process()
+            else:
+                search_param.append(getattr(class_object, search_attr).ilike(f'%{str(request_arg)}%'))
+                form[search_attr].data = request_arg
+    clear_filter(class_object)
+    return filter_param, search_param
+
+
 @app.route('/sendmail/', methods=['GET', 'POST'])
 def sendmail():
     url_back = request.args.get('url_back', url_for('index', **request.args))
@@ -400,11 +435,14 @@ def schedule_day_delete(schedule_id, id):
 @login_required
 def clients_table():
     page = request.args.get('page', 1, type=int)
-    data = Client.get_pagination(page)
+    form = set_filter(Client)
+    param = get_filter_parameters(form, Client)
+    data = Client.get_pagination(page, *param)
     return render_template('client_table.html',
                            title=_('Clients'),
                            items=data.items,
-                           pagination=data)
+                           pagination=data,
+                           form=form)
 
 
 @app.route('/clients/create/', methods=['GET', 'POST'])
@@ -634,14 +672,17 @@ def services_table():
         template = 'service_table_choice.html'
     else:
         template = 'service_table.html'
-    data = Service.get_pagination(page)
+    form = set_filter(Service)
+    param = get_filter_parameters(form, Service)
+    data = Service.get_pagination(page, *param)
     return render_template(template,
                            title=_('Services'),
                            items=data.items,
                            pagination=data,
                            url_back=url_back,
                            url_submit=url_submit,
-                           id=appointment_id)
+                           id=appointment_id,
+                           form=form)
 
 
 @app.route('/services/create/', methods=['GET', 'POST'])
@@ -798,20 +839,9 @@ def location_delete(id):
 @login_required
 def appointments_table():
     page = request.args.get('page', 1, type=int)
-    for search_attr, search_name, search_object in Appointment.search:
-        setattr(SearchForm, search_attr, SelectField(_l(search_name),
-                                                     choices=[], coerce=int))
-    form = SearchForm(request.form)
-    param = {}
-    for search_attr, search_name, search_object in Appointment.search:
-        if issubclass(search_object, Entity):
-            form[search_attr].choices = search_object.get_items(True)
-        request_arg = request.args.get(search_attr, None, type=int)
-        if request_arg:
-            param[search_attr] = request_arg
-            form[search_attr].default = request_arg
-            form.process()
-    data = Appointment.get_pagination(page, param)
+    form = set_filter(Appointment)
+    param = get_filter_parameters(form, Appointment)
+    data = Appointment.get_pagination(page, *param)
     return render_template('timetable.html',
                            title=_('Timetable'),
                            items=data.items,
