@@ -23,7 +23,7 @@
         <tr class="{{ loop.cycle('table-success', 'table-default') }}  border-start border-end border-light">
           <td class="col-6 ps-3">
             {% if c.no_active %}
-              <img src="{{ url_for('static', filename='/hidden.png') }}" alt="edit" width="24">
+              <img src="{{ url_for('static', filename='/hidden.png') }}" alt="no_active" width="24">
             {% endif %}
             {{ c.name }}
           </td>

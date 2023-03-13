@@ -16,37 +16,67 @@ from app.models import *
 
 
 def set_filter(class_object):
+    search_list = []
     for search_attr, search_name, search_object in class_object.search:
+        search_list.append(search_attr)
         if issubclass(search_object, Entity):
             choices = search_object.get_items(True)
             setattr(SearchForm, search_attr, SelectField(_l(search_name),
                                                          choices=[*choices],
                                                          coerce=int))
+        elif issubclass(search_object, type(datetime.now())) or issubclass(
+                search_object, Period):
+            setattr(SearchForm, search_attr, DateField(_l(search_name)))
         else:
             setattr(SearchForm, search_attr, StringField(_l(search_name)))
-    return SearchForm(request.form)
-
-
-def clear_filter(class_object):
-    for search_attr, search_name, search_object in class_object.search:
-        if hasattr(SearchForm, search_attr):
-            delattr(SearchForm, search_attr)
+    rest_args = list(set(request.args.keys()).difference(set(search_list)))
+    rest_args_dict = {}
+    for ra in rest_args:
+        setattr(SearchForm, ra, HiddenField(ra))
+        rest_args_dict[ra] = request.args.get(ra, None)
+    setattr(SearchForm, 'filter', HiddenField('filter'))
+    return SearchForm(request.form, meta={'csrf': False}, **rest_args_dict)
 
 
 def get_filter_parameters(form, class_object):
     filter_param = {}
     search_param = []
+    rest_args_list = list(request.args.keys())
+    check_filter = False
     for search_attr, search_name, search_object in class_object.search:
+        if search_attr in rest_args_list:
+            rest_args_list.remove(search_attr)
         request_arg = request.args.get(search_attr, None, type=str)
         if request_arg and not request_arg == '0':
+            check_filter = True
             if issubclass(search_object, Entity):
                 filter_param[search_attr] = request_arg
                 form[search_attr].default = request_arg
                 form.process()
+            elif issubclass(search_object, type(datetime.now())):
+                filter_param[search_attr] = request_arg
+                form[search_attr].data = datetime.strptime(request_arg,
+                                                           '%Y-%m-%d')
+            elif issubclass(search_object, Period):
+                search_param.append(getattr(class_object, search_attr).between(
+                    datetime.strptime(request_arg, '%Y-%m-%d'),
+                    datetime.strptime(request_arg, '%Y-%m-%d') + timedelta(days=1)))
+                search_param.append(getattr(class_object, search_attr
+                                            ).ilike(f'%{str(request_arg)}%'))
+                form[search_attr].data = datetime.strptime(request_arg,
+                                                           '%Y-%m-%d')
             else:
-                search_param.append(getattr(class_object, search_attr).ilike(f'%{str(request_arg)}%'))
+                search_param.append(getattr(class_object, search_attr
+                                            ).ilike(f'%{str(request_arg)}%'))
                 form[search_attr].data = request_arg
-    clear_filter(class_object)
+        if hasattr(SearchForm, search_attr):
+            delattr(SearchForm, search_attr)
+    for ra in rest_args_list:
+        if hasattr(SearchForm, ra):
+            delattr(SearchForm, ra)
+    form.filter.data = check_filter
+    if hasattr(SearchForm, 'filter'):
+        delattr(SearchForm, 'filter')
     return filter_param, search_param
 
 
@@ -203,11 +233,14 @@ def user_edit(id):
 @login_required
 def staff_table():
     page = request.args.get('page', 1, type=int)
-    data = Staff.get_pagination(page)
+    form = set_filter(Staff)
+    param = get_filter_parameters(form, Staff)
+    data = Staff.get_pagination(page, *param)
     return render_template('staff_table.html',
                            title=_('Staff'),
                            items=data.items,
-                           pagination=data)
+                           pagination=data,
+                           form=form)
 
 
 @app.route('/staff/create/', methods=['GET', 'POST'])
@@ -300,11 +333,14 @@ def staff_delete(id):
 @login_required
 def schedules_table():
     page = request.args.get('page', 1, type=int)
-    data = Schedule.get_pagination(page)
+    form = set_filter(Schedule)
+    param = get_filter_parameters(form, Schedule)
+    data = Schedule.get_pagination(page, *param)
     return render_template('schedule_table.html',
                            title=_('Schedules'),
                            items=data.items,
-                           pagination=data)
+                           pagination=data,
+                           form=form)
 
 
 @app.route('/schedules/create', methods=['GET', 'POST'])
@@ -507,13 +543,17 @@ def client_delete(id):
 @login_required
 def client_files_table(id):
     page = request.args.get('page', 1, type=int)
-    param = {'client_id': id}
-    data = ClientFile.get_pagination(page, param)
+    form = set_filter(ClientFile)
+    param = get_filter_parameters(form, ClientFile)
+    param_filter = {**param[0], **{'client_id': id}}
+    param_search = param[1]
+    data = ClientFile.get_pagination(page, param_filter, param_search)
     return render_template('client_files_table.html',
                            id=id,
                            title=_('Files'),
                            items=data.items,
-                           pagination=data)
+                           pagination=data,
+                           form=form)
 
 
 @app.route('/clients/<id>/upload_file/', methods=['GET', 'POST'])
@@ -589,12 +629,15 @@ def client_file_delete(client_id, id):
 @login_required
 def tags_table():
     page = request.args.get('page', 1, type=int)
-    data = Tag.get_pagination(page)
+    form = set_filter(Tag)
+    param = get_filter_parameters(form, Tag)
+    data = Tag.get_pagination(page, *param)
     return render_template('tags_table.html',
                            id=id,
                            title=_('Tags'),
                            items=data.items,
-                           pagination=data)
+                           pagination=data,
+                           form=form)
 
 
 @app.route('/tags/create/', methods=['GET', 'POST'])
@@ -761,11 +804,14 @@ def service_delete(id):
 @login_required
 def locations_table():
     page = request.args.get('page', 1, type=int)
-    data = Location.get_pagination(page)
+    form = set_filter(Location)
+    param = get_filter_parameters(form, Location)
+    data = Location.get_pagination(page, *param)
     return render_template('location_table.html',
                            title=_('Locations'),
                            items=data.items,
-                           pagination=data)
+                           pagination=data,
+                           form=form)
 
 
 @app.route('/locations/create/', methods=['GET', 'POST'])
@@ -1008,11 +1054,14 @@ def appointment_result(appointment_id):
 @login_required
 def items_table():
     page = request.args.get('page', 1, type=int)
-    data = Item.get_pagination(page)
+    form = set_filter(Item)
+    param = get_filter_parameters(form, Item)
+    data = Item.get_pagination(page, *param)
     return render_template('item_table.html',
                            title=_('Items'),
                            items=data.items,
-                           pagination=data)
+                           pagination=data,
+                           form=form)
 
 
 @app.route('/items/create', methods=['GET', 'POST'])
@@ -1068,16 +1117,14 @@ def item_delete(id):
 @login_required
 def items_flow_table():
     page = request.args.get('page', 1, type=int)
-    param = {}
-    select_item = request.args.get('item_id', 0, type=int)
-    if select_item > 0:
-        param['item_id'] = select_item
-    data = ItemFlow.get_pagination(page, param)
-
+    form = set_filter(ItemFlow)
+    param = get_filter_parameters(form, ItemFlow)
+    data = ItemFlow.get_pagination(page, *param)
     return render_template('item_flow_table.html',
                            title=_('Items flow'),
                            items=data.items,
-                           pagination=data)
+                           pagination=data,
+                           form=form)
 
 
 @app.route('/items_flow/create', methods=['GET', 'POST'])
@@ -1182,16 +1229,14 @@ def item_flow_delete(id):
 @login_required
 def notices_table():
     page = request.args.get('page', 1, type=int)
-    client_id = request.args.get('client_id', None)
-    param = {}
-    if client_id:
-        param['client_id'] = client_id
-    data = Notice.get_pagination(page, param)
-
+    form = set_filter(Notice)
+    param = get_filter_parameters(form, Notice)
+    data = Notice.get_pagination(page, *param)
     return render_template('notice_table.html',
                            title=_('Notices'),
                            items=data.items,
-                           pagination=data)
+                           pagination=data,
+                           form=form)
 
 
 @app.route('/notices/create/', methods=['GET', 'POST'])
@@ -1267,12 +1312,14 @@ def notice_delete(id):
 @login_required
 def cash_flow_table():
     page = request.args.get('page', 1, type=int)
-    data = CashFlow.get_pagination(page)
-
+    form = set_filter(CashFlow)
+    param = get_filter_parameters(form, CashFlow)
+    data = CashFlow.get_pagination(page, *param)
     return render_template('cash_flow_table.html',
                            title=_('Cash flow'),
                            items=data.items,
-                           pagination=data)
+                           pagination=data,
+                           form=form)
 
 
 @app.route('/cash_flow/create', methods=['GET', 'POST'])

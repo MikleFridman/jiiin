@@ -37,7 +37,7 @@
       {% endfor %}
     </tbody>
   </table>
-  <div id="services-count">Selected services: {{ session.get('services', []) | count }}</div>
+  <div id="services-count">{{ _('Selected services') }}: {{ session.get('services', []) | count }}</div>
   {% if session.get('services', []) | count > 0 %}
     <button type="button" id="submit" class="btn btn-primary mt-3" onclick="window.location.href='{{ url_submit }}'">{{ _('Select') }}</button>
   {% else %}

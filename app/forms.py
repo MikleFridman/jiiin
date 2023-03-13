@@ -5,7 +5,7 @@ from flask_wtf import FlaskForm
 from wtforms import (StringField, PasswordField, BooleanField,
                      SubmitField, TextAreaField, TelField, IntegerField,
                      FloatField, SelectField, DateField, TimeField,
-                     SelectMultipleField, FileField, HiddenField)
+                     SelectMultipleField, FileField, HiddenField, EmailField)
 from wtforms.validators import (DataRequired, Email, EqualTo,
                                 ValidationError, Length, Optional)
 
@@ -26,7 +26,7 @@ def validate_phone(form, field):
 class RegisterForm(FlaskForm):
     company = StringField(_l('Company'), validators=[DataRequired()])
     username = StringField(_l('Username'), validators=[DataRequired()])
-    email = StringField(_l('E-mail'), validators=[DataRequired(), Email()])
+    email = EmailField(_l('E-mail'), validators=[DataRequired(), Email()])
     password = PasswordField(_l('Password'), validators=[DataRequired()])
     password2 = PasswordField(_l('Repeat password'), validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField(_l('Submit'))

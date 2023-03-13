@@ -1,30 +1,56 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 {% block app_content %}
 <div class="col-md-5 mb-2">
-    <div class="accordion" id="accordionFilter">
-        <div class="accordion-item">
-            <h2 class="accordion-header" id="headingOne">
-              <button class="accordion-button collapsed p-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-                  {{ _('Click here to expand filter') }}
-              </button>
-            </h2>
-            <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionFilter" style="">
-              <div class="accordion-body mb-0 pb-1">
-                <form action="" method="GET">
-                    {% for field in form if field.widget.input_type != 'hidden' %}
-                    <div class="row mb-1">
-                        {{ field.label(class_="col-4 col-form-label") }}
-                        <div class="col-8">
-                            {{ field(class_="form-control") }}
-                        </div>
+    <div class="row">
+        <div class="col-md-1">
+            {% if form.filter.data %}
+                <img class="ms-2" src="{{ url_for('static', filename='/filter.png') }}" alt="time" width="26">
+            {% endif %}
+        </div>
+        <div class="col-md-11">
+            <div class="accordion" id="accordionFilter">
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingOne">
+                      <button class="accordion-button collapsed p-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                          {{ _('Click here to expand filter') }}
+                      </button>
+                    </h2>
+                    <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionFilter" style="">
+                      <div class="accordion-body mb-0 pb-1">
+                        <form action="" method="GET" id="searchForm">
+                            {% for field in form %}
+                            <div class="row mb-1">
+                                {% if field.widget.input_type != 'hidden' %}
+                                    {{ field.label(class_="col-4 col-form-label") }}
+                                {% endif %}
+                                <div class="col-8">
+                                    {{ field(class_="form-control") }}
+                                </div>
+                            </div>
+                            {% endfor %}
+                            <button type="submit" class="btn btn-primary mt-3 mb-2">{{ _('Select') }}</button>
+                            <button type="reset" id="reset" class="btn btn-secondary mt-3 ms-3 mb-2" onclick="reset_form()">{{ _('Reset') }}</button>
+                        </form>
+                      </div>
                     </div>
-                    {% endfor %}
-                    <button type="submit" class="btn btn-primary mt-3 mb-2">{{ _('Select') }}</button>
-                    <button type="button" class="btn btn-secondary mt-3 ms-3 mb-2" onclick="window.location.href='{{ request.path }}'">{{ _('Reset') }}</button>
-                </form>
-              </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+<script>
+function reset_form() {
+    var fields = document.getElementsByTagName("input")
+    for (var i = 0; i < fields.length; i++) {
+        if (fields[i].type !='hidden') {
+            fields[i].value = ''
+        }
+    }
+    var fields = document.getElementsByTagName("select")
+    for (var i = 0; i < fields.length; i++) {
+        fields[i].value = 0
+    }
+    document.getElementById('searchForm').submit()
+    }
+</script>
 {% endblock %}

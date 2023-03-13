@@ -2,9 +2,10 @@
 
 {% block app_content %}
   <div class="row">
-    <div class="col-md-4 mb-2">
+    <div class="col-md-7 mb-2">
       <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('staff_create') }}';">{{ _('Add new') }}</button>
     </div>
+    {% include '_search_form.html' %}
   </div>
   <table id="data" class="table table-hover border-top border-bottom border-light">
     <thead>

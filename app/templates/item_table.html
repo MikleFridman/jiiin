@@ -2,9 +2,10 @@
 
 {% block app_content %}
   <div class="row">
-    <div class="col-md-4 mb-2">
+    <div class="col-md-7 mb-2">
       <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('item_create') }}';">{{ _('Add new') }}</button>
     </div>
+    {% include '_search_form.html' %}
   </div>
   <table id="data" class="table table-hover border-top border-bottom border-light">
     <thead>
@@ -22,7 +23,7 @@
             {{ i.name }}
           </td>
           <td class="col-1 text-center">
-            <a href="{{ url_for('items_flow_table', item_id=i.id) }}"><img src="{{ url_for('static', filename='/view_list.png') }}" alt="view_list" width="24"></a>
+            <a href="{{ url_for('items_flow_table', item_id=i.id) }}"><img src="{{ url_for('static', filename='/flow.png') }}" title="{{ _('Flow') }}" alt="flow" width="24"></a>
           </td>
           <td class="col-1 text-center">{{ i.get_balance_all()|float }}</td>
           <td class="col-1 text-center">

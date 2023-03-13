@@ -1,3 +1,5 @@
+from dataclasses import dataclass
+
 from flask import abort
 from flask_babel import lazy_gettext as _l
 from flask_login import UserMixin, current_user
@@ -169,6 +171,12 @@ class Splitter:
     @declared_attr
     def cid(self):
         return db.Column(db.Integer, db.ForeignKey('company.id'), nullable=False)
+
+
+@dataclass
+class Period:
+    date_from: datetime
+    date_to: datetime
 
 
 class Tariff(db.Model, Entity):
@@ -345,6 +353,7 @@ class Client(db.Model, Entity, Splitter):
 
 class ClientFile(db.Model, Entity, Splitter):
     sort = 'name'
+    search = [('name', 'Title', str)]
     client_id = db.Column(db.Integer, db.ForeignKey('client.id'),
                           nullable=False)
     name = db.Column(db.String(64))
@@ -354,6 +363,7 @@ class ClientFile(db.Model, Entity, Splitter):
 
 class Tag(db.Model, Entity, Splitter):
     sort = 'name'
+    search = [('name', 'Title', str)]
     name = db.Column(db.String(64), index=True, nullable=False)
 
     def add_tag(self, tag):
@@ -388,11 +398,10 @@ class Service(db.Model, Entity, Splitter):
 
 class Location(db.Model, Entity, Splitter):
     sort = 'name'
+    search = [('name', 'Title', str)]
     name = db.Column(db.String(64), index=True, nullable=False)
     address = db.Column(db.String(120))
     phone = db.Column(db.String(20), index=True, unique=True)
-    open = db.Column(db.Time)
-    close = db.Column(db.Time)
     timezone = db.Column(db.Integer, default=0)
     appointments = db.relationship('Appointment', backref='location',
                                    cascade='all, delete')
@@ -438,7 +447,8 @@ class Appointment(db.Model, Entity, Splitter):
     sort_mode = 'desc'
     search = [('location_id', 'Location', Location),
               ('staff_id', 'Worker', Staff),
-              ('client_id', 'Client', Client)]
+              ('client_id', 'Client', Client),
+              ('date_time', 'Date', Period)]
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow(),
                           onupdate=datetime.utcnow)
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'),
@@ -500,6 +510,7 @@ class Appointment(db.Model, Entity, Splitter):
 
 class Schedule(db.Model, Entity, Splitter):
     sort = 'name'
+    search = [('name', 'Title', str)]
     week = [_l('Monday'), _l('Tuesday'), _l('Wednesday'), _l('Thursday'),
             _l('Friday'), _l('Saturday'), _l('Sunday')]
     name = db.Column(db.String(64), index=True, nullable=False)
@@ -548,7 +559,7 @@ class ScheduleDay(db.Model, Entity, Splitter):
 
 class Item(db.Model, Entity, Splitter):
     sort = 'name'
-    search = ['name']
+    search = [('name', 'Title', str)]
     name = db.Column(db.String(64), index=True, nullable=False)
     description = db.Column(db.String(255))
     storage = db.relationship('Storage', backref='item', cascade='all, delete')
@@ -577,6 +588,9 @@ class Item(db.Model, Entity, Splitter):
 class ItemFlow(db.Model, Entity, Splitter):
     sort = 'date'
     sort_mode = 'desc'
+    search = [('location_id', 'Location', Location),
+              ('item_id', 'Item', Item),
+              ('date', 'Date', type(datetime.now()))]
     date = db.Column(db.Date, nullable=False)
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
     item_id = db.Column(db.Integer, db.ForeignKey('item.id'), nullable=False)
@@ -597,7 +611,8 @@ class Storage(db.Model, Entity, Splitter):
 class CashFlow(db.Model, Entity, Splitter):
     sort = 'date'
     sort_mode = 'desc'
-    search = ['location', 'date']
+    search = [('location_id', 'Location', Location),
+              ('date', 'Date', type(datetime.now()))]
     date = db.Column(db.Date, nullable=False)
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
     description = db.Column(db.String(255))
@@ -616,6 +631,8 @@ class Cash(db.Model, Entity, Splitter):
 class Notice(db.Model, Entity, Splitter):
     sort = 'date'
     sort_mode = 'desc'
+    search = [('client_id', 'Client', Client),
+              ('date', 'Date', type(datetime.now()))]
     date = db.Column(db.Date, nullable=False)
     client_id = db.Column(db.Integer, db.ForeignKey('client.id'))
     description = db.Column(db.String(255))
