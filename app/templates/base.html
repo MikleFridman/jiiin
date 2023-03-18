@@ -63,7 +63,7 @@
               {% if current_user.is_authenticated %}
               <li class="nav-item">
                   <a class="nav-link me-2 {% if request.path == url_for('notices_table') %}active{% endif %}" href="{{ url_for('notices_table') }}">
-                      <img src="{{ url_for('static', filename='/alarm.png') }}" alt="notices" title="{{ _('Notices') }}" width="22">
+<!--                      <img src="{{ url_for('static', filename='/alarm.png') }}" alt="notices" title="{{ _('Notices') }}" width="22">-->
                   </a>
               </li>
               <li class="nav-item">

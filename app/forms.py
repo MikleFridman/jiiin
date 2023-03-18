@@ -166,7 +166,7 @@ class LocationForm(FlaskForm):
 class AppointmentForm(FlaskForm):
     location = SelectField(_l('Location'), choices=[], coerce=int)
     date = DateField(_l('Date'), validators=[], format='%Y-%m-%d')
-    time = TimeField(_l('Time'), validators=[], format='%H:%M')
+    time = SelectField(_l('Time'), choices=[], validate_choice=False)
     client = SelectField(_l('Client'), choices=[], coerce=int)
     staff = SelectField(_l('Worker'), choices=[], coerce=int)
     service = SelectMultipleField(_l('Services'), choices=[],
@@ -212,8 +212,8 @@ class AppointmentForm(FlaskForm):
         if not self.date.data:
             raise ValidationError(_l('Please select date'))
 
-    def validate_time(self, time):
-        if not time.data:
+    def validate_time(self, field):
+        if not field.data:
             raise ValidationError(_l('Please select time'))
         location = self.location.data
         staff = self.staff.data
@@ -231,8 +231,9 @@ class AppointmentForm(FlaskForm):
                                             except_id)
         if not intervals:
             raise ValidationError(_l('This time unavailable'))
+        time = datetime.strptime(field.data, '%H:%M').time()
         dt = datetime(date.year, date.month,
-                      date.day, time.data.hour, time.data.minute)
+                      date.day, time.hour, time.minute)
         check = False
         for interval in intervals:
             time_from = interval[0]

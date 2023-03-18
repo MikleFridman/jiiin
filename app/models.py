@@ -618,7 +618,7 @@ class CashFlow(db.Model, Entity, Splitter):
     description = db.Column(db.String(255))
     cost = db.Column(db.Float)
     appointment = db.relationship('Appointment', backref='payment',
-                                  uselist='False', cascade='all, delete')
+                                  uselist='False')
 
 
 class Cash(db.Model, Entity, Splitter):

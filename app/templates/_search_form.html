@@ -2,12 +2,12 @@
 {% block app_content %}
 <div class="col-md-5 mb-2">
     <div class="row">
-        <div class="col-md-1">
+        <div class="col-1">
             {% if form.filter.data %}
-                <img class="ms-2" src="{{ url_for('static', filename='/filter.png') }}" alt="time" width="26">
+                <img class="ms-2 mt-2" src="{{ url_for('static', filename='/filter.png') }}" alt="time" width="22">
             {% endif %}
         </div>
-        <div class="col-md-11">
+        <div class="col-11">
             <div class="accordion" id="accordionFilter">
                 <div class="accordion-item">
                     <h2 class="accordion-header" id="headingOne">

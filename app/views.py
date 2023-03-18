@@ -229,6 +229,7 @@ def user_edit(id):
 
 
 # Staff block start
+# noinspection PyTypeChecker
 @app.route('/staff/')
 @login_required
 def staff_table():
@@ -329,11 +330,13 @@ def staff_delete(id):
 # Staff block end
 
 # Schedule block start
+# noinspection PyTypeChecker
 @app.route('/schedules/')
 @login_required
 def schedules_table():
     page = request.args.get('page', 1, type=int)
     form = set_filter(Schedule)
+    # noinspection PyTypeChecker
     param = get_filter_parameters(form, Schedule)
     data = Schedule.get_pagination(page, *param)
     return render_template('schedule_table.html',
@@ -467,6 +470,7 @@ def schedule_day_delete(schedule_id, id):
 
 
 # Client block start
+# noinspection PyTypeChecker
 @app.route('/clients/')
 @login_required
 def clients_table():
@@ -539,6 +543,7 @@ def client_delete(id):
     return redirect(url_for('clients_table'))
 
 
+# noinspection PyTypeChecker
 @app.route('/clients/<id>/files/', methods=['GET', 'POST'])
 @login_required
 def client_files_table(id):
@@ -625,6 +630,7 @@ def client_file_delete(client_id, id):
 
 
 # Tag block start
+# noinspection PyTypeChecker
 @app.route('/tags/')
 @login_required
 def tags_table():
@@ -690,29 +696,29 @@ def tag_delete(id):
 
 
 # Service block start
+# noinspection PyTypeChecker
 @app.route('/services/', methods=['GET', 'POST'])
 @login_required
 def services_table():
     page = request.args.get('page', 1, type=int)
     appointment_id = request.args.get('appointment_id', None, type=int)
-    client_id = request.args.get('client_id', None, type=int)
     url_back = request.args.get('url_back', url_for('appointments_table'))
-    if appointment_id:
-        appointment = Appointment.get_object(appointment_id)
-        session['services'] = [str(s.id) for s in appointment.services]
     if 'edit' in url_back:
-        url_submit = url_back + '?mod_services=1'
+        url_submit = url_for('appointment_edit', id=appointment_id,
+                             mod_services=1)
     else:
-        url_submit = url_for('appointment_create', client_id=client_id)
+        url_submit = url_for('appointment_create')
     if url_back == url_for('appointments_table'):
         session.pop('services', None)
         session.pop('location', None)
         session.pop('staff', None)
         session.pop('client', None)
         session.pop('date', None)
+        session.pop('time', None)
     choice_mode = request.args.get('choice_mode', None, type=int)
     if choice_mode:
         template = 'service_table_choice.html'
+        url_back = url_for('appointments_table')
     else:
         template = 'service_table.html'
     form = set_filter(Service)
@@ -800,6 +806,7 @@ def service_delete(id):
 
 
 # Location block start
+# noinspection PyTypeChecker
 @app.route('/locations/')
 @login_required
 def locations_table():
@@ -881,6 +888,7 @@ def location_delete(id):
 
 
 # Appointment block start
+# noinspection PyTypeChecker
 @app.route('/appointments/')
 @login_required
 def appointments_table():
@@ -907,6 +915,7 @@ def appointment_create():
     selected_staff_id = session.get('staff')
     selected_client_id = session.get('client')
     selected_date = session.get('date')
+    selected_time = session.get('time')
     form = AppointmentForm()
     form.location.choices = Location.get_items(True)
     form.staff.choices = Staff.get_items(True)
@@ -916,14 +925,16 @@ def appointment_create():
     for service_id in selected_services_id:
         service = Service.get_object(service_id)
         selected_services.append(service)
+    form.services.data = ','.join(list(str(s) for s in selected_services_id))
     if form.validate_on_submit():
+        time = datetime.strptime(form.time.data, '%H:%M').time()
         appointment = Appointment(cid=current_user.cid,
                                   location_id=form.location.data,
                                   date_time=datetime(form.date.data.year,
                                                      form.date.data.month,
                                                      form.date.data.day,
-                                                     form.time.data.hour,
-                                                     form.time.data.minute),
+                                                     time.hour,
+                                                     time.minute),
                                   client_id=form.client.data,
                                   staff_id=form.staff.data,
                                   info=form.info.data)
@@ -935,21 +946,17 @@ def appointment_create():
         db.session.commit()
         return redirect(url_for('appointments_table'))
     elif request.method == 'GET':
-        if request.args.get('client_id', None):
-            form.client.default = request.args.get('client_id')
-            form.process()
         if selected_location_id:
             form.location.default = selected_location_id
-            form.process()
         if selected_staff_id:
             form.staff.default = selected_staff_id
-            form.process()
         if selected_client_id:
             form.client.default = selected_client_id
-            form.process()
+        if selected_time:
+            form.time.default = selected_time
+        form.process()
         if selected_date:
             form.date.data = datetime.strptime(selected_date, '%Y-%m-%d')
-    form.services.data = ','.join(list(str(s) for s in selected_services_id))
     return render_template('appointment_form.html',
                            title=_('Appointment (create)'),
                            form=form,
@@ -965,34 +972,35 @@ def appointment_edit(id):
     param_url = {**request.args}
     param_url.pop('mod_services', None)
     url_back = url_for('appointments_table', **param_url)
-    mod_services = request.args.get('mod_services', None) and 'services' in session
-    if mod_services:
-        selected_services_id = session.get('services')
-        url_select_service = url_for('services_table',
-                                     choice_mode=1,
-                                     url_back=request.path)
-    else:
-        selected_services_id = [s.id for s in appointment.services]
-        url_select_service = url_for('services_table',
-                                     choice_mode=1,
-                                     appointment_id=id,
-                                     url_back=request.path)
+    mod_services = request.args.get('mod_services', None)
+    if not mod_services:
+        session.pop('services', None)
+        session['services'] = [str(s.id) for s in appointment.services]
+    selected_services_id = session.get('services')
+    url_select_service = url_for('services_table',
+                                 choice_mode=1,
+                                 appointment_id=id,
+                                 url_back=request.path)
     selected_services = []
     for service_id in selected_services_id:
         service = Service.get_object(service_id)
         selected_services.append(service)
+    selected_services.sort(key=lambda x: x.name)
     form = AppointmentForm(appointment)
     form.duration.data = get_duration(selected_services_id)
     form.location.choices = Location.get_items(True)
     form.staff.choices = Staff.get_items(True)
     form.client.choices = Client.get_items(True)
+    current_time = appointment.date_time.time().strftime('%H:%M')
+    form.time.choices = (current_time, current_time)
     if form.validate_on_submit():
+        time = datetime.strptime(form.time.data, '%H:%M').time()
         appointment.location_id = form.location.data
         appointment.date_time = datetime(form.date.data.year,
                                          form.date.data.month,
                                          form.date.data.day,
-                                         form.time.data.hour,
-                                         form.time.data.minute)
+                                         time.hour,
+                                         time.minute)
         appointment.client_id = form.client.data
         appointment.staff_id = form.staff.data
         appointment.info = form.info.data
@@ -1006,9 +1014,9 @@ def appointment_edit(id):
         form.location.default = appointment.location_id
         form.staff.default = appointment.staff_id
         form.client.default = appointment.client_id
+        form.time.default = current_time
         form.process()
         form.date.data = appointment.date_time.date()
-        form.time.data = appointment.date_time.time()
         form.info.data = appointment.info
     form.services.data = ','.join(list(str(s) for s in selected_services_id))
     return render_template('appointment_form.html',
@@ -1050,6 +1058,7 @@ def appointment_result(appointment_id):
 
 
 # Item block start
+# noinspection PyTypeChecker
 @app.route('/items/')
 @login_required
 def items_table():
@@ -1113,6 +1122,7 @@ def item_delete(id):
 
 
 # ItemFlow block start
+# noinspection PyTypeChecker
 @app.route('/items_flow/')
 @login_required
 def items_flow_table():
@@ -1225,6 +1235,7 @@ def item_flow_delete(id):
 
 
 # Notice block start
+# noinspection PyTypeChecker
 @app.route('/notices/')
 @login_required
 def notices_table():
@@ -1308,6 +1319,7 @@ def notice_delete(id):
 
 
 # CashFlow block start
+# noinspection PyTypeChecker
 @app.route('/cash_flow/')
 @login_required
 def cash_flow_table():
@@ -1357,8 +1369,7 @@ def cash_flow_create():
     elif request.method == 'GET':
         if appointment:
             location_id = appointment.location_id
-            description = ' '.join(('#Appointment',
-                                    str(appointment.id),
+            description = ' '.join((_('#Payment for services'),
                                     str(appointment.date_time)))
             date = appointment.date_time.date()
             cost = appointment.cost
@@ -1444,7 +1455,7 @@ def select_service(service_id, selected):
         if str(service_id) in services_id:
             services_id.remove(str(service_id))
             session['services'] = services_id
-    return jsonify(len(services_id))
+    return jsonify(services_id)
 
 
 @app.route('/select_location/<location_id>/')
@@ -1473,6 +1484,40 @@ def select_client(client_id):
 def select_date(date):
     session['date'] = date
     return jsonify('Ok')
+
+
+@app.route('/select_time/<time>/')
+@login_required
+def select_time(time):
+    session['time'] = time
+    return jsonify('Ok')
+
+
+@app.route('/get_services/')
+@login_required
+def get_services():
+    return jsonify(session['services'])
+
+
+@app.route('/get_intervals/<location_id>/<staff_id>/<date>')
+@login_required
+def get_intervals(location_id, staff_id, date):
+    timeslots = []
+    duration = get_duration(session['services'])
+    intervals = get_free_time_intervals(int(location_id), datetime.strptime(
+        date, '%Y-%m-%d').date(), int(staff_id), duration)
+    delta_config = CompanyConfig.get_parameter('min_time_interval')
+    for interval in intervals:
+        start = interval[0] + timedelta(minutes=14)
+        start = start - timedelta(minutes=start.minute % delta_config,
+                                  seconds=start.second,
+                                  microseconds=start.microsecond)
+        delta = timedelta(minutes=delta_config)
+        timeslots.append(start.strftime('%H:%M'))
+        while start < interval[1]:
+            start = start + delta
+            timeslots.append(start.strftime('%H:%M'))
+    return jsonify(timeslots)
 
 
 # Tasks block start

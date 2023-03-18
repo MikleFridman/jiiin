@@ -1,15 +1,34 @@
   <table id="data" class="table border-top border-bottom border-light">
     <tbody>
       {% for s in items %}
-        <tr class="table-default border-start border-end border-light">
-          <td class="ps-3">
-            {% if s.no_active %}
-              <img src="{{ url_for('static', filename='/hidden.png') }}" alt="hidden" width="24">
-            {% endif %}
+        <tr id="tr_{{ s.id }}" class="table-default border-start border-end border-light">
+          <td class="col-8 ps-3">
             {{ s.name }}
           </td>
-          <td class="col-2 text-center">{{ s.duration }} min</td>
+          <td class="col-3 text-center">{{ s.duration }} {{ _('min') }}</td>
+          <td class="col-1 text-center">
+            <a href="" id="{{ s.id }}" onclick="select_checkbox(id, 0)">
+              <img src="{{ url_for('static', filename='/delete.png') }}" alt="hidden" width="22">
+            </a>
+          </td>
         </tr>
       {% endfor %}
     </tbody>
   </table>
+<script>
+  function select_checkbox(id, checked)  {
+      if (checked){
+        value = 1
+      } else {
+        value = 0
+      }
+      fetch('/select_service/' + id + '/' + value).then(function(response) {
+          response.json().then(function(data) {
+          urlParams = new URLSearchParams(window.location.search);
+          urlParams.set('mod_services', 1);
+          window.location.search = urlParams;
+          })
+      });
+      document.getElementById('tr_' + id).detach();
+  }
+</script>

@@ -82,7 +82,7 @@ def get_free_time_intervals(location_id, date, staff_id, duration,
         time_open = wt['hour_from']
         time_close = wt['hour_to']
     staff_intervals = []
-    staff = Staff.query.get_or_404(staff_id)
+    staff = Staff.get_object(staff_id)
     if staff.main_schedule:
         wts = staff.main_schedule.get_work_time(date)
         if wts['hour_from'] == wts['hour_to']:
@@ -90,10 +90,9 @@ def get_free_time_intervals(location_id, date, staff_id, duration,
         else:
             staff_intervals = [(wts['hour_from'], wts['hour_to'])]
     timetable = Appointment.query.filter_by(
-        cid=current_user.cid, location_id=location.id, cancel=False).filter(
+        cid=current_user.cid, location_id=location.id, staff_id=staff_id, cancel=False).filter(
         func.date(Appointment.date_time) == date,
-        Appointment.id != except_id).filter_by(
-        staff=staff).order_by(Appointment.date_time)
+        Appointment.id != except_id).order_by(Appointment.date_time)
     intervals = []
     time_from = max(time_open, datetime.now())
     for appointment in timetable:

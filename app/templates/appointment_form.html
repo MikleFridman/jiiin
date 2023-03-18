@@ -7,25 +7,25 @@
             <div class="form-group col-md-4">
                 {{ form.location.label(class_="col-form-label") }}
                 {% if form.location.errors %}
-                    {{ form.location(class_="form-select is-invalid", onchange="select_location(this.selectedIndex)") }}
+                    {{ form.location(class_="form-select is-invalid", onchange="select_location(this.value)") }}
                 {% else %}
-                    {{ form.location(class_="form-select", onchange="select_location(this.selectedIndex)") }}
+                    {{ form.location(class_="form-select", onchange="select_location(this.value)") }}
                 {% endif %}
                 <div class="form-group mt-2">
                     {{ form.staff.label(class_="col-form-label") }}
                     {% if form.staff.errors %}
-                        {{ form.staff(class_="form-select is-invalid", onchange="select_staff(this.selectedIndex)") }}
+                        {{ form.staff(class_="form-select is-invalid", onchange="select_staff(this.value)") }}
                     {% else %}
-                        {{ form.staff(class_="form-select", onchange="select_staff(this.selectedIndex)") }}
+                        {{ form.staff(class_="form-select", onchange="select_staff(this.value)") }}
                     {% endif %}
                 </div>
             </div>
             <div class="form-group col-md-4">
                 {{ form.client.label(class_="col-form-label") }}
                 {% if form.client.errors %}
-                    {{ form.client(class_="form-select is-invalid", onchange="select_client(this.selectedIndex)") }}
+                    {{ form.client(class_="form-select is-invalid", onchange="select_client(this.value)") }}
                 {% else %}
-                    {{ form.client(class_="form-select", onchange="select_client(this.selectedIndex)") }}
+                    {{ form.client(class_="form-select", onchange="select_client(this.value)") }}
                 {% endif %}
                 <div class="row mt-2">
                     <div class="col-md-7">
@@ -39,15 +39,15 @@
                     <div class="col-md-5">
                     {{ form.time.label(class_="col-form-label") }}
                     {% if form.time.errors %}
-                        {{ form.time(class_="form-control is-invalid") }}
+                        {{ form.time(class_="form-select is-invalid", onchange="select_time(this.value)") }}
                     {% else %}
-                        {{ form.time(class_="form-control") }}
+                        {{ form.time(class_="form-select", onchange="select_time(this.value)") }}
                     {% endif %}
                     </div>
                 </div>
             </div>
         </div>
-        <div class="form-group mt-3">
+        <div class="form-group mt-3" onload="chart()">
             <div class="form-group col-md-8">
                 {{ form.service.label(class_="col-form-label") }}
                 <a href="{{ url_select_service }}"> ({{ _('select') }})</a>
@@ -96,11 +96,13 @@
     }
 </script>
 <script>
-  function select_location(id)  {
+   chart()
+   function select_location(id)  {
    fetch('/select_location/' + id + '/').then(function(response) {
    response.json().then(function(data) {
    })
    });
+   chart();
   }
 
   function select_staff(id)  {
@@ -108,6 +110,7 @@
    response.json().then(function(data) {
    })
    });
+   chart();
   }
 
   function select_client(id)  {
@@ -122,6 +125,32 @@
    response.json().then(function(data) {
    })
    });
+   chart();
   }
+
+  function select_time(time)  {
+   fetch('/select_time/' + time + '/').then(function(response) {
+   response.json().then(function(data) {
+   })
+   });
+  }
+
+  function chart()  {
+        location_id = document.getElementById('location').value
+        staff_id = document.getElementById('staff').value
+        date = document.getElementById('date').value
+        time = document.getElementById('time')
+        fetch('/get_intervals/' + location_id + '/' + staff_id + '/' + date).then(function(response) {
+            response.json().then(function(data) {
+                var optionHTML = "";
+                for (var t of data) {
+                optionHTML += '<option value="' + t + '">' + t + '</option>';
+                }
+                current_value = time.value
+                time.innerHTML = optionHTML;
+                time.value = current_value
+            })
+        });
+    }
 </script>
 {% endblock %}
