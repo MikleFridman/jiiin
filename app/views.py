@@ -1499,13 +1499,17 @@ def get_services():
     return jsonify(session['services'])
 
 
-@app.route('/get_intervals/<location_id>/<staff_id>/<date>')
+@app.route('/get_intervals/<location_id>/<staff_id>/<date>/<id>')
 @login_required
-def get_intervals(location_id, staff_id, date):
+def get_intervals(location_id, staff_id, date, id):
     timeslots = []
     duration = get_duration(session['services'])
-    intervals = get_free_time_intervals(int(location_id), datetime.strptime(
-        date, '%Y-%m-%d').date(), int(staff_id), duration)
+    if int(id):
+        intervals = get_free_time_intervals(int(location_id), datetime.strptime(
+            date, '%Y-%m-%d').date(), int(staff_id), duration, id)
+    else:
+        intervals = get_free_time_intervals(int(location_id), datetime.strptime(
+            date, '%Y-%m-%d').date(), int(staff_id), duration)
     delta_config = CompanyConfig.get_parameter('min_time_interval')
     for interval in intervals:
         start = interval[0] + timedelta(minutes=14)

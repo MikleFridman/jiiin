@@ -74,7 +74,7 @@ def get_free_time_intervals(location_id, date, staff_id, duration,
                             except_id=None):
     if not location_id or not date or not staff_id or not duration:
         return []
-    location = Location.query.get_or_404(location_id)
+    location = Location.get_object(location_id)
     time_open = datetime.strptime('00.00', '%H.%M')
     time_close = datetime.strptime('00.00', '%H.%M')
     if location.main_schedule:
@@ -106,6 +106,9 @@ def get_free_time_intervals(location_id, date, staff_id, duration,
     interval = time_close - time_from
     if interval >= duration:
         intervals.append((time_from, time_close - duration))
+    if except_id and len(intervals) == 0:
+        appointment = Appointment.get_object(except_id)
+        intervals = [(appointment.date_time, appointment.date_time)]
     if CompanyConfig.get_parameter('simple_mode'):
         return intervals
     else:

@@ -80,29 +80,13 @@
     </form>
 
 <script>
-<!--    var location_select = document.getElementById("location");-->
-<!--    var service_select = document.getElementById("service");-->
-
-    location_select.onchange = function()  {
-        fetch('/services/' + location_select.value).then(function(response) {
-            response.json().then(function(data) {
-                var optionHTML = "";
-                for (var service of data.services) {optionHTML += '<option value="' + service.id + '">' + service.name + '</option>';}
-                current_value_service = service_select.value
-                service_select.innerHTML = optionHTML;
-                service_select.value = current_value_service
-            })
-        });
-    }
-</script>
-<script>
-   chart()
-   function select_location(id)  {
+  timeline()
+  function select_location(id)  {
    fetch('/select_location/' + id + '/').then(function(response) {
    response.json().then(function(data) {
    })
    });
-   chart();
+   timeline();
   }
 
   function select_staff(id)  {
@@ -110,7 +94,7 @@
    response.json().then(function(data) {
    })
    });
-   chart();
+   timeline();
   }
 
   function select_client(id)  {
@@ -125,7 +109,7 @@
    response.json().then(function(data) {
    })
    });
-   chart();
+   timeline();
   }
 
   function select_time(time)  {
@@ -135,22 +119,23 @@
    });
   }
 
-  function chart()  {
-        location_id = document.getElementById('location').value
-        staff_id = document.getElementById('staff').value
-        date = document.getElementById('date').value
-        time = document.getElementById('time')
-        fetch('/get_intervals/' + location_id + '/' + staff_id + '/' + date).then(function(response) {
-            response.json().then(function(data) {
-                var optionHTML = "";
-                for (var t of data) {
-                optionHTML += '<option value="' + t + '">' + t + '</option>';
-                }
-                current_value = time.value
-                time.innerHTML = optionHTML;
-                time.value = current_value
-            })
-        });
-    }
+  function timeline()  {
+    location_id = document.getElementById('location').value
+    staff_id = document.getElementById('staff').value
+    date = document.getElementById('date').value
+    if (location_id == "" || staff_id == "" || date == "") {return false;}
+    time = document.getElementById('time')
+    fetch('/get_intervals/' + location_id + '/' + staff_id + '/' + date + '/' + {{ id|default('0') }}).then(function(response) {
+        response.json().then(function(data) {
+          var optionHTML = "";
+          for (var t of data) {
+            optionHTML += '<option value="' + t + '">' + t + '</option>';
+          }
+          current_value = time.value
+          time.innerHTML = optionHTML;
+          time.value = current_value
+        })
+    });
+  }
 </script>
 {% endblock %}
