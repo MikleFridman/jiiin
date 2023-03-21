@@ -9,7 +9,7 @@ from wtforms import (StringField, PasswordField, BooleanField,
 from wtforms.validators import (DataRequired, Email, EqualTo,
                                 ValidationError, Length, Optional)
 
-from .models import Schedule, Item
+from .models import Schedule, Item, Week
 from app.functions import *
 
 
@@ -118,9 +118,8 @@ class ScheduleForm(FlaskForm):
 
 
 class ScheduleDayForm(FlaskForm):
-    weekday = SelectField(_l('Weekday'),
-                          choices=[(i, d) for i, d in enumerate(Schedule.week)],
-                          coerce=int)
+    choices = Week.get_items(True)
+    weekday = SelectField(_l('Weekday'), choices=[*choices], coerce=int)
     hour_from = TimeField(_l('From hour'))
     hour_to = TimeField(_l('To hour'))
     submit = SubmitField(_l('Submit'))
@@ -136,6 +135,11 @@ class ClientForm(FlaskForm):
 
 class ClientFileForm(FlaskForm):
     file = FileField('')
+    submit = SubmitField(_l('Submit'))
+
+
+class ClientTagForm(FlaskForm):
+    tags = SelectMultipleField(_l('Tags'), choices=[], coerce=int)
     submit = SubmitField(_l('Submit'))
 
 
@@ -251,9 +255,6 @@ class ResultForm(FlaskForm):
 
 class SearchForm(FlaskForm):
     pass
-    # location_id = SelectField(_l('Location'), choices=[], coerce=int)
-    # staff_id = SelectField(_l('Worker'), choices=[], coerce=int)
-    # client_id = SelectField(_l('Client'), choices=[], coerce=int)
 
 
 class ItemForm(FlaskForm):
@@ -266,7 +267,7 @@ class ItemFlowForm(FlaskForm):
     location = SelectField(_l('Location'), choices=[], coerce=int)
     date = DateField(_l('Date'))
     item = SelectField(_l('Item'), choices=[], coerce=int)
-    action = SelectField(_l('Operation'), choices=[(1, 'Plus'), (-1, 'Minus')],
+    action = SelectField(_l('Operation'), choices=[(1, _l('Plus')), (-1, _l('Minus'))],
                          coerce=int)
     quantity = FloatField(_l('Quantity'), default=0)
     submit = SubmitField(_l('Submit'))

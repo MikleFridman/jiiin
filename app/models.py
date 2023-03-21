@@ -114,9 +114,13 @@ class Entity:
         return list(c.__name__ for c in cls.__subclasses__())
 
     @classmethod
-    def get_items(cls, tuple_mode=False):
-        items = cls.query.filter_by(no_active=False,
-                                    cid=current_user.cid)
+    def get_items(cls, tuple_mode=False, data_filter=None, data_search=None):
+        param = {'cid': current_user.cid, 'no_active': False}
+        if data_filter:
+            param = {**param, **data_filter}
+        items = cls.query.filter_by(**param)
+        if data_search:
+            items = items.filter(*data_search)
         if cls.sort_mode == 'asc':
             items = items.order_by(getattr(cls, cls.sort).asc())
         else:
@@ -330,9 +334,19 @@ class Staff(db.Model, Entity, Splitter):
             return self.schedules[0]
 
 
+class Tag(db.Model, Entity, Splitter):
+    sort = 'name'
+    search = [('name', 'Title', str)]
+    name = db.Column(db.String(64), index=True, nullable=False)
+
+    def __repr__(self):
+        return self.name
+
+
 class Client(db.Model, Entity, Splitter):
     sort = 'name'
-    search = [('name', 'Name', str),
+    search = [('tags', 'Tags', Tag),
+              ('name', 'Name', str),
               ('phone', 'Phone', str)]
     name = db.Column(db.String(64), index=True, nullable=False)
     phone = db.Column(db.String(16), index=True, unique=True, nullable=False)
@@ -350,6 +364,14 @@ class Client(db.Model, Entity, Splitter):
             active = '(no active)'
         return '{} {}'.format(self.name, active)
 
+    def add_tag(self, tag):
+        if tag not in self.tags:
+            self.tags.append(tag)
+
+    def remove_tag(self, tag):
+        if tag in self.tags:
+            self.tags.remove(tag)
+
 
 class ClientFile(db.Model, Entity, Splitter):
     sort = 'name'
@@ -359,23 +381,6 @@ class ClientFile(db.Model, Entity, Splitter):
     name = db.Column(db.String(64))
     path = db.Column(db.String(128))
     hash = db.Column(db.String(64))
-
-
-class Tag(db.Model, Entity, Splitter):
-    sort = 'name'
-    search = [('name', 'Title', str)]
-    name = db.Column(db.String(64), index=True, nullable=False)
-
-    def add_tag(self, tag):
-        if not self.is_service(tag):
-            self.tags.append(tag)
-
-    def remove_tag(self, tag):
-        if self.is_tag(tag):
-            self.tags.remove(tag)
-
-    def is_tag(self, tag):
-        return tag in self.tag
 
 
 class Service(db.Model, Entity, Splitter):
@@ -508,11 +513,23 @@ class Appointment(db.Model, Entity, Splitter):
         return service in self.services
 
 
+class Week:
+    days = [_l('Monday'), _l('Tuesday'), _l('Wednesday'), _l('Thursday'),
+            _l('Friday'), _l('Saturday'), _l('Sunday')]
+
+    @classmethod
+    def get_items(cls, tuple_mode=False):
+        if tuple_mode:
+            items = [(i, d) for i, d in enumerate(cls.days)]
+            items.insert(0, (0, _l('-Select-')))
+        else:
+            items = [d for d in cls.days]
+        return items
+
+
 class Schedule(db.Model, Entity, Splitter):
     sort = 'name'
     search = [('name', 'Title', str)]
-    week = [_l('Monday'), _l('Tuesday'), _l('Wednesday'), _l('Thursday'),
-            _l('Friday'), _l('Saturday'), _l('Sunday')]
     name = db.Column(db.String(64), index=True, nullable=False)
     days = db.relationship('ScheduleDay', backref='schedule',
                            cascade='all, delete')
@@ -546,6 +563,7 @@ class Schedule(db.Model, Entity, Splitter):
 
 class ScheduleDay(db.Model, Entity, Splitter):
     sort = 'day_number'
+    search = [('day_number', 'Weekday', Week)]
     schedule_id = db.Column(db.Integer,
                             db.ForeignKey('schedule.id'), nullable=False)
     day_number = db.Column(db.Integer)
@@ -554,7 +572,7 @@ class ScheduleDay(db.Model, Entity, Splitter):
 
     @property
     def weekday(self):
-        return Schedule.week[self.day_number]
+        return Week.get_items()[self.day_number]
 
 
 class Item(db.Model, Entity, Splitter):

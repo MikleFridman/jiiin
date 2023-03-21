@@ -2,15 +2,19 @@
 
 {% block app_content %}
   <div class="row">
-    <div class="col-md-7 mb-2">
+    <div class="col-md-2 mb-2">
       <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('client_create') }}';">{{ _('Add new') }}</button>
+    </div>
+    <div class="col-md-5 mb-2 text-center">
+      <h4>{{ _('Clients') }}</h4>
     </div>
     {% include '_search_form.html' %}
   </div>
   <table id="data" class="table table-hover border-top border-bottom border-light">
     <thead>
       <tr class="table-primary border-start border-end border-light text-center">
-        <th class="col-6">{{ _('Name') }}</th>
+        <th class="col-5">{{ _('Name') }}</th>
+        <th class="col-1">{{ _('Tags') }}</th>
         <th class="col-1">{{ _('History') }}</th>
         <th class="col-1">{{ _('Files') }}</th>
         <th class="col-1">{{ _('Notices') }}</th>
@@ -21,25 +25,30 @@
     <tbody>
       {% for c in items %}
         <tr class="{{ loop.cycle('table-success', 'table-default') }}  border-start border-end border-light">
-          <td class="col-6 ps-3">
+          <td class="col-5 ps-3">
             {% if c.no_active %}
               <img src="{{ url_for('static', filename='/hidden.png') }}" alt="no_active" width="24">
             {% endif %}
             {{ c.name }}
           </td>
           <td class="col-1 text-center">
-            <a href="{{ url_for('appointments_table', client_id=c.id) }}">
-              <img class="ms-2" src="{{ url_for('static', filename='/table.png') }}" alt="table" width="24">
+            <a href="{{ url_for('client_tags', client_id=c.id) }}">
+              <img class="ms-2" src="{{ url_for('static', filename='/tag.png') }}" alt="table" width="23">
             </a>
           </td>
           <td class="col-1 text-center">
-            <a href="{{ url_for('client_files_table', id=c.id) }}">
-              <img class="ms-2" src="{{ url_for('static', filename='/attach.png') }}" alt="attach" width="22">
+            <a href="{{ url_for('appointments_table', client_id=c.id) }}">
+              <img class="ms-2" src="{{ url_for('static', filename='/schedule.png') }}" alt="table" width="23">
+            </a>
+          </td>
+          <td class="col-1 text-center">
+            <a href="{{ url_for('client_files_table', client_id=c.id) }}">
+              <img class="ms-2" src="{{ url_for('static', filename='/attach.png') }}" alt="attach" width="23">
             </a>
           </td>
           <td class="col-1 text-center">
             <a href="{{ url_for('notices_table', client_id=c.id) }}">
-              <img class="ms-2" src="{{ url_for('static', filename='/notification.png') }}" alt="notice" width="23">
+              <img class="ms-2" src="{{ url_for('static', filename='/alarm.png') }}" alt="notice" width="23">
             </a>
           </td>
           <td class="col-2 text-center">{{ c.phone }}</td>

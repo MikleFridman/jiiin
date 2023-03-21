@@ -24,7 +24,11 @@
                                     {{ field.label(class_="col-4 col-form-label") }}
                                 {% endif %}
                                 <div class="col-8">
-                                    {{ field(class_="form-control") }}
+                                    {% if field.type == 'SelectField' %}
+                                        {{ field(class_="form-select") }}
+                                    {% else %}
+                                        {{ field(class_="form-control") }}
+                                    {% endif %}
                                 </div>
                             </div>
                             {% endfor %}

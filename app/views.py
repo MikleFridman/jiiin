@@ -1,4 +1,5 @@
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import RelationshipProperty
 
 import app
 import hashlib
@@ -19,7 +20,7 @@ def set_filter(class_object):
     search_list = []
     for search_attr, search_name, search_object in class_object.search:
         search_list.append(search_attr)
-        if issubclass(search_object, Entity):
+        if issubclass(search_object, Entity) or issubclass(search_object, Week):
             choices = search_object.get_items(True)
             setattr(SearchForm, search_attr, SelectField(_l(search_name),
                                                          choices=[*choices],
@@ -49,8 +50,11 @@ def get_filter_parameters(form, class_object):
         request_arg = request.args.get(search_attr, None, type=str)
         if request_arg and not request_arg == '0':
             check_filter = True
-            if issubclass(search_object, Entity):
-                filter_param[search_attr] = request_arg
+            if issubclass(search_object, Entity) or issubclass(search_object, Week):
+                if type(getattr(class_object, search_attr).property) == RelationshipProperty:
+                    search_param.append(getattr(class_object, search_attr).any(id=request_arg))
+                else:
+                    filter_param[search_attr] = request_arg
                 form[search_attr].default = request_arg
                 form.process()
             elif issubclass(search_object, type(datetime.now())):
@@ -60,9 +64,8 @@ def get_filter_parameters(form, class_object):
             elif issubclass(search_object, Period):
                 search_param.append(getattr(class_object, search_attr).between(
                     datetime.strptime(request_arg, '%Y-%m-%d'),
-                    datetime.strptime(request_arg, '%Y-%m-%d') + timedelta(days=1)))
-                search_param.append(getattr(class_object, search_attr
-                                            ).ilike(f'%{str(request_arg)}%'))
+                    datetime.strptime(request_arg, '%Y-%m-%d') +
+                    timedelta(days=1)))
                 form[search_attr].data = datetime.strptime(request_arg,
                                                            '%Y-%m-%d')
             else:
@@ -395,13 +398,17 @@ def schedule_delete(id):
 @login_required
 def schedule_days_table(schedule_id):
     page = request.args.get('page', 1, type=int)
-    param = {'schedule_id': schedule_id}
-    data = ScheduleDay.get_pagination(page, param)
+    form = set_filter(ScheduleDay)
+    param = get_filter_parameters(form, ScheduleDay)
+    param_filter = {**param[0], **{'schedule_id': schedule_id}}
+    param_search = param[1]
+    data = ScheduleDay.get_pagination(page, param_filter, param_search)
     return render_template('schedule_days_table.html',
                            title=_('Schedule_days'),
                            items=data.items,
                            pagination=data,
-                           schedule_id=schedule_id)
+                           schedule_id=schedule_id,
+                           form=form)
 
 
 @app.route('/schedules/<schedule_id>/schedule_days/create', methods=['GET', 'POST'])
@@ -544,42 +551,42 @@ def client_delete(id):
 
 
 # noinspection PyTypeChecker
-@app.route('/clients/<id>/files/', methods=['GET', 'POST'])
+@app.route('/clients/<client_id>/files/', methods=['GET', 'POST'])
 @login_required
-def client_files_table(id):
+def client_files_table(client_id):
     page = request.args.get('page', 1, type=int)
     form = set_filter(ClientFile)
     param = get_filter_parameters(form, ClientFile)
-    param_filter = {**param[0], **{'client_id': id}}
+    param_filter = {**param[0], **{'client_id': client_id}}
     param_search = param[1]
     data = ClientFile.get_pagination(page, param_filter, param_search)
     return render_template('client_files_table.html',
-                           id=id,
+                           client_id=client_id,
                            title=_('Files'),
                            items=data.items,
                            pagination=data,
                            form=form)
 
 
-@app.route('/clients/<id>/upload_file/', methods=['GET', 'POST'])
+@app.route('/clients/<client_id>/upload_file/', methods=['GET', 'POST'])
 @login_required
-def client_file_upload(id):
-    url_back = url_for('client_files_table', id=id, **request.args)
-    client = Client.get_object(id)
+def client_file_upload(client_id):
+    url_back = url_for('client_files_table', client_id=client_id, **request.args)
+    client = Client.get_object(client_id)
     if not client:
         return redirect(url_back)
     form = ClientFileForm()
     if request.method == 'POST':
         if 'file' not in request.files:
             flash('No selected file')
-            return redirect(url_for('client_file_upload', id=id))
+            return redirect(url_for('client_file_upload', client_id=client_id))
         file = request.files['file']
         if file.filename == '':
             flash('No selected file')
-            return redirect(url_for('client_file_upload', id=id))
+            return redirect(url_for('client_file_upload', client_id=client_id))
         if not allowed_file_ext(file.filename):
             flash('Unauthorized file extension')
-            return redirect(url_for('client_file_upload', id=id))
+            return redirect(url_for('client_file_upload', client_id=client_id))
         directory = os.path.join(app.config['UPLOAD_FOLDER'],
                                  str(current_user.cid))
         path = os.path.join(directory, str(uuid.uuid4()))
@@ -589,7 +596,7 @@ def client_file_upload(id):
         with open(path, 'rb') as f:
             hash_file = hashlib.sha1(f.read()).hexdigest()
         client_file = ClientFile(cid=current_user.cid,
-                                 client_id=id,
+                                 client_id=client_id,
                                  name=file.filename,
                                  path=path,
                                  hash=hash_file)
@@ -613,7 +620,7 @@ def client_file_download(client_id, id):
 @app.route('/clients/<client_id>/delete_file/<id>/')
 @login_required
 def client_file_delete(client_id, id):
-    url_back = url_for('client_files_table', id=client_id, **request.args)
+    url_back = url_for('client_files_table', client_id=client_id, **request.args)
     try:
         file = ClientFile.get_object(id)
         os.remove(file.path)
@@ -626,6 +633,28 @@ def client_file_delete(client_id, id):
     return redirect(url_back)
 
 
+@app.route('/clients/<client_id>/tags/', methods=['GET', 'POST'])
+@login_required
+def client_tags(client_id):
+    url_back = url_for('clients_table', **request.args)
+    form = ClientTagForm()
+    form.tags.choices = Tag.get_items(True)
+    form.tags.choices.pop(0)
+    client = Client.get_object(client_id)
+    if form.validate_on_submit():
+        client.tags.clear()
+        for tag_id in form.tags.data:
+            tag = Tag.get_object(tag_id)
+            client.add_tag(tag)
+        db.session.commit()
+        return redirect(url_back)
+    elif request.method == 'GET':
+        form.tags.default = [x.id for x in client.tags]
+        form.process()
+    return render_template('data_form.html',
+                           title=_('Tags'),
+                           form=form,
+                           url_back=url_back)
 # Client block end
 
 
@@ -1274,7 +1303,8 @@ def notice_create():
         if appointment:
             form.date.data = appointment.date_repeat
             previous_visit = appointment.date_time.date()
-            form.description.data = f'*Previous visit {previous_visit}'
+            form.description.data = ' '.join((_('*Previous visit'),
+                                             str(previous_visit)))
     return render_template('data_form.html',
                            title=_('Notice (create)'),
                            form=form,

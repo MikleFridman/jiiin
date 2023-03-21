@@ -2,8 +2,11 @@
 
 {% block app_content %}
   <div class="row">
-    <div class="col-md-7 mb-2">
+    <div class="col-md-2 mb-2">
       <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('cash_flow_create', **request.args) }}';">{{ _('Add new') }}</button>
+    </div>
+    <div class="col-md-5 mb-2 text-center">
+      <h4>{{ _('Cash flow') }}</h4>
     </div>
     {% include '_search_form.html' %}
   </div>

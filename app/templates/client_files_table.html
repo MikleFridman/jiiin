@@ -2,8 +2,11 @@
 
 {% block app_content %}
   <div class="row">
-    <div class="col-md-7 mb-2">
-      <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('client_file_upload', id=id) }}';">{{ _('Add new') }}</button>
+    <div class="col-md-2 mb-2">
+      <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('client_file_upload', client_id=client_id) }}';">{{ _('Add new') }}</button>
+    </div>
+    <div class="col-md-5 mb-2 text-center">
+      <h4>{{ _('Files') }}</h4>
     </div>
     {% include '_search_form.html' %}
   </div>
@@ -21,8 +24,8 @@
             {{ f.name }}
           </td>
           <td class="col-1 text-center">
-            <a href="{{ url_for('client_file_download', client_id=id, id=f.id) }}"><img src="{{ url_for('static', filename='/download.png') }}" alt="download" width="24"></a>
-            <a href="{{ url_for('client_file_delete', client_id=id, id=f.id) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
+            <a href="{{ url_for('client_file_download', client_id=client_id, id=f.id) }}"><img src="{{ url_for('static', filename='/download.png') }}" alt="download" width="24"></a>
+            <a href="{{ url_for('client_file_delete', client_id=client_id, id=f.id) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
           </td>
         </tr>
       {% endfor %}

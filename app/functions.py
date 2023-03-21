@@ -71,7 +71,7 @@ def get_interval_intersection(list_1, list_2):
 
 
 def get_free_time_intervals(location_id, date, staff_id, duration,
-                            except_id=None):
+                            appointment_id=None):
     if not location_id or not date or not staff_id or not duration:
         return []
     location = Location.get_object(location_id)
@@ -89,10 +89,12 @@ def get_free_time_intervals(location_id, date, staff_id, duration,
             staff_intervals = []
         else:
             staff_intervals = [(wts['hour_from'], wts['hour_to'])]
-    timetable = Appointment.query.filter_by(
-        cid=current_user.cid, location_id=location.id, staff_id=staff_id, cancel=False).filter(
-        func.date(Appointment.date_time) == date,
-        Appointment.id != except_id).order_by(Appointment.date_time)
+    filter_param = dict(location_id=location.id, staff_id=staff_id, cancel=False)
+    search_param = [func.date(Appointment.date_time) == date]
+    if appointment_id:
+        search_param.append(Appointment.id != appointment_id)
+    timetable = Appointment.get_items(False, filter_param, search_param)
+    timetable.sort(key=lambda x: x.date_time)
     intervals = []
     time_from = max(time_open, datetime.now())
     for appointment in timetable:
@@ -106,9 +108,11 @@ def get_free_time_intervals(location_id, date, staff_id, duration,
     interval = time_close - time_from
     if interval >= duration:
         intervals.append((time_from, time_close - duration))
-    if except_id and len(intervals) == 0:
-        appointment = Appointment.get_object(except_id)
-        intervals = [(appointment.date_time, appointment.date_time)]
+    if appointment_id and len(intervals) == 0:
+        appointment = Appointment.get_object(appointment_id)
+        intervals.append((appointment.date_time, appointment.time_end-duration))
+    intervals.sort(key=lambda x: x[0])
+    print(intervals)
     if CompanyConfig.get_parameter('simple_mode'):
         return intervals
     else:
