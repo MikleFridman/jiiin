@@ -218,10 +218,12 @@ class Company(db.Model, Entity):
                                 cascade='all, delete')
     notices = db.relationship('Notice', backref='company',
                               cascade='all, delete')
-    tasks = db.relationship('Task', backref='company',
-                            cascade='all, delete')
     appointments = db.relationship('Appointment', backref='company',
                                    cascade='all, delete')
+    holidays = db.relationship('Holiday', backref='company',
+                               cascade='all, delete')
+    tags = db.relationship('Tag', backref='company',
+                           cascade='all, delete')
 
     def __repr__(self):
         return self.name
@@ -321,6 +323,7 @@ class Staff(db.Model, Entity, Splitter):
                                     cascade='all, delete')
     schedules = db.relationship('Schedule', secondary=staff_schedules,
                                 backref=db.backref('staff', lazy=True))
+    holidays = db.relationship('Holiday', backref='staff', cascade='all, delete')
 
     def __repr__(self):
         active = ''
@@ -332,6 +335,9 @@ class Staff(db.Model, Entity, Splitter):
     def main_schedule(self):
         if len(self.schedules) > 0:
             return self.schedules[0]
+
+    def get_holidays(self):
+        pass
 
 
 class Tag(db.Model, Entity, Splitter):
@@ -650,10 +656,12 @@ class Notice(db.Model, Entity, Splitter):
     sort = 'date'
     sort_mode = 'desc'
     search = [('client_id', 'Client', Client),
+              ('processed', 'Processed', bool),
               ('date', 'Date', type(datetime.now()))]
     date = db.Column(db.Date, nullable=False)
     client_id = db.Column(db.Integer, db.ForeignKey('client.id'))
     description = db.Column(db.String(255))
+    processed = db.Column(db.Boolean, default=False)
 
     @classmethod
     def get_notices(cls, date=datetime.utcnow().date()):
@@ -661,6 +669,18 @@ class Notice(db.Model, Entity, Splitter):
                  'date': date,
                  'no_active': False}
         return cls.query.filter_by(**param)
+
+
+class Holiday(db.Model, Entity, Splitter):
+    sort = 'date'
+    sort_mode = 'desc'
+    search = [('staff_id', 'Worker', Staff),
+              ('date', 'Date', type(datetime.now()))]
+    date = db.Column(db.Date, nullable=False)
+    staff_id = db.Column(db.Integer, db.ForeignKey('staff.id'))
+    working_day = db.Column(db.Boolean, default=False)
+    hour_from = db.Column(db.Time)
+    hour_to = db.Column(db.Time)
 
 
 class TaskStatus(db.Model, Entity, Splitter):

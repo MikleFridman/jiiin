@@ -44,6 +44,7 @@
               <a class="dropdown-item" href="{{ url_for('locations_table') }}">{{ _('Locations') }}</a>
               <a class="dropdown-item" href="{{ url_for('services_table') }}">{{ _('Services') }}</a>
               <a class="dropdown-item" href="{{ url_for('staff_table') }}">{{ _('Staff') }}</a>
+              <a class="dropdown-item" href="{{ url_for('holidays_table') }}">{{ _('Holidays') }}</a>
               <a class="dropdown-item" href="{{ url_for('tags_table') }}">{{ _('Tags') }}</a>
               <div class="dropdown-divider"></div>
               <a class="dropdown-item" href="{{ url_for('company_edit') }}">{{ _('Settings') }}</a>
@@ -62,11 +63,14 @@
       <div class="d-flex">
           <ul class="navbar-nav me-auto">
               {% if current_user.is_authenticated %}
+              {% if notices_count %}
               <li class="nav-item">
-                  <a class="nav-link me-2 {% if request.path == url_for('notices_table') %}active{% endif %}" href="{{ url_for('notices_table') }}">
-<!--                      <img src="{{ url_for('static', filename='/alarm.png') }}" alt="notices" title="{{ _('Notices') }}" width="22">-->
+                  <a class="nav-link me-2" href="{{ url_for('notices_table', date=today_date, processed=False) }}">
+                      <img src="{{ url_for('static', filename='/bell.png') }}" alt="notices" title="{{ _('Notices') }}" width="22">
+                      <span class="badge bg-secondary rounded-pill">{{ notices_count }}</span>
                   </a>
               </li>
+              {% endif %}
               <li class="nav-item">
                   <a class="nav-link me-2 {% if request.path == url_for('sendmail') %}active{% endif %}" href="{{ url_for('sendmail', url_back=request.path) }}">{{ _('Contact us') }}</a>
               </li>

@@ -10,9 +10,17 @@
                     {% if field.widget.input_type != 'checkbox' %}
                         {{ field.label(class_="col-form-label") }}
                         {% if field.errors %}
-                            {{ field(class_="form-control is-invalid") }}
+                            {% if field.type == 'SelectField' %}
+                                {{ field(class_="form-select is-invalid") }}
+                            {% else%}
+                                {{ field(class_="form-control is-invalid") }}
+                            {% endif %}
                         {% else %}
-                            {{ field(class_="form-control") }}
+                            {% if field.type == 'SelectField' %}
+                                {{ field(class_="form-select") }}
+                            {% else%}
+                                {{ field(class_="form-control") }}
+                            {% endif %}
                         {% endif %}
                     {% else %}
                         <div class="mt-3">

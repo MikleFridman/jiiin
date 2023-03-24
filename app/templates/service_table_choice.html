@@ -13,9 +13,9 @@
     <thead>
       <tr class="table-primary border-start border-end border-light text-center">
         <th class="col-1"></th>
-        <th>{{ _('Title') }}</th>
-        <th class="col-1"><img class="ms-2" src="{{ url_for('static', filename='/time.png') }}" alt="time" width="22"></th>
-        <th class="col-2"><img class="ms-2" src="{{ url_for('static', filename='/price.png') }}" alt="price" width="21"></th>
+        <th class="col-9">{{ _('Title') }}</th>
+        <th class="col-1">{{ _('Time') }}</th>
+        <th class="col-1">{{ _('Price') }}</th>
       </tr>
     </thead>
     <tbody>
@@ -28,14 +28,14 @@
               <input class="form-check-input" type="checkbox" value="" id="{{ s.id }}" onchange="select_checkbox(id, checked)">
             {% endif %}
           </td>
-          <td>
+          <td class="col-9">
             {% if s.no_active %}
               <img src="{{ url_for('static', filename='/hidden.png') }}" alt="hidden" width="24">
             {% endif %}
-            {{ s.name[:80] }}
+            {{ s.name[:100] }}
           </td>
           <td class="col-1 text-center">{{ s.duration }}</td>
-          <td class="col-2 text-center">{{ s.price }}</td>
+          <td class="col-1 text-center">{{ s.price }}</td>
         </tr>
       {% endfor %}
     </tbody>
@@ -50,9 +50,9 @@
   {% else %}
     <button type="button" id="submit" class="btn btn-primary disabled mt-3" onclick="window.location.href='{{ url_submit }}'">{{ _('Select') }}</button>
   {% endif%}
-  {% if not id%}
-    <button type="button" class="btn btn-secondary mt-3 ms-3" onclick="window.location.href='{{ url_back }}'">{{ _('Cancel') }}</button>
-  {% endif%}
+<!--  {% if not id%}-->
+<!--    <button type="button" class="btn btn-secondary mt-3 ms-3" onclick="window.location.href='{{ url_back }}'">{{ _('Cancel') }}</button>-->
+<!--  {% endif%}-->
   </div>
 {% import '_pagination.html' as forms %}
 {{ forms.render_pagination(pagination, 'services_table', **request.args) }}

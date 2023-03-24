@@ -1,3 +1,5 @@
+import ast
+
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import RelationshipProperty
 
@@ -16,6 +18,20 @@ from app.functions import *
 from app.models import *
 
 
+@app.context_processor
+def inject_today_date():
+    return {'today_date': datetime.now().date()}
+
+
+@app.context_processor
+def check_notices():
+    if current_user.is_authenticated:
+        param = dict(date=datetime.now().date(), processed=False)
+        items = Notice.get_items(data_filter=param)
+        return {'notices_count': len(items)}
+    return []
+
+
 def set_filter(class_object):
     search_list = []
     for search_attr, search_name, search_object in class_object.search:
@@ -25,6 +41,11 @@ def set_filter(class_object):
             setattr(SearchForm, search_attr, SelectField(_l(search_name),
                                                          choices=[*choices],
                                                          coerce=int))
+        elif issubclass(search_object, bool):
+            choices = [('', _l('-Select-')), ('False', _l('False')), ('True', _l('True'))]
+            setattr(SearchForm, search_attr, SelectField(_l(search_name),
+                                                         choices=[*choices],
+                                                         coerce=str))
         elif issubclass(search_object, type(datetime.now())) or issubclass(
                 search_object, Period):
             setattr(SearchForm, search_attr, DateField(_l(search_name)))
@@ -55,6 +76,10 @@ def get_filter_parameters(form, class_object):
                     search_param.append(getattr(class_object, search_attr).any(id=request_arg))
                 else:
                     filter_param[search_attr] = request_arg
+                form[search_attr].default = request_arg
+                form.process()
+            elif issubclass(search_object, bool):
+                filter_param[search_attr] = ast.literal_eval(request_arg)
                 form[search_attr].default = request_arg
                 form.process()
             elif issubclass(search_object, type(datetime.now())):
@@ -330,7 +355,83 @@ def staff_delete(id):
     return redirect(url_for('staff_table'))
 
 
+@app.route('/holidays/')
+@login_required
+def holidays_table():
+    page = request.args.get('page', 1, type=int)
+    form = set_filter(Holiday)
+    param = get_filter_parameters(form, Holiday)
+    data = Holiday.get_pagination(page, *param)
+    return render_template('holidays_table.html',
+                           title=_('Holidays'),
+                           items=data.items,
+                           pagination=data,
+                           form=form)
+
+
+@app.route('/holidays/create/', methods=['GET', 'POST'])
+@login_required
+def holiday_create():
+    url_back = request.args.get('url_back', url_for('holidays_table',
+                                                    **request.args))
+    form = HolidayForm()
+    form.staff.choices = Staff.get_items(True)
+    if form.validate_on_submit():
+        holiday = Holiday(cid=current_user.cid,
+                          staff_id=form.staff.data,
+                          date=form.date.data,
+                          working_day=form.working_day.data,
+                          hour_from=form.hour_from.data,
+                          hour_to=form.hour_to.data)
+        db.session.add(holiday)
+        db.session.commit()
+        return redirect(url_back)
+    return render_template('data_form.html',
+                           title=_('Holiday (create)'),
+                           form=form,
+                           url_back=url_back)
+
+
+@app.route('/holidays/edit/<id>/', methods=['GET', 'POST'])
+@login_required
+def holiday_edit(id):
+    url_back = request.args.get('url_back', url_for('holidays_table',
+                                                    **request.args))
+    holiday = Holiday.get_object(id)
+    form = HolidayForm()
+    form.staff.choices = Staff.get_items(True)
+    if form.validate_on_submit():
+        holiday.staff_id = form.staff.data
+        holiday.date = form.date.data
+        holiday.working_day = form.working_day.data
+        holiday.hour_from = form.hour_from.data
+        holiday.hour_to = form.hour_to.data
+        db.session.commit()
+        return redirect(url_back)
+    elif request.method == 'GET':
+        form.staff.default = holiday.staff_id
+        form.process()
+        form.date.data = holiday.date
+        form.working_day.data = holiday.working_day
+        form.hour_from.data = holiday.hour_from
+        form.hour_to.data = holiday.hour_to
+    return render_template('data_form.html',
+                           title=_('Holiday (edit)'),
+                           form=form,
+                           url_back=url_back)
+
+
+@app.route('/holidays/delete/<id>/')
+@login_required
+def holiday_delete(id):
+    url_back = url_for('holidays_table', **request.args)
+    notice = Holiday.get_object(id)
+    db.session.delete(notice)
+    db.session.commit()
+    flash('Delete holiday {}'.format(id))
+    return redirect(url_back)
 # Staff block end
+
 
 # Schedule block start
 # noinspection PyTypeChecker
@@ -1287,6 +1388,7 @@ def notice_create():
     appointment_id = request.args.get('appointment_id', None)
     appointment = Appointment.get_object(appointment_id, False)
     form = NoticeForm()
+    form.processed.render_kw = {'disabled': ''}
     form.client.choices = Client.get_items(True)
     if form.validate_on_submit():
         notice = Notice(cid=current_user.cid,
@@ -1323,6 +1425,7 @@ def notice_edit(id):
         notice.client_id = form.client.data
         notice.date = form.date.data
         notice.description = form.description.data
+        notice.processed = form.processed.data
         db.session.commit()
         return redirect(url_back)
     elif request.method == 'GET':
@@ -1330,6 +1433,7 @@ def notice_edit(id):
         form.process()
         form.date.data = notice.date
         form.description.data = notice.description
+        form.processed.data = notice.processed
     return render_template('data_form.html',
                            title=_('Notice (edit)'),
                            form=form,

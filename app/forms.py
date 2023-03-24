@@ -149,7 +149,7 @@ class TagForm(FlaskForm):
 
 
 class ServiceForm(FlaskForm):
-    name = StringField(_l('Name'), validators=[DataRequired()])
+    name = StringField(_l('Title'), validators=[DataRequired()])
     duration = IntegerField(_l('Duration'), default=0)
     price = FloatField(_l('Price'), default=0)
     repeat = IntegerField(_l('Repeat'), default=0)
@@ -304,6 +304,16 @@ class NoticeForm(FlaskForm):
     date = DateField(_l('Date'))
     description = TextAreaField(_l('Description'), validators=[DataRequired(),
                                                                Length(max=255)])
+    processed = BooleanField(_l('Processed'))
+    submit = SubmitField(_l('Submit'))
+
+
+class HolidayForm(FlaskForm):
+    staff = SelectField(_l('Staff'), choices=[], coerce=int)
+    date = DateField(_l('Date'))
+    working_day = BooleanField(_l('Working day'))
+    hour_from = TimeField(_l('From hour'), validators=[Optional()])
+    hour_to = TimeField(_l('To hour'), validators=[Optional()])
     submit = SubmitField(_l('Submit'))
 
 
