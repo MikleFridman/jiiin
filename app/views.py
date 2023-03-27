@@ -164,7 +164,7 @@ def login():
         return redirect(url_for('index'))
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.find_user(form.username.data)
+        user = User.find_object({'username': form.username.data})
         if user is None or not user.check_password(form.password.data):
             flash('Invalid username or password')
             return redirect(url_for('login'))
@@ -203,14 +203,20 @@ def company_edit():
         company.config.default_time_from = form.default_time_from.data
         company.config.default_time_to = form.default_time_to.data
         company.config.simple_mode = form.simple_mode.data
+        company.config.min_time_interval = form.min_time_interval.data
         db.session.commit()
         return redirect(url_for('index'))
     elif request.method == 'GET':
-        form = CompanyForm(
-            obj=company,
-            data={'simple_mode': CompanyConfig.get_parameter('simple_mode'),
-                  'default_time_from': CompanyConfig.get_parameter('default_time_from'),
-                  'default_time_to': CompanyConfig.get_parameter('default_time_to')})
+        form.min_time_interval.default = CompanyConfig.get_parameter('min_time_interval')
+        form.process()
+        form.name.data = company.name
+        form.registration_number.data = company.registration_number
+        form.info.data = company.info
+        form.default_time_from.data = company.config.default_time_from
+        form.default_time_to.data = company.config.default_time_to
+        form.simple_mode.data = CompanyConfig.get_parameter('simple_mode')
+        form.default_time_from.data = CompanyConfig.get_parameter('default_time_from')
+        form.default_time_to.data = CompanyConfig.get_parameter('default_time_to')
     return render_template('data_form.html',
                            title=_('Company (edit)'),
                            form=form,
@@ -253,6 +259,30 @@ def user_edit(id):
                            url_back=url_back)
 
 
+@app.route('/reset_password_request/', methods=['GET', 'POST'])
+def reset_password_request():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    form = ResetPasswordRequestForm()
+    if form.validate_on_submit():
+        user = User.find_object({'email': form.email.data})
+        if user:
+            temp_password = User.get_random_password()
+            send_mail(subject=_('Reset password') + ' Jiiin',
+                      sender=app.config['MAIL_DEFAULT_SENDER'],
+                      recipients=[user.email],
+                      text_body=render_template('reset_password.txt',
+                                                password=temp_password))
+            user.set_password(temp_password)
+            db.session.commit()
+            flash(_('Temporary password has been sent to your e-mail'))
+            return redirect(url_for('login'))
+        else:
+            flash(_('User with the specified e-mail is not registered'))
+            return redirect(url_for('reset_password_request'))
+    return render_template('data_form.html',
+                           title=_('Reset password'),
+                           form=form)
 # User block end
 
 
@@ -1022,6 +1052,12 @@ def location_delete(id):
 @app.route('/appointments/')
 @login_required
 def appointments_table():
+    session.pop('location', None)
+    session.pop('staff', None)
+    session.pop('client', None)
+    session.pop('services', None)
+    session.pop('date', None)
+    session.pop('time', None)
     page = request.args.get('page', 1, type=int)
     form = set_filter(Appointment)
     param = get_filter_parameters(form, Appointment)
@@ -1047,6 +1083,8 @@ def appointment_create():
     selected_date = session.get('date')
     selected_time = session.get('time')
     form = AppointmentForm()
+    if selected_time:
+        form.time.choices = (selected_time, selected_time)
     form.location.choices = Location.get_items(True)
     form.staff.choices = Staff.get_items(True)
     form.client.choices = Client.get_items(True)
@@ -1116,13 +1154,18 @@ def appointment_edit(id):
         service = Service.get_object(service_id)
         selected_services.append(service)
     selected_services.sort(key=lambda x: x.name)
+    selected_location_id = session.get('location')
+    selected_staff_id = session.get('staff')
+    selected_client_id = session.get('client')
+    selected_date = session.get('date')
+    selected_time = session.get('time')
     form = AppointmentForm(appointment)
     form.duration.data = get_duration(selected_services_id)
     form.location.choices = Location.get_items(True)
     form.staff.choices = Staff.get_items(True)
     form.client.choices = Client.get_items(True)
     current_time = appointment.date_time.time().strftime('%H:%M')
-    form.time.choices = (current_time, current_time)
+    form.services.data = ','.join(list(str(s) for s in selected_services_id))
     if form.validate_on_submit():
         time = datetime.strptime(form.time.data, '%H:%M').time()
         appointment.location_id = form.location.data
@@ -1141,18 +1184,34 @@ def appointment_edit(id):
         db.session.commit()
         return redirect(url_back)
     elif request.method == 'GET':
-        form.location.default = appointment.location_id
-        form.staff.default = appointment.staff_id
-        form.client.default = appointment.client_id
-        form.time.default = current_time
+        if selected_location_id:
+            form.location.default = selected_location_id
+        else:
+            form.location.default = appointment.location_id
+        if selected_staff_id:
+            form.staff.default = selected_staff_id
+        else:
+            form.staff.default = appointment.staff_id
+        if selected_client_id:
+            form.client.default = selected_client_id
+        else:
+            form.client.default = appointment.client_id
+        if selected_time:
+            form.time.choices = (selected_time, selected_time)
+            form.time.default = selected_time
+        else:
+            form.time.choices = (current_time, current_time)
+            form.time.default = current_time
         form.process()
-        form.date.data = appointment.date_time.date()
+        if selected_date:
+            form.date.data = datetime.strptime(selected_date, '%Y-%m-%d')
+        else:
+            form.date.data = appointment.date_time.date()
         form.info.data = appointment.info
-    form.services.data = ','.join(list(str(s) for s in selected_services_id))
     return render_template('appointment_form.html',
                            title=_('Appointment (edit)'),
                            form=form,
-                           id=id,
+                           appointment_id=id,
                            items=selected_services,
                            url_select_service=url_select_service,
                            url_back=url_back)
@@ -1633,14 +1692,17 @@ def get_services():
     return jsonify(session['services'])
 
 
-@app.route('/get_intervals/<location_id>/<staff_id>/<date>/<id>')
+@app.route('/get_intervals/<location_id>/<staff_id>/<date>/<appointment_id>')
 @login_required
-def get_intervals(location_id, staff_id, date, id):
+def get_intervals(location_id, staff_id, date, appointment_id):
     timeslots = []
+    current_time = None
     duration = get_duration(session['services'])
-    if int(id):
+    if int(appointment_id):
         intervals = get_free_time_intervals(int(location_id), datetime.strptime(
-            date, '%Y-%m-%d').date(), int(staff_id), duration, id)
+            date, '%Y-%m-%d').date(), int(staff_id), duration, appointment_id)
+        appointment = Appointment.get_object(appointment_id)
+        current_time = appointment.date_time.time().strftime('%H:%M')
     else:
         intervals = get_free_time_intervals(int(location_id), datetime.strptime(
             date, '%Y-%m-%d').date(), int(staff_id), duration)
@@ -1655,6 +1717,9 @@ def get_intervals(location_id, staff_id, date, id):
         while start < interval[1]:
             start = start + delta
             timeslots.append(start.strftime('%H:%M'))
+    if current_time and current_time not in timeslots:
+        timeslots.append(current_time)
+    timeslots.sort()
     return jsonify(timeslots)
 
 

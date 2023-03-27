@@ -79,13 +79,28 @@ class UserFormEdit(UserForm):
                 raise ValidationError(_l('Please use a different email'))
 
 
+class ResetPasswordRequestForm(FlaskForm):
+    email = EmailField(_l('E-mail'), validators=[DataRequired(), Email()])
+    submit = SubmitField(_l('Submit'))
+
+
+class ResetPasswordForm(FlaskForm):
+    password = PasswordField(_l('Password'), validators=[DataRequired()])
+    password2 = PasswordField(_l('Repeat password'), validators=[DataRequired(), EqualTo('password')])
+    submit = SubmitField(_l('Submit'))
+
+
 class CompanyForm(FlaskForm):
     name = StringField(_l('Company name'), validators=[DataRequired()])
     registration_number = StringField(_l('Registration number'))
-    info = TextAreaField(_l('Info'), validators=[Length(max=200)])
     default_time_from = TimeField(_l('Open from (default)'))
     default_time_to = TimeField(_l('Open until (default)'))
+    choices = [(5, '5'), (10, '10'), (15, '15'), (30, '30'), (45, '45'),
+               (60, '60')]
+    min_time_interval = SelectField(_l('Time interval (min)'), choices=choices,
+                                    coerce=int)
     simple_mode = BooleanField(_l('Not use staff schedules'))
+    info = TextAreaField(_l('Info'), validators=[Length(max=200)])
     submit = SubmitField(_l('Submit'))
 
 
@@ -322,7 +337,7 @@ class CashFlowForm(FlaskForm):
     date = DateField(_l('Date'))
     description = StringField(_l('Description'), validators=[DataRequired(),
                                                              Length(max=120)])
-    action = SelectField(_l('Operation'), choices=[(1, 'Plus'), (-1, 'Minus')],
+    action = SelectField(_l('Operation'), choices=[(1, _l('Plus')), (-1, _l('Minus'))],
                          coerce=int)
     cost = FloatField(_l('Sum'), default=0)
     submit = SubmitField(_l('Submit'))

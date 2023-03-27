@@ -7,7 +7,7 @@
           </td>
           <td class="col-3 text-center">{{ s.duration }} {{ _('min') }}</td>
           <td class="col-1 text-center">
-            <a href="" id="{{ s.id }}" onclick="select_checkbox(id, 0)">
+            <a href="" id="{{ s.id }}" onclick="delete_service(id)">
               <img src="{{ url_for('static', filename='/delete.png') }}" alt="hidden" width="22">
             </a>
           </td>
@@ -16,19 +16,13 @@
     </tbody>
   </table>
 <script>
-  function select_checkbox(id, checked)  {
-      if (checked){
-        value = 1
-      } else {
-        value = 0
-      }
-      fetch('/select_service/' + id + '/' + value).then(function(response) {
+  function delete_service(id)  {
+      fetch('/select_service/' + id + '/' + 0).then(function(response) {
           response.json().then(function(data) {
           urlParams = new URLSearchParams(window.location.search);
           urlParams.set('mod_services', 1);
           window.location.search = urlParams;
           })
       });
-      document.getElementById('tr_' + id).detach();
   }
 </script>

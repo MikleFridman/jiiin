@@ -1,4 +1,6 @@
+import string
 from dataclasses import dataclass
+from random import choice
 
 from flask import abort
 from flask_babel import lazy_gettext as _l
@@ -281,8 +283,19 @@ class User(db.Model, UserMixin, Entity, Splitter):
         return self.username
 
     @classmethod
-    def find_user(cls, username):
-        return cls.query.filter_by(username=username).first()
+    def find_object(cls, data_filter, mode_404=False):
+        param = {'no_active': False, **data_filter}
+        if mode_404:
+            obj = cls.query.filter_by(**param).first_or_404()
+        else:
+            obj = cls.query.filter_by(**param).first()
+        return obj
+
+    @staticmethod
+    def get_random_password(length: int = 8):
+        abc = string.ascii_letters + string.digits
+        password = ''.join(choice(abc) for i in range(length))
+        return password
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -336,8 +349,17 @@ class Staff(db.Model, Entity, Splitter):
         if len(self.schedules) > 0:
             return self.schedules[0]
 
-    def get_holidays(self):
-        pass
+    def get_holiday_time(self, date):
+        param = dict(staff_id=self.id, date=date)
+        holiday = Holiday.find_object(param)
+        if holiday:
+            hour_from = hour_to = datetime.strptime('00.00', '%H.%M')
+            if holiday.working_day:
+                hour_from = datetime.combine(date, holiday.hour_from)
+                hour_to = datetime.combine(date, holiday.hour_to)
+            return {'hour_from': hour_from, 'hour_to': hour_to}
+        else:
+            return []
 
 
 class Tag(db.Model, Entity, Splitter):

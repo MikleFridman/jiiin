@@ -39,6 +39,8 @@ def get_tariff_limit(parameter):
 
 def get_duration(services):
     duration = 0
+    if not services:
+        return timedelta(minutes=duration)
     for service_id in services:
         service = Service.get_object(service_id)
         duration += service.duration
@@ -88,7 +90,14 @@ def get_free_time_intervals(location_id, date, staff_id, duration,
         if wts['hour_from'] == wts['hour_to']:
             staff_intervals = []
         else:
-            staff_intervals = [(wts['hour_from'], wts['hour_to'])]
+            staff_from = max(wts['hour_from'], datetime.now())
+            staff_intervals = [(staff_from, wts['hour_to'])]
+    ht = staff.get_holiday_time(date)
+    if ht:
+        if ht['hour_from'] == ht['hour_to']:
+            staff_intervals = []
+        else:
+            staff_intervals = [(ht['hour_from'], ht['hour_to'])]
     filter_param = dict(location_id=location.id, staff_id=staff_id, cancel=False)
     search_param = [func.date(Appointment.date_time) == date]
     if appointment_id:
@@ -108,11 +117,7 @@ def get_free_time_intervals(location_id, date, staff_id, duration,
     interval = time_close - time_from
     if interval >= duration:
         intervals.append((time_from, time_close - duration))
-    if appointment_id and len(intervals) == 0:
-        appointment = Appointment.get_object(appointment_id)
-        intervals.append((appointment.date_time, appointment.time_end-duration))
     intervals.sort(key=lambda x: x[0])
-    print(intervals)
     if CompanyConfig.get_parameter('simple_mode'):
         return intervals
     else:
@@ -125,4 +130,13 @@ def send_mail_from_site(sender, subject, text):
                   sender=sender,
                   recipients=[app.config['MAIL_USERNAME']])
     msg.body = text
+    mail.send(msg)
+
+
+def send_mail(sender, subject, recipients, text_body, html_body=None):
+    msg = Message(subject=subject,
+                  sender=sender,
+                  recipients=recipients)
+    msg.body = text_body
+    msg.html = html_body
     mail.send(msg)

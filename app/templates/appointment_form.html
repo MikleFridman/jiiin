@@ -80,7 +80,7 @@
     </form>
 
 <script>
-  timeline()
+  window.addEventListener('load', timeline())
   function select_location(id)  {
    fetch('/select_location/' + id + '/').then(function(response) {
    response.json().then(function(data) {
@@ -123,11 +123,15 @@
     location_id = document.getElementById('location').value
     staff_id = document.getElementById('staff').value
     date = document.getElementById('date').value
-    if (location_id == "" || staff_id == "" || date == "") {return false;}
     time = document.getElementById('time')
-    fetch('/get_intervals/' + location_id + '/' + staff_id + '/' + date + '/' + {{ id|default('0') }}).then(function(response) {
+    if (location_id == "" || staff_id == "" || date == "") {
+        var optionHTML = '<option selected value=""> - : - </option>';
+        time.innerHTML = optionHTML;
+        return false;
+    }
+    fetch('/get_intervals/' + location_id + '/' + staff_id + '/' + date + '/' + {{ appointment_id|default('0') }}).then(function(response) {
         response.json().then(function(data) {
-          var optionHTML = "";
+          var optionHTML = '<option value=""> - : - </option>';
           for (var t of data) {
             optionHTML += '<option value="' + t + '">' + t + '</option>';
           }
