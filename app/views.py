@@ -199,7 +199,7 @@ def company_edit():
     if form.validate_on_submit():
         company.name = form.name.data
         company.registration_number = form.registration_number.data
-        company.info = form.info.data
+        # company.info = form.info.data
         company.config.default_time_from = form.default_time_from.data
         company.config.default_time_to = form.default_time_to.data
         company.config.simple_mode = form.simple_mode.data
@@ -211,7 +211,7 @@ def company_edit():
         form.process()
         form.name.data = company.name
         form.registration_number.data = company.registration_number
-        form.info.data = company.info
+        # form.info.data = company.info
         form.default_time_from.data = company.config.default_time_from
         form.default_time_to.data = company.config.default_time_to
         form.simple_mode.data = CompanyConfig.get_parameter('simple_mode')
@@ -1633,6 +1633,46 @@ def cash_flow_delete(id):
     flash('Delete cash flow {}'.format(id))
     return redirect(url_for('cash_flow_table'))
 # CashFlow block end
+
+
+# Report block start
+@app.route('/report_view/', methods=['GET', 'POST'])
+@login_required
+def report_view():
+    url_back = url_for('index')
+    form = ReportForm()
+    form.location.choices = Location.get_items(True)
+    form.staff.choices = Staff.get_items(True)
+    data = []
+    if form.validate_on_submit():
+        filter_param = {}
+        if form.location.data:
+            filter_param['location_id'] = form.location.data
+        if form.staff.data:
+            filter_param['staff_id'] = form.staff.data
+        date_time_from = datetime(form.date_from.data.year,
+                                  form.date_from.data.month,
+                                  form.date_from.data.day,
+                                  0, 0, 0)
+        date_time_to = datetime(form.date_to.data.year,
+                                form.date_to.data.month,
+                                form.date_to.data.day,
+                                23, 59, 59)
+        search_param = [Appointment.date_time.between(date_time_from,
+                                                      date_time_to)]
+        data = Appointment.get_report(data_filter=filter_param,
+                                      data_search=search_param,
+                                      sort_mode='asc')
+    elif request.method == 'GET':
+        form.date_from.data = datetime.now().replace(day=1)
+        form.date_to.data = datetime.now().date()
+    return render_template('report_table.html',
+                           title=_('Reports'),
+                           form=form,
+                           items=data,
+                           url_back=url_back)
+
+# Report block end
 
 
 @app.route('/select_service/<service_id>/<selected>/')

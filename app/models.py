@@ -6,6 +6,7 @@ from flask import abort
 from flask_babel import lazy_gettext as _l
 from flask_login import UserMixin, current_user
 from flask_security import RoleMixin
+from sqlalchemy import func
 from sqlalchemy.orm import declared_attr
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db, login, app
@@ -539,6 +540,32 @@ class Appointment(db.Model, Entity, Splitter):
 
     def is_service(self, service):
         return service in self.services
+
+    @classmethod
+    def get_report(cls, data_filter=None, data_search=None, sort_mode=None):
+        param = {'cid': current_user.cid, 'no_active': False}
+        if data_filter:
+            param = {**param, **data_filter}
+        items = cls.query.filter_by(**param)
+        items = items.join(Location, Location.id == cls.location_id,
+                           isouter=True)
+        items = items.join(Staff, Staff.id == cls.staff_id,
+                           isouter=True)
+        items = items.join(CashFlow, CashFlow.id == cls.payment_id,
+                           isouter=True)
+        if data_search:
+            items = items.filter(*data_search)
+        items = items.with_entities(Location.name, Staff.name,
+                                    func.count(cls.id), func.sum(CashFlow.cost)
+                                    ).group_by(cls.location_id, cls.staff_id)
+        if not sort_mode:
+            sort_mode = cls.sort_mode
+        if sort_mode == 'asc':
+            items = items.order_by(Location.name.asc(), Staff.name.asc())
+        else:
+            items = items.order_by(getattr(cls, cls.sort).desc())
+        headers = ['location', 'staff', 'count', 'sum']
+        return [dict(list(zip(headers, item))) for item in items.all()]
 
 
 class Week:

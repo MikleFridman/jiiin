@@ -62,14 +62,14 @@
             <div class="form-group col-md-8">
                 <button type="submit" class="btn btn-primary mt-3 mb-2">{{ _('Submit') }}</button>
                 <button type="button" class="btn btn-secondary mt-3 ms-3 mb-2" onclick="window.location.href='{{ url_back }}'">{{ _('Back') }}</button>
-                {% if id %}
+                {% if appointment_id %}
                     <div class="btn-group" role="group" aria-label="">
                       <button type="button" class="btn btn-light mt-3 ms-5 mb-2">{{ _('More actions') }}</button>
                       <div class="btn-group" role="group">
                         <button id="btnGroupDrop1" type="button" class="btn btn-light mt-3 mb-2 dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
                         <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-                          <a class="dropdown-item" href="{{ url_for('appointment_result', appointment_id=id, url_back=request.path) }}">{{ _('Result') }}</a>
-                          <a class="dropdown-item" href="{{ url_for('cash_flow_create', appointment_id=id, url_back=request.path) }}">{{ _('Payment') }}</a>
+                          <a class="dropdown-item" href="{{ url_for('appointment_result', appointment_id=appointment_id, url_back=request.path) }}">{{ _('Result') }}</a>
+                          <a class="dropdown-item" href="{{ url_for('cash_flow_create', appointment_id=appointment_id, url_back=request.path) }}">{{ _('Payment') }}</a>
                           <a class="dropdown-item" href="{{ url_for('notice_create', client_id=form.client.data, url_back=request.path, appointment_id=id) }}">{{ _('Notice') }}</a>
                         </div>
                       </div>

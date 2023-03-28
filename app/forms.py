@@ -100,7 +100,7 @@ class CompanyForm(FlaskForm):
     min_time_interval = SelectField(_l('Time interval (min)'), choices=choices,
                                     coerce=int)
     simple_mode = BooleanField(_l('Not use staff schedules'))
-    info = TextAreaField(_l('Info'), validators=[Length(max=200)])
+    # info = TextAreaField(_l('Info'), validators=[Length(max=200)])
     submit = SubmitField(_l('Submit'))
 
 
@@ -234,6 +234,14 @@ class AppointmentForm(FlaskForm):
     def validate_time(self, field):
         if not field.data:
             raise ValidationError(_l('Please select time'))
+        time = datetime.strptime(field.data, '%H:%M').time()
+        date_time = datetime(self.date.data.year,
+                             self.date.data.month,
+                             self.date.data.day,
+                             time.hour,
+                             time.minute)
+        if date_time < datetime.now():
+            return True
         location = self.location.data
         staff = self.staff.data
         duration = self.duration.data
@@ -325,11 +333,18 @@ class NoticeForm(FlaskForm):
 
 class HolidayForm(FlaskForm):
     staff = SelectField(_l('Staff'), choices=[], coerce=int)
-    date = DateField(_l('Date'))
+    date = DateField(_l('Date'), validators=[DataRequired()], format='%Y-%m-%d')
     working_day = BooleanField(_l('Working day'))
     hour_from = TimeField(_l('From hour'), validators=[Optional()])
     hour_to = TimeField(_l('To hour'), validators=[Optional()])
     submit = SubmitField(_l('Submit'))
+
+
+class ReportForm(FlaskForm):
+    date_from = DateField(_l('From'), validators=[DataRequired()], format='%Y-%m-%d')
+    date_to = DateField(_l('To'), validators=[DataRequired()], format='%Y-%m-%d')
+    location = SelectField(_l('Location'), choices=[], coerce=int)
+    staff = SelectField(_l('Worker'), choices=[], coerce=int)
 
 
 class CashFlowForm(FlaskForm):

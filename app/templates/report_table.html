@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+  <div class="row">
+    <div class="col-md-2 mb-2">
+    </div>
+    <div class="col-md-5 mb-2 text-center">
+      <h4>{{ _('Reports') }}</h4>
+    </div>
+    {% include '_report_form.html' %}
+  </div>
+  <table id="data" class="table table-hover border-top border-bottom border-light">
+    <thead>
+      <tr class="table-primary border-start border-end border-light text-center">
+        <th class="col-4">{{ _('Location') }}</th>
+        <th class="col-4">{{ _('Worker') }}</th>
+        <th class="col-2">{{ _('Count') }}</th>
+        <th class="col-2">{{ _('Sum') }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for d in items %}
+        <tr class="{{ loop.cycle('table-success', 'table-default') }}  border-start border-end border-light">
+          <td class="col-4 ps-3">
+            {{ d['location'] }}
+          </td>
+          <td class="col-4 text-center">
+            {{ d['staff'] }}
+          </td>
+          <td class="col-2 text-center">
+            {{ d['count'] }}
+          </td>
+          <td class="col-2 text-center">
+            {{ d['sum']|float }}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+    <thead>
+      <tr class="table-primary border-start border-end border-light text-center">
+        <th class="col-4">{{ _('Total:') }}</th>
+        <th class="col-4"></th>
+        <th class="col-2">{{ items | sum(attribute='count') }}</th>
+        <th class="col-2">{{ items | sum(attribute='sum') }}</th>
+      </tr>
+    </thead>
+  </table>
+{% endblock %}
