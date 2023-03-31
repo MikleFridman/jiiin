@@ -1,7 +1,7 @@
 {% extends "bootstrap/base.html" %}
 
 {% block title %}
-    {% if title %}{{ title }} - Jiiin{% else %}Welcome to Jiiin{% endif %}
+    {% if title %}{{ title }} - Jiiin{% else %}{{ _('Welcome to Jiiin') }}!{% endif %}
 {% endblock %}
 
 {% block scripts %}
@@ -51,7 +51,7 @@
           </div>
         </li>
         <li class="nav-item dropdown">
-          <a class="nav-link {% if request.path == url_for('report_view') %}active{% endif %}" href="{{ url_for('report_view') }}">{{ _('Reports') }}</a>
+          <a class="nav-link {% if request.path == url_for('report_statistics_view') %}active{% endif %}" href="{{ url_for('report_statistics_view') }}">{{ _('Reports') }}</a>
         </li>
 
 <!--            <li class="nav-item dropdown">-->

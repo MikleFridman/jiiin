@@ -482,6 +482,7 @@ class Appointment(db.Model, Entity, Splitter):
     search = [('location_id', 'Location', Location),
               ('staff_id', 'Worker', Staff),
               ('client_id', 'Client', Client),
+              ('payment_id', 'Payment', type(None)),
               ('date_time', 'Date', Period)]
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow(),
                           onupdate=datetime.utcnow)
@@ -542,7 +543,7 @@ class Appointment(db.Model, Entity, Splitter):
         return service in self.services
 
     @classmethod
-    def get_report(cls, data_filter=None, data_search=None, sort_mode=None):
+    def get_report_statistics(cls, data_filter=None, data_search=None, sort_mode=None):
         param = {'cid': current_user.cid, 'no_active': False}
         if data_filter:
             param = {**param, **data_filter}
@@ -685,7 +686,7 @@ class CashFlow(db.Model, Entity, Splitter):
     sort = 'date'
     sort_mode = 'desc'
     search = [('location_id', 'Location', Location),
-              ('date', 'Date', type(datetime.now()))]
+              ('date', 'Date', Period)]
     date = db.Column(db.Date, nullable=False)
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
     description = db.Column(db.String(255))

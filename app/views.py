@@ -41,14 +41,24 @@ def set_filter(class_object):
             setattr(SearchForm, search_attr, SelectField(_l(search_name),
                                                          choices=[*choices],
                                                          coerce=int))
-        elif issubclass(search_object, bool):
-            choices = [('', _l('-Select-')), ('False', _l('False')), ('True', _l('True'))]
+        elif issubclass(search_object, bool) or issubclass(search_object,
+                                                           type(None)):
+            choices = [('', _l('-Select-')),
+                       ('False', _l('False')),
+                       ('True', _l('True'))]
             setattr(SearchForm, search_attr, SelectField(_l(search_name),
                                                          choices=[*choices],
                                                          coerce=str))
-        elif issubclass(search_object, type(datetime.now())) or issubclass(
-                search_object, Period):
+        elif issubclass(search_object, type(datetime.now())):
             setattr(SearchForm, search_attr, DateField(_l(search_name)))
+        elif issubclass(search_object, Period):
+            search_attr_from = search_attr + '_from'
+            search_attr_to = search_attr + '_to'
+            setattr(SearchForm, search_attr_from, DateField(_l('Date from')))
+            setattr(SearchForm, search_attr_to, DateField(_l('Date to')))
+            search_list.remove(search_attr)
+            search_list.append(search_attr_from)
+            search_list.append(search_attr_to)
         else:
             setattr(SearchForm, search_attr, StringField(_l(search_name)))
     rest_args = list(set(request.args.keys()).difference(set(search_list)))
@@ -63,11 +73,8 @@ def set_filter(class_object):
 def get_filter_parameters(form, class_object):
     filter_param = {}
     search_param = []
-    rest_args_list = list(request.args.keys())
     check_filter = False
     for search_attr, search_name, search_object in class_object.search:
-        if search_attr in rest_args_list:
-            rest_args_list.remove(search_attr)
         request_arg = request.args.get(search_attr, None, type=str)
         if request_arg and not request_arg == '0':
             check_filter = True
@@ -79,27 +86,52 @@ def get_filter_parameters(form, class_object):
                 form[search_attr].default = request_arg
                 form.process()
             elif issubclass(search_object, bool):
-                filter_param[search_attr] = ast.literal_eval(request_arg)
+                request_value = ast.literal_eval(request_arg)
+                if request_value:
+                    search_param.append(getattr(class_object, search_attr).is_(True))
+                else:
+                    search_param.append(getattr(class_object, search_attr).is_not(True))
+                form[search_attr].default = request_arg
+                form.process()
+            elif issubclass(search_object, type(None)):
+                request_value = ast.literal_eval(request_arg)
+                if request_value:
+                    search_param.append(getattr(class_object, search_attr).is_not(None))
+                else:
+                    search_param.append(getattr(class_object, search_attr).is_(None))
                 form[search_attr].default = request_arg
                 form.process()
             elif issubclass(search_object, type(datetime.now())):
                 filter_param[search_attr] = request_arg
                 form[search_attr].data = datetime.strptime(request_arg,
                                                            '%Y-%m-%d')
-            elif issubclass(search_object, Period):
-                search_param.append(getattr(class_object, search_attr).between(
-                    datetime.strptime(request_arg, '%Y-%m-%d'),
-                    datetime.strptime(request_arg, '%Y-%m-%d') +
-                    timedelta(days=1)))
-                form[search_attr].data = datetime.strptime(request_arg,
-                                                           '%Y-%m-%d')
             else:
                 search_param.append(getattr(class_object, search_attr
                                             ).ilike(f'%{str(request_arg)}%'))
                 form[search_attr].data = request_arg
+        if issubclass(search_object, Period):
+            search_attr_from = search_attr + '_from'
+            search_attr_to = search_attr + '_to'
+            request_arg_from = request.args.get(search_attr_from, None, type=str)
+            request_arg_to = request.args.get(search_attr_to, None, type=str)
+            if request_arg_from and not request_arg_from == '0':
+                check_filter = True
+                search_param.append(func.date(
+                    getattr(class_object, search_attr)) >=
+                    datetime.strptime(request_arg_from, '%Y-%m-%d').date())
+                form[search_attr_from].data = datetime.strptime(
+                    request_arg_from, '%Y-%m-%d')
+            if request_arg_to and not request_arg_to == '0':
+                check_filter = True
+                search_param.append(func.date(
+                    getattr(class_object, search_attr)) <
+                    (datetime.strptime(request_arg_to, '%Y-%m-%d') +
+                     timedelta(days=1)).date())
+                form[search_attr_to].data = datetime.strptime(
+                    request_arg_to, '%Y-%m-%d').date()
         if hasattr(SearchForm, search_attr):
             delattr(SearchForm, search_attr)
-    for ra in rest_args_list:
+    for ra in list(request.args.keys()):
         if hasattr(SearchForm, ra):
             delattr(SearchForm, ra)
     form.filter.data = check_filter
@@ -114,11 +146,12 @@ def sendmail():
     form = ContactForm()
     form.text.render_kw = {'rows': 6}
     if form.validate_on_submit():
-        sender = form.name.data, form.email.data
-        subject = f'Feedback from site ({form.email.data})'
+        sender = app.config['MAIL_DEFAULT_SENDER']
+        subject = f'Feedback from site ({form.name.data}, {form.email.data})'
         text = form.text.data
         send_mail_from_site(sender, subject, text)
-        return render_template('success_sendmail.html')
+        flash(_('Message success send'))
+        return redirect(url_back)
     return render_template('data_form.html',
                            title=_('Send mail'),
                            form=form,
@@ -166,19 +199,21 @@ def login():
     if form.validate_on_submit():
         user = User.find_object({'username': form.username.data})
         if user is None or not user.check_password(form.password.data):
-            flash('Invalid username or password')
+            flash(_('Invalid username or password'))
             return redirect(url_for('login'))
         login_user(user, remember=form.remember_me.data)
         if not user.company or not user.company.config:
             logout_user()
-            error_message = 'Not found company configuration!'
+            error_message = _('Not found company configuration!')
             return render_template('error.html', message=error_message), 404
         next_page = request.args.get('next')
         if not next_page or url_parse(next_page).netloc != '':
             next_page = url_for('index')
         app.logger.info('%s успешный вход в систему', user.username)
         return redirect(next_page)
-    return render_template('login.html', title='Sign In', form=form)
+    return render_template('login.html',
+                           title=_('Sign in'),
+                           form=form)
 
 
 @app.route('/logout/')
@@ -1139,7 +1174,7 @@ def appointment_edit(id):
     appointment = Appointment.get_object(id)
     param_url = {**request.args}
     param_url.pop('mod_services', None)
-    url_back = url_for('appointments_table', **param_url)
+    url_back = request.args.get('url_back', url_for('appointments_table', **param_url))
     mod_services = request.args.get('mod_services', None)
     if not mod_services:
         session.pop('services', None)
@@ -1636,10 +1671,9 @@ def cash_flow_delete(id):
 
 
 # Report block start
-@app.route('/report_view/', methods=['GET', 'POST'])
+@app.route('/report_statistics_view/', methods=['GET', 'POST'])
 @login_required
-def report_view():
-    url_back = url_for('index')
+def report_statistics_view():
     form = ReportForm()
     form.location.choices = Location.get_items(True)
     form.staff.choices = Staff.get_items(True)
@@ -1660,17 +1694,32 @@ def report_view():
                                 23, 59, 59)
         search_param = [Appointment.date_time.between(date_time_from,
                                                       date_time_to)]
-        data = Appointment.get_report(data_filter=filter_param,
-                                      data_search=search_param,
-                                      sort_mode='asc')
+        data = Appointment.get_report_statistics(data_filter=filter_param,
+                                                 data_search=search_param,
+                                                 sort_mode='asc')
     elif request.method == 'GET':
         form.date_from.data = datetime.now().replace(day=1)
         form.date_to.data = datetime.now().date()
-    return render_template('report_table.html',
+    return render_template('report_statistics_table.html',
                            title=_('Reports'),
                            form=form,
-                           items=data,
-                           url_back=url_back)
+                           items=data)
+
+
+@app.route('/report_check_payments_view/', methods=['GET', 'POST'])
+@login_required
+def report_check_payments_view():
+    page = request.args.get('page', 1, type=int)
+    form = set_filter(Appointment)
+    param = get_filter_parameters(form, Appointment)
+    data_filter = {**param[0], **{'payment_id': None}}
+    data_search = param[1]
+    data = Appointment.get_pagination(page, data_filter=data_filter, data_search=data_search)
+    return render_template('report_check_payments_table.html',
+                           title=_('Reports'),
+                           form=form,
+                           items=data.items,
+                           pagination=data)
 
 # Report block end
 

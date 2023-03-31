@@ -1,7 +1,7 @@
 import phonenumbers
 from flask import flash
 from flask_babel import lazy_gettext as _l
-from flask_wtf import FlaskForm
+from flask_wtf import FlaskForm, RecaptchaField
 from wtforms import (StringField, PasswordField, BooleanField,
                      SubmitField, TextAreaField, TelField, IntegerField,
                      FloatField, SelectField, DateField, TimeField,
@@ -29,6 +29,7 @@ class RegisterForm(FlaskForm):
     email = EmailField(_l('E-mail'), validators=[DataRequired(), Email()])
     password = PasswordField(_l('Password'), validators=[DataRequired()])
     password2 = PasswordField(_l('Repeat password'), validators=[DataRequired(), EqualTo('password')])
+    recaptcha = RecaptchaField()
     submit = SubmitField(_l('Submit'))
 
     def validate_username(self, username):
@@ -341,10 +342,10 @@ class HolidayForm(FlaskForm):
 
 
 class ReportForm(FlaskForm):
-    date_from = DateField(_l('From'), validators=[DataRequired()], format='%Y-%m-%d')
-    date_to = DateField(_l('To'), validators=[DataRequired()], format='%Y-%m-%d')
     location = SelectField(_l('Location'), choices=[], coerce=int)
     staff = SelectField(_l('Worker'), choices=[], coerce=int)
+    date_from = DateField(_l('Date from'), validators=[DataRequired()], format='%Y-%m-%d')
+    date_to = DateField(_l('Date to'), validators=[DataRequired()], format='%Y-%m-%d')
 
 
 class CashFlowForm(FlaskForm):

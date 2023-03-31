@@ -128,7 +128,7 @@ def get_free_time_intervals(location_id, date, staff_id, duration,
 def send_mail_from_site(sender, subject, text):
     msg = Message(subject=subject,
                   sender=sender,
-                  recipients=[app.config['MAIL_USERNAME']])
+                  recipients=[app.config['ADMINS'][0]])
     msg.body = text
     mail.send(msg)
 
