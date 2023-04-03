@@ -193,6 +193,7 @@ class AppointmentForm(FlaskForm):
                                   validate_choice=False, coerce=int)
     duration = HiddenField(_l('Duration'), default=0)
     services = HiddenField(_l('Services'), default='')
+    no_check_duration = BooleanField(_l('Not control duration'))
     info = TextAreaField(_l('Info'), validators=[Length(max=200)])
     submit = SubmitField(_l('Submit'))
 
@@ -279,6 +280,11 @@ class ResultForm(FlaskForm):
 
 class SearchForm(FlaskForm):
     pass
+
+
+class ConfirmForm(FlaskForm):
+    confirm = HiddenField()
+    submit = SubmitField(_l('Submit'))
 
 
 class ItemForm(FlaskForm):

@@ -1,4 +1,5 @@
 import ast
+from urllib.parse import quote, unquote
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import RelationshipProperty
@@ -63,9 +64,11 @@ def set_filter(class_object):
             setattr(SearchForm, search_attr, StringField(_l(search_name)))
     rest_args = list(set(request.args.keys()).difference(set(search_list)))
     rest_args_dict = {}
+    ignore_list = ['page']
     for ra in rest_args:
-        setattr(SearchForm, ra, HiddenField(ra))
-        rest_args_dict[ra] = request.args.get(ra, None)
+        if ra not in ignore_list:
+            setattr(SearchForm, ra, HiddenField(ra))
+            rest_args_dict[ra] = request.args.get(ra, None)
     setattr(SearchForm, 'filter', HiddenField('filter'))
     return SearchForm(request.form, meta={'csrf': False}, **rest_args_dict)
 
@@ -352,10 +355,11 @@ def staff_create():
                       phone=form.phone.data,
                       birthday=form.birthday.data)
         db.session.add(staff)
-        if form.schedule.data:
-            db.session.flush()
-            schedule = Schedule.get_object(form.schedule.data)
-            staff.schedules.append(schedule)
+        if not CompanyConfig.get_parameter('simple_mode'):
+            if form.schedule.data:
+                db.session.flush()
+                schedule = Schedule.get_object(form.schedule.data)
+                staff.schedules.append(schedule)
         db.session.commit()
         return redirect(url_for('staff_table'))
     return render_template('data_form.html',
@@ -378,11 +382,12 @@ def staff_edit(id):
         staff.name = form.name.data
         staff.phone = form.phone.data
         staff.birthday = form.birthday.data
-        if form.schedule.data:
-            schedule = Schedule.get_object(form.schedule.data)
-            staff.schedules.append(schedule)
-        else:
-            staff.schedules.clear()
+        if not CompanyConfig.get_parameter('simple_mode'):
+            if form.schedule.data:
+                schedule = Schedule.get_object(form.schedule.data)
+                staff.schedules.append(schedule)
+            else:
+                staff.schedules.clear()
         db.session.commit()
         return redirect(url_for('staff_table'))
     elif request.method == 'GET':
@@ -699,21 +704,48 @@ def client_edit(id):
                            url_back=url_back)
 
 
+@app.route('/confirm/', methods=['GET', 'POST'])
+@login_required
+def confirm_action():
+    action_url = unquote(request.args.get('action_url'))
+    url_back = unquote(request.args.get('url_back'))
+    token = session.get('token', None)
+    form = ConfirmForm(meta={'csrf': False})
+    form.confirm.data = token
+    if form.validate_on_submit():
+        return redirect(action_url)
+    return render_template('confirm_form.html',
+                           form=form,
+                           action_url=action_url,
+                           url_back=url_back)
+
+
 @app.route('/clients/delete/<id>/', methods=['GET', 'POST'])
 @login_required
 def client_delete(id):
+    url_back = url_for('clients_table')
     client = Client.get_object(id)
+    token = session.get('token', None)
+    if not token:
+        session['token'] = User.get_random_password()
+    confirm = request.args.get('confirm')
+    if not confirm or confirm != token:
+        session['token'] = User.get_random_password()
+        return redirect(url_for('confirm_action',
+                                action_url=quote(request.path),
+                                url_back=quote(url_back)))
+    session.pop('token', None)
     if (len(client.files) > 0 or
             len(client.appointments) > 0):
         flash('Unable to delete an object')
     else:
         try:
             db.session.delete(client)
-            db.session.commit()
+            # db.session.commit()
             flash('Delete client {}'.format(id))
         except IntegrityError:
             flash('Deletion error')
-    return redirect(url_for('clients_table'))
+    return redirect(url_back)
 
 
 # noinspection PyTypeChecker
@@ -1140,6 +1172,7 @@ def appointment_create():
                                                      time.minute),
                                   client_id=form.client.data,
                                   staff_id=form.staff.data,
+                                  no_check_duration=form.no_check_duration.data,
                                   info=form.info.data)
         db.session.add(appointment)
         db.session.flush()
@@ -1211,6 +1244,7 @@ def appointment_edit(id):
                                          time.minute)
         appointment.client_id = form.client.data
         appointment.staff_id = form.staff.data
+        appointment.no_check_duration = form.no_check_duration.data
         appointment.info = form.info.data
         appointment.services.clear()
         for service in selected_services:
@@ -1242,6 +1276,7 @@ def appointment_edit(id):
             form.date.data = datetime.strptime(selected_date, '%Y-%m-%d')
         else:
             form.date.data = appointment.date_time.date()
+        form.no_check_duration.data = appointment.no_check_duration
         form.info.data = appointment.info
     return render_template('appointment_form.html',
                            title=_('Appointment (edit)'),
@@ -1706,20 +1741,16 @@ def report_statistics_view():
                            items=data)
 
 
-@app.route('/report_check_payments_view/', methods=['GET', 'POST'])
+@app.route('/dashboard_view/')
 @login_required
-def report_check_payments_view():
-    page = request.args.get('page', 1, type=int)
-    form = set_filter(Appointment)
-    param = get_filter_parameters(form, Appointment)
-    data_filter = {**param[0], **{'payment_id': None}}
-    data_search = param[1]
-    data = Appointment.get_pagination(page, data_filter=data_filter, data_search=data_search)
-    return render_template('report_check_payments_table.html',
-                           title=_('Reports'),
-                           form=form,
-                           items=data.items,
-                           pagination=data)
+def dashboard_view():
+    users_count = len(User.get_items())
+    services_count = len(Service.get_items())
+    clients_count = len(Client.get_items())
+    return render_template('dashboard.html',
+                           users_count=users_count,
+                           services_count=services_count,
+                           clients_count=clients_count)
 
 # Report block end
 
@@ -1781,12 +1812,16 @@ def get_services():
     return jsonify(session['services'])
 
 
-@app.route('/get_intervals/<location_id>/<staff_id>/<date>/<appointment_id>')
+@app.route('/get_intervals/<location_id>/<staff_id>/<date>/<appointment_id>/'
+           '<no_check>/')
 @login_required
-def get_intervals(location_id, staff_id, date, appointment_id):
+def get_intervals(location_id, staff_id, date, appointment_id, no_check):
     timeslots = []
     current_time = None
-    duration = get_duration(session['services'])
+    if no_check == 'true':
+        duration = timedelta(minutes=CompanyConfig.get_parameter('min_time_interval'))
+    else:
+        duration = get_duration(session['services'])
     if int(appointment_id):
         intervals = get_free_time_intervals(int(location_id), datetime.strptime(
             date, '%Y-%m-%d').date(), int(staff_id), duration, appointment_id)

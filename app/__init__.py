@@ -50,7 +50,7 @@ admin.add_view(UserAdminView(User, db.session))
 admin.add_view(MyModelView(Role, db.session))
 admin.add_view(MyModelView(Permission, db.session))
 with app.test_request_context():
-    admin.add_link(MenuLink(name='Go to site', url=url_for('index')))
+    admin.add_link(MenuLink(name=_l('Go to site'), url=url_for('index')))
 
 
 @babel.localeselector

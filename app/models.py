@@ -272,7 +272,7 @@ class Role(db.Model, RoleMixin, Entity, Splitter):
 
 
 class User(db.Model, UserMixin, Entity, Splitter):
-    sort = 'name'
+    sort = 'username'
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True, nullable=False)
     password_hash = db.Column(db.String(128))
@@ -496,6 +496,7 @@ class Appointment(db.Model, Entity, Splitter):
     services = db.relationship('Service', secondary=appointments_services,
                                lazy='subquery',
                                backref=db.backref('appointments', lazy=True))
+    no_check_duration = db.Column(db.Boolean, default=False)
     info = db.Column(db.Text)
     result = db.Column(db.Text)
     payment_id = db.Column(db.Integer, db.ForeignKey('cash_flow.id'))

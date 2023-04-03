@@ -47,13 +47,17 @@
                 </div>
             </div>
         </div>
-        <div class="form-group mt-3" onload="chart()">
+        <div class="form-group mt-3">
             <div class="form-group col-md-8">
                 {{ form.service.label(class_="col-form-label") }}
                 <a href="{{ url_select_service }}"> ({{ _('select') }})</a>
                 {% include '_services.html' %}
             </div>
-            <div class="form-group col-md-8 mt-1">
+            <div class="form-group col-md-8 mt-2">
+                {{ form.no_check_duration(class_="form-check-input ms-1", onclick="handleClick()") }}
+                {{ form.no_check_duration.label(class_="form-check-label ms-3") }}
+            </div>
+            <div class="form-group col-md-8 mt-2">
                 {{ form.info.label(class_="col-form-label") }}
                 {{ form.info(class_="form-control") }}
             </div>
@@ -81,6 +85,10 @@
 
 <script>
   window.addEventListener('load', timeline())
+  function handleClick() {
+      timeline();
+  }
+
   function select_location(id)  {
    fetch('/select_location/' + id + '/').then(function(response) {
    response.json().then(function(data) {
@@ -123,13 +131,14 @@
     location_id = document.getElementById('location').value
     staff_id = document.getElementById('staff').value
     date = document.getElementById('date').value
+    no_check = document.getElementById('no_check_duration').checked
     time = document.getElementById('time')
     if (location_id == "" || staff_id == "" || date == "") {
         var optionHTML = '<option selected value=""> - : - </option>';
         time.innerHTML = optionHTML;
         return false;
     }
-    fetch('/get_intervals/' + location_id + '/' + staff_id + '/' + date + '/' + {{ appointment_id|default('0') }}).then(function(response) {
+    fetch('/get_intervals/' + location_id + '/' + staff_id + '/' + date + '/' + {{ appointment_id|default('0') }} + '/' + no_check).then(function(response) {
         response.json().then(function(data) {
           var optionHTML = '<option value=""> - : - </option>';
           for (var t of data) {
