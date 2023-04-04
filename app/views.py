@@ -710,12 +710,14 @@ def confirm_action():
     action_url = unquote(request.args.get('action_url'))
     url_back = unquote(request.args.get('url_back'))
     token = session.get('token', None)
-    form = ConfirmForm(meta={'csrf': False})
+    form = ConfirmForm()
     form.confirm.data = token
+    desc = _('Delete object? Are you sure?')
     if form.validate_on_submit():
-        return redirect(action_url)
+        return redirect(f'{action_url}?confirm={form.confirm.data}')
     return render_template('confirm_form.html',
                            form=form,
+                           desc=desc,
                            action_url=action_url,
                            url_back=url_back)
 
