@@ -283,7 +283,6 @@ class SearchForm(FlaskForm):
 
 
 class ConfirmForm(FlaskForm):
-    confirm = HiddenField()
     submit = SubmitField(_l('Submit'))
 
 

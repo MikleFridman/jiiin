@@ -6,7 +6,7 @@ from flask import abort
 from flask_babel import lazy_gettext as _l
 from flask_login import UserMixin, current_user
 from flask_security import RoleMixin
-from sqlalchemy import func
+from sqlalchemy import func, inspect
 from sqlalchemy.orm import declared_attr
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db, login, app
@@ -170,7 +170,13 @@ class Entity:
 
     def item_delete(self):
         db.session.delete(self)
-        db.session.commit()
+        # db.session.commit()
+
+    @classmethod
+    def get_attributes(cls):
+        table = inspect(cls)
+        for column in table.c:
+            print(getattr(cls, column.name).property)
 
 
 class Splitter:

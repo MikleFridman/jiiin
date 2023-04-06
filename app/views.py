@@ -1,5 +1,5 @@
 import ast
-from urllib.parse import quote, unquote
+from functools import wraps
 
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import RelationshipProperty
@@ -31,6 +31,34 @@ def check_notices():
         items = Notice.get_items(data_filter=param)
         return {'notices_count': len(items)}
     return []
+
+
+def confirm(desc):
+    def outer(f):
+        @wraps(f)
+        def wrap(*args, **kwargs):
+            form = ConfirmForm()
+            url_back = request.args.get('url_back')
+            if form.validate_on_submit():
+                return f(*args, **kwargs)
+            return render_template('confirm_form.html',
+                                   form=form,
+                                   desc=desc,
+                                   url_back=url_back)
+        return wrap
+    return outer
+
+
+@app.route('/delete/<class_name>/<object_id>/', methods=['GET', 'POST'])
+@login_required
+@confirm(_('Delete object? Are you sure?'))
+def delete(class_name, object_id):
+    class_object = Entity.get_class(class_name)
+    del_object = class_object.get_object(object_id)
+    url_back = request.args.get('url_back')
+    del_object.item_delete()
+    flash(f'Delete {class_name} {object_id}')
+    return redirect(url_back)
 
 
 def set_filter(class_object):
@@ -702,52 +730,6 @@ def client_edit(id):
                            title=_('Client (edit)'),
                            form=form,
                            url_back=url_back)
-
-
-@app.route('/confirm/', methods=['GET', 'POST'])
-@login_required
-def confirm_action():
-    action_url = unquote(request.args.get('action_url'))
-    url_back = unquote(request.args.get('url_back'))
-    token = session.get('token', None)
-    form = ConfirmForm()
-    form.confirm.data = token
-    desc = _('Delete object? Are you sure?')
-    if form.validate_on_submit():
-        return redirect(f'{action_url}?confirm={form.confirm.data}')
-    return render_template('confirm_form.html',
-                           form=form,
-                           desc=desc,
-                           action_url=action_url,
-                           url_back=url_back)
-
-
-@app.route('/clients/delete/<id>/', methods=['GET', 'POST'])
-@login_required
-def client_delete(id):
-    url_back = url_for('clients_table')
-    client = Client.get_object(id)
-    token = session.get('token', None)
-    if not token:
-        session['token'] = User.get_random_password()
-    confirm = request.args.get('confirm')
-    if not confirm or confirm != token:
-        session['token'] = User.get_random_password()
-        return redirect(url_for('confirm_action',
-                                action_url=quote(request.path),
-                                url_back=quote(url_back)))
-    session.pop('token', None)
-    if (len(client.files) > 0 or
-            len(client.appointments) > 0):
-        flash('Unable to delete an object')
-    else:
-        try:
-            db.session.delete(client)
-            # db.session.commit()
-            flash('Delete client {}'.format(id))
-        except IntegrityError:
-            flash('Deletion error')
-    return redirect(url_back)
 
 
 # noinspection PyTypeChecker
