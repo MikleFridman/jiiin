@@ -2,12 +2,12 @@ import string
 from dataclasses import dataclass
 from random import choice
 
-from flask import abort
+from flask import abort, flash
 from flask_babel import lazy_gettext as _l
 from flask_login import UserMixin, current_user
 from flask_security import RoleMixin
 from sqlalchemy import func, inspect
-from sqlalchemy.orm import declared_attr
+from sqlalchemy.orm import declared_attr, ONETOMANY, MANYTOMANY
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db, login, app
 from datetime import datetime, timedelta
@@ -168,15 +168,25 @@ class Entity:
             obj = cls.query.filter_by(**param).first()
         return obj
 
-    def item_delete(self):
+    def delete_object(self):
+        for attr in self.get_relationships():
+            if len(getattr(self, attr.split('.')[1])) > 0:
+                flash(_l('Unable to delete the selected object'))
+                return False
         db.session.delete(self)
-        # db.session.commit()
+        db.session.commit()
+        flash(_l('Object successfully deleted'))
+        return True
 
-    @classmethod
-    def get_attributes(cls):
-        table = inspect(cls)
-        for column in table.c:
-            print(getattr(cls, column.name).property)
+    def get_relationships(self):
+        rel_list = []
+        for r in inspect(type(self)).relationships:
+            if r.direction == ONETOMANY and 'delete' not in r.cascade:
+                rel_list.append(r.__str__())
+            elif (r.direction == MANYTOMANY and
+                  r.secondary.name.split('_')[1] == r.back_populates):
+                rel_list.append(r.__str__())
+        return rel_list
 
 
 class Splitter:
@@ -339,6 +349,7 @@ class Staff(db.Model, Entity, Splitter):
     name = db.Column(db.String(64), index=True, nullable=False)
     phone = db.Column(db.String(16), index=True, unique=True, nullable=False)
     birthday = db.Column(db.Date)
+    appointments = db.relationship('Appointment', backref='staff')
     task_progress = db.relationship('TaskProgress', backref='staff',
                                     cascade='all, delete')
     schedules = db.relationship('Schedule', secondary=staff_schedules,
@@ -346,10 +357,7 @@ class Staff(db.Model, Entity, Splitter):
     holidays = db.relationship('Holiday', backref='staff', cascade='all, delete')
 
     def __repr__(self):
-        active = ''
-        if self.no_active:
-            active = '(no active)'
-        return '{} {}'.format(self.name, active)
+        return self.name
 
     @property
     def main_schedule(self):
@@ -389,6 +397,7 @@ class Client(db.Model, Entity, Splitter):
     info = db.Column(db.Text)
     files = db.relationship('ClientFile', backref='client', cascade='all, delete')
     notices = db.relationship('Notice', backref='client', cascade='all, delete')
+    appointments = db.relationship('Appointment', backref='client')
     tags = db.relationship('Tag', secondary=clients_tags,
                            lazy='subquery',
                            backref=db.backref('clients', lazy=True))
@@ -425,6 +434,10 @@ class Service(db.Model, Entity, Splitter):
     duration = db.Column(db.Integer)
     price = db.Column(db.Float)
     repeat = db.Column(db.Integer)
+    appointments = db.relationship('Appointment',
+                                   secondary=appointments_services,
+                                   lazy='subquery',
+                                   backref=db.backref('services', lazy=True))
 
     def __repr__(self):
         active = ''
@@ -443,8 +456,7 @@ class Location(db.Model, Entity, Splitter):
     address = db.Column(db.String(120))
     phone = db.Column(db.String(20), index=True, unique=True)
     timezone = db.Column(db.Integer, default=0)
-    appointments = db.relationship('Appointment', backref='location',
-                                   cascade='all, delete')
+    appointments = db.relationship('Appointment', backref='location')
     cash = db.relationship('Cash', backref='location', uselist='False',
                            cascade='all, delete')
     cash_flows = db.relationship('CashFlow', backref='location',
@@ -496,12 +508,7 @@ class Appointment(db.Model, Entity, Splitter):
                             nullable=False)
     date_time = db.Column(db.DateTime, nullable=False)
     client_id = db.Column(db.Integer, db.ForeignKey('client.id'))
-    client = db.relationship('Client', backref='appointments')
     staff_id = db.Column(db.Integer, db.ForeignKey('staff.id'))
-    staff = db.relationship('Staff', backref='appointments')
-    services = db.relationship('Service', secondary=appointments_services,
-                               lazy='subquery',
-                               backref=db.backref('appointments', lazy=True))
     no_check_duration = db.Column(db.Boolean, default=False)
     info = db.Column(db.Text)
     result = db.Column(db.Text)

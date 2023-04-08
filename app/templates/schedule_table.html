@@ -32,7 +32,7 @@
           </td>
           <td class="col-1 text-center">
             <a href="{{ url_for('schedule_edit', id=sh.id) }}"><img src="{{ url_for('static', filename='/edit.png') }}" alt="edit" width="24"></a>
-            <a href="{{ url_for('schedule_delete', id=sh.id) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
+            <a href="{{ url_for('delete', class_name='schedule', object_id=sh.id, url_back=url_for('schedules_table')) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
           </td>
         </tr>
       {% endfor %}

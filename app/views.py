@@ -51,13 +51,12 @@ def confirm(desc):
 
 @app.route('/delete/<class_name>/<object_id>/', methods=['GET', 'POST'])
 @login_required
-@confirm(_('Delete object? Are you sure?'))
+@confirm(_l('Delete the selected object?'))
 def delete(class_name, object_id):
     class_object = Entity.get_class(class_name)
     del_object = class_object.get_object(object_id)
-    url_back = request.args.get('url_back')
-    del_object.item_delete()
-    flash(f'Delete {class_name} {object_id}')
+    url_back = request.args.get('url_back', url_for('index'))
+    del_object.delete_object()
     return redirect(url_back)
 
 
@@ -434,25 +433,6 @@ def staff_edit(id):
                            url_back=url_back)
 
 
-@app.route('/staff/delete/<id>/', methods=['GET', 'POST'])
-@login_required
-def staff_delete(id):
-    staff = Staff.get_object(id)
-    if (len(staff.calendar) > 0 or
-            len(staff.appointments) > 0 or
-            len(staff.tasks) > 0 or
-            len(staff.tasks_progress) > 0):
-        flash('Unable to delete an object')
-    else:
-        try:
-            db.session.delete(staff)
-            db.session.commit()
-            flash('Delete staff {}'.format(id))
-        except IntegrityError:
-            flash('Deletion error')
-    return redirect(url_for('staff_table'))
-
-
 @app.route('/holidays/')
 @login_required
 def holidays_table():
@@ -517,17 +497,6 @@ def holiday_edit(id):
                            title=_('Holiday (edit)'),
                            form=form,
                            url_back=url_back)
-
-
-@app.route('/holidays/delete/<id>/')
-@login_required
-def holiday_delete(id):
-    url_back = url_for('holidays_table', **request.args)
-    notice = Holiday.get_object(id)
-    db.session.delete(notice)
-    db.session.commit()
-    flash('Delete holiday {}'.format(id))
-    return redirect(url_back)
 # Staff block end
 
 
@@ -581,16 +550,6 @@ def schedule_edit(id):
                            title=_('Schedule (edit)'),
                            form=form,
                            url_back=url_back)
-
-
-@app.route('/schedules/delete/<id>', methods=['GET', 'POST'])
-@login_required
-def schedule_delete(id):
-    schedule = Schedule.get_object(id)
-    db.session.delete(schedule)
-    db.session.commit()
-    flash('Delete schedule {}'.format(id))
-    return redirect(url_for('schedules_table'))
 
 
 @app.route('/schedules/<schedule_id>/schedule_days/')
@@ -656,22 +615,6 @@ def schedule_day_edit(schedule_id, id):
                            title=_('Schedule day (edit)'),
                            form=form,
                            url_back=url_back)
-
-
-@app.route('/schedules/<schedule_id>/schedule_days/delete/<id>', methods=['GET', 'POST'])
-@login_required
-def schedule_day_delete(schedule_id, id):
-    url_back = url_for('schedule_days_table', schedule_id=schedule_id,
-                       **request.args)
-    schedule = Schedule.get_object(schedule_id)
-    param = {'schedule_id': schedule.id, 'id': id}
-    schedule_day = ScheduleDay.find_object(param, True)
-    db.session.delete(schedule_day)
-    db.session.commit()
-    flash('Delete schedule day {}'.format(id))
-    return redirect(url_back)
-
-
 # Schedule block end
 
 
@@ -799,22 +742,6 @@ def client_file_download(client_id, id):
     return send_file(file.path, as_attachment=True, download_name=file.name)
 
 
-@app.route('/clients/<client_id>/delete_file/<id>/')
-@login_required
-def client_file_delete(client_id, id):
-    url_back = url_for('client_files_table', client_id=client_id, **request.args)
-    try:
-        file = ClientFile.get_object(id)
-        os.remove(file.path)
-        db.session.delete(file)
-        db.session.commit()
-    except RuntimeError:
-        flash('Runtime error')
-        return redirect(url_back)
-    flash('Delete file {}'.format(id))
-    return redirect(url_back)
-
-
 @app.route('/clients/<client_id>/tags/', methods=['GET', 'POST'])
 @login_required
 def client_tags(client_id):
@@ -890,19 +817,6 @@ def tag_edit(id):
                            title=_('Tag (edit)'),
                            form=form,
                            url_back=url_back)
-
-
-@app.route('/tags/delete/<id>/')
-@login_required
-def tag_delete(id):
-    url_back = url_for('tags_table', **request.args)
-    tag = Tag.get_object(id)
-    db.session.delete(tag)
-    db.session.commit()
-    flash('Delete tag {}'.format(id))
-    return redirect(url_back)
-
-
 # Tag block end
 
 
@@ -1003,16 +917,6 @@ def service_edit(id):
                            title=_('Service (edit)'),
                            form=form,
                            url_back=url_back)
-
-
-@app.route('/services/delete/<id>/', methods=['GET', 'POST'])
-@login_required
-def service_delete(id):
-    service = Service.get_object(id)
-    db.session.delete(service)
-    db.session.commit()
-    flash('Delete service {}'.format(id))
-    return redirect(url_for('services_table'))
 # Service block end
 
 
@@ -1085,16 +989,6 @@ def location_edit(id):
                            title=_('Location (edit)'),
                            form=form,
                            url_back=url_back)
-
-
-@app.route('/locations/delete/<id>/', methods=['GET', 'POST'])
-@login_required
-def location_delete(id):
-    location = Location.get_object(id)
-    db.session.delete(location)
-    db.session.commit()
-    flash('Delete location {}'.format(id))
-    return redirect(url_for('locations_table'))
 # Location block end
 
 
@@ -1271,16 +1165,6 @@ def appointment_edit(id):
                            url_back=url_back)
 
 
-@app.route('/appointments/delete/<id>/', methods=['GET', 'POST'])
-@login_required
-def appointment_delete(id):
-    appointment = Appointment.get_object(id)
-    db.session.delete(appointment)
-    db.session.commit()
-    flash('Delete appointment {}'.format(id))
-    return redirect(url_for('appointments_table'))
-
-
 @app.route('/appointments/<appointment_id>/result/', methods=['GET', 'POST'])
 @login_required
 def appointment_result(appointment_id):
@@ -1351,16 +1235,6 @@ def item_edit(id):
                            title=_('Item (edit)'),
                            form=form,
                            url_back=url_back)
-
-
-@app.route('/items/delete/<id>')
-@login_required
-def item_delete(id):
-    item = Item.get_object(id)
-    db.session.delete(item)
-    db.session.commit()
-    flash('Delete item {}'.format(id))
-    return redirect(url_for('items_table'))
 # Item block end
 
 
@@ -1461,19 +1335,6 @@ def item_flow_edit(id):
                            title=_('Item flow (edit)'),
                            form=form,
                            url_back=url_back)
-
-
-@app.route('/items_flow/delete/<id>')
-@login_required
-def item_flow_delete(id):
-    item_flow = ItemFlow.get_object(id)
-    db.session.delete(item_flow)
-    param = {'location_id': item_flow.location_id, 'item_id': item_flow.item_id}
-    storage = Storage.find_object(param)
-    storage.quantity -= item_flow.quantity
-    db.session.commit()
-    flash('Delete item flow {}'.format(id))
-    return redirect(url_for('items_flow_table'))
 # ItemFlow block end
 
 
@@ -1551,17 +1412,6 @@ def notice_edit(id):
                            title=_('Notice (edit)'),
                            form=form,
                            url_back=url_back)
-
-
-@app.route('/notices/delete/<id>/')
-@login_required
-def notice_delete(id):
-    url_back = url_for('notices_table', **request.args)
-    notice = Notice.get_object(id)
-    db.session.delete(notice)
-    db.session.commit()
-    flash('Delete notice {}'.format(id))
-    return redirect(url_back)
 # Notice block end
 
 
@@ -1673,19 +1523,6 @@ def cash_flow_edit(id):
                            title=_('Cash flow (edit)'),
                            form=form,
                            url_back=url_back)
-
-
-@app.route('/cash_flow/delete/<id>')
-@login_required
-def cash_flow_delete(id):
-    cash_flow = CashFlow.get_object(id)
-    db.session.delete(cash_flow)
-    param = {'location_id': cash_flow.location_id}
-    cash = Cash.find_object(param, True)
-    cash.cost -= cash_flow.cost
-    db.session.commit()
-    flash('Delete cash flow {}'.format(id))
-    return redirect(url_for('cash_flow_table'))
 # CashFlow block end
 
 
@@ -1831,111 +1668,111 @@ def get_intervals(location_id, staff_id, date, appointment_id, no_check):
     return jsonify(timeslots)
 
 
-# Tasks block start
-@app.route('/task_statuses/')
-@login_required
-def task_statuses_table():
-    page = request.args.get('page', 1, type=int)
-    data = TaskStatus.get_pagination(page)
-    return render_template('task_status_table.html',
-                           title='Task statuses',
-                           items=data.items,
-                           pagination=data)
-
-
-@app.route('/task_statuses/create/', methods=['GET', 'POST'])
-@login_required
-def task_status_create():
-    url_back = url_for('staff_table', **request.args)
-    form = TaskStatusForm()
-    if form.validate_on_submit():
-        task_status = TaskStatus(cid=current_user.cid,
-                                 name=form.name.data,
-                                 description=form.description.data,
-                                 final=form.final.data)
-        db.session.add(task_status)
-        db.session.commit()
-        return redirect(url_for('task_statuses_table'))
-    return render_template('data_form.html',
-                           title='Task status (create)',
-                           form=form,
-                           url_back=url_back)
-
-
-@app.route('/task_statuses/edit/<id>/', methods=['GET', 'POST'])
-@login_required
-def task_status_edit(id):
-    url_back = url_for('task_statuses_table', **request.args)
-    task_status = TaskStatus.get_object(id)
-    form = TaskStatusForm()
-    if form.validate_on_submit():
-        task_status.name = form.name.data
-        task_status.description = form.description.data
-        task_status.final = form.final.data
-        db.session.commit()
-        return redirect(url_back)
-    elif request.method == 'GET':
-        form = TaskStatusForm(obj=task_status)
-    return render_template('data_form.html',
-                           title='Task status (edit)',
-                           form=form,
-                           url_back=url_back)
-
-
-@app.route('/task_statuses/delete/<id>/', methods=['GET', 'POST'])
-@login_required
-def task_status_delete(id):
-    task_status = TaskStatus.get_object(id)
-    if len(task_status.progress) > 0:
-        flash('Unable to delete an object')
-    else:
-        try:
-            db.session.delete(task_status)
-            db.session.commit()
-            flash('Delete task status {}'.format(id))
-        except IntegrityError:
-            flash('Deletion error')
-    return redirect(url_for('task_statuses_table'))
-
-
-@app.route('/tasks/')
-@login_required
-def tasks_table():
-    page = request.args.get('page', 1, type=int)
-    data = Task.get_pagination(page)
-    return render_template('task_table.html',
-                           title='Tasks',
-                           items=data.items,
-                           pagination=data)
-
-
-@app.route('/tasks/create', methods=['GET', 'POST'])
-@login_required
-def task_create():
-    url_back = url_for('tasks_table', **request.args)
-    form = TaskForm()
-    form.staff.choices = Staff.get_items(True)
-    if form.validate_on_submit():
-        task = Task(cid=current_user.cid,
-                    name=form.name.data,
-                    description=form.description.data,
-                    staff_id=form.staff.data,
-                    author_id=current_user.id,
-                    deadline=form.deadline.data)
-        db.session.add(task)
-        db.session.flush()
-        status = TaskStatus.query.get_or_404(1)
-        task_progress = TaskProgress(cid=current_user.cid,
-                                     task_id=task.id,
-                                     staff_id=form.staff.data,
-                                     status_id=status.id)
-        db.session.add(task_progress)
-        db.session.commit()
-        return redirect(url_for('tasks_table'))
-    return render_template('data_form.html',
-                           title='Task (create)',
-                           form=form,
-                           url_back=url_back)
-
-
-# Tasks block end
+# # Tasks block start
+# @app.route('/task_statuses/')
+# @login_required
+# def task_statuses_table():
+#     page = request.args.get('page', 1, type=int)
+#     data = TaskStatus.get_pagination(page)
+#     return render_template('task_status_table.html',
+#                            title='Task statuses',
+#                            items=data.items,
+#                            pagination=data)
+#
+#
+# @app.route('/task_statuses/create/', methods=['GET', 'POST'])
+# @login_required
+# def task_status_create():
+#     url_back = url_for('staff_table', **request.args)
+#     form = TaskStatusForm()
+#     if form.validate_on_submit():
+#         task_status = TaskStatus(cid=current_user.cid,
+#                                  name=form.name.data,
+#                                  description=form.description.data,
+#                                  final=form.final.data)
+#         db.session.add(task_status)
+#         db.session.commit()
+#         return redirect(url_for('task_statuses_table'))
+#     return render_template('data_form.html',
+#                            title='Task status (create)',
+#                            form=form,
+#                            url_back=url_back)
+#
+#
+# @app.route('/task_statuses/edit/<id>/', methods=['GET', 'POST'])
+# @login_required
+# def task_status_edit(id):
+#     url_back = url_for('task_statuses_table', **request.args)
+#     task_status = TaskStatus.get_object(id)
+#     form = TaskStatusForm()
+#     if form.validate_on_submit():
+#         task_status.name = form.name.data
+#         task_status.description = form.description.data
+#         task_status.final = form.final.data
+#         db.session.commit()
+#         return redirect(url_back)
+#     elif request.method == 'GET':
+#         form = TaskStatusForm(obj=task_status)
+#     return render_template('data_form.html',
+#                            title='Task status (edit)',
+#                            form=form,
+#                            url_back=url_back)
+#
+#
+# @app.route('/task_statuses/delete/<id>/', methods=['GET', 'POST'])
+# @login_required
+# def task_status_delete(id):
+#     task_status = TaskStatus.get_object(id)
+#     if len(task_status.progress) > 0:
+#         flash('Unable to delete an object')
+#     else:
+#         try:
+#             db.session.delete(task_status)
+#             db.session.commit()
+#             flash('Delete task status {}'.format(id))
+#         except IntegrityError:
+#             flash('Deletion error')
+#     return redirect(url_for('task_statuses_table'))
+#
+#
+# @app.route('/tasks/')
+# @login_required
+# def tasks_table():
+#     page = request.args.get('page', 1, type=int)
+#     data = Task.get_pagination(page)
+#     return render_template('task_table.html',
+#                            title='Tasks',
+#                            items=data.items,
+#                            pagination=data)
+#
+#
+# @app.route('/tasks/create', methods=['GET', 'POST'])
+# @login_required
+# def task_create():
+#     url_back = url_for('tasks_table', **request.args)
+#     form = TaskForm()
+#     form.staff.choices = Staff.get_items(True)
+#     if form.validate_on_submit():
+#         task = Task(cid=current_user.cid,
+#                     name=form.name.data,
+#                     description=form.description.data,
+#                     staff_id=form.staff.data,
+#                     author_id=current_user.id,
+#                     deadline=form.deadline.data)
+#         db.session.add(task)
+#         db.session.flush()
+#         status = TaskStatus.query.get_or_404(1)
+#         task_progress = TaskProgress(cid=current_user.cid,
+#                                      task_id=task.id,
+#                                      staff_id=form.staff.data,
+#                                      status_id=status.id)
+#         db.session.add(task_progress)
+#         db.session.commit()
+#         return redirect(url_for('tasks_table'))
+#     return render_template('data_form.html',
+#                            title='Task (create)',
+#                            form=form,
+#                            url_back=url_back)
+#
+#
+# # Tasks block end

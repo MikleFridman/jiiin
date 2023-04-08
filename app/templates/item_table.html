@@ -31,7 +31,7 @@
           <td class="col-1 text-center">{{ i.get_balance_all()|float }}</td>
           <td class="col-1 text-center">
             <a href="{{ url_for('item_edit', id=i.id) }}"><img src="{{ url_for('static', filename='/edit.png') }}" alt="edit" width="24"></a>
-            <a href="{{ url_for('item_delete', id=i.id) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
+            <a href="{{ url_for('delete', class_name='item', object_id=i.id, url_back=url_for('items_table')) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
           </td>
         </tr>
       {% endfor %}
