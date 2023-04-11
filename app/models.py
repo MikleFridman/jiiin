@@ -174,7 +174,7 @@ class Entity:
                 flash(_l('Unable to delete the selected object'))
                 return False
         db.session.delete(self)
-        db.session.commit()
+        # db.session.commit()
         flash(_l('Object successfully deleted'))
         return True
 
@@ -571,7 +571,8 @@ class Appointment(db.Model, Entity, Splitter):
         if data_search:
             items = items.filter(*data_search)
         items = items.with_entities(Location.name, Staff.name,
-                                    func.count(cls.id), func.sum(CashFlow.cost)
+                                    func.count(cls.id),
+                                    func.coalesce(func.sum(CashFlow.cost), 0)
                                     ).group_by(cls.location_id, cls.staff_id)
         if not sort_mode:
             sort_mode = cls.sort_mode

@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import phonenumbers
 from flask import flash
 from flask_babel import lazy_gettext as _l
@@ -9,12 +11,12 @@ from wtforms import (StringField, PasswordField, BooleanField,
 from wtforms.validators import (DataRequired, Email, EqualTo,
                                 ValidationError, Length, Optional)
 
-from .models import Schedule, Item, Week
-from app.functions import *
+from .functions import get_languages, get_free_time_intervals
+from .models import Item, Week, Client, User, Staff, Location, Service
 
 
 # global validators
-def validate_phone(form, field):
+def validate_phone_global(form, field):
     try:
         p = phonenumbers.parse(field.data)
         if not phonenumbers.is_valid_number(p):
@@ -35,12 +37,12 @@ class RegisterForm(FlaskForm):
     def validate_username(self, username):
         user = User.query.filter_by(username=username.data).first()
         if user is not None:
-            raise ValidationError('Please use a different username')
+            raise ValidationError(_l('Please use a different username'))
 
     def validate_email(self, email):
         user = User.query.filter_by(email=email.data).first()
         if user is not None:
-            raise ValidationError('Please use a different email')
+            raise ValidationError(_l('Please use a different email'))
 
 
 class LoginForm(FlaskForm):
@@ -52,6 +54,7 @@ class LoginForm(FlaskForm):
 
 class UserForm(RegisterForm):
     company = None
+    recaptcha = None
 
 
 class UserFormEdit(UserForm):
@@ -69,14 +72,14 @@ class UserFormEdit(UserForm):
 
     def validate_username(self, username):
         if username.data != self.original_username:
-            user = User.query.filter_by(username=username.data).first()
-            if user is not None:
+            if User.find_object({'username': username.data}):
+                flash(_l('Please use a different username'))
                 raise ValidationError(_l('Please use a different username'))
 
     def validate_email(self, email):
         if email.data != self.original_email:
-            user = User.query.filter_by(email=email.data).first()
-            if user is not None:
+            if User.find_object({'email': email.data}):
+                flash(_l('Please use a different email'))
                 raise ValidationError(_l('Please use a different email'))
 
 
@@ -87,7 +90,8 @@ class ResetPasswordRequestForm(FlaskForm):
 
 class ResetPasswordForm(FlaskForm):
     password = PasswordField(_l('Password'), validators=[DataRequired()])
-    password2 = PasswordField(_l('Repeat password'), validators=[DataRequired(), EqualTo('password')])
+    password2 = PasswordField(_l('Repeat password'),
+                              validators=[DataRequired(), EqualTo('password')])
     submit = SubmitField(_l('Submit'))
 
 
@@ -107,7 +111,7 @@ class CompanyForm(FlaskForm):
 
 class StaffForm(FlaskForm):
     name = StringField(_l('Name'), validators=[DataRequired()])
-    phone = TelField(_l('Phone'), validators=[DataRequired(), validate_phone])
+    phone = TelField(_l('Phone'), validators=[DataRequired(), validate_phone_global])
     birthday = DateField(_l('Birthday'), validators=[Optional()])
     schedule = SelectField(_l('Schedule'), choices=[], coerce=int,
                            validate_choice=False)
@@ -119,8 +123,8 @@ class StaffForm(FlaskForm):
 
     def validate_phone(self, field):
         if field.data != self.source_phone:
-            staff = Staff.query.filter_by(phone=field.data).first()
-            if staff is not None:
+            if Staff.find_object({'phone': field.data}):
+                flash(_l('Please use a different phone'))
                 raise ValidationError(_l('Please use a different phone'))
 
 
@@ -143,10 +147,21 @@ class ScheduleDayForm(FlaskForm):
 
 class ClientForm(FlaskForm):
     name = StringField(_l('Name'), validators=[DataRequired()])
-    phone = TelField(_l('Phone'), validators=[DataRequired(), validate_phone])
+    phone = TelField(_l('Phone'), validators=[DataRequired(), validate_phone_global])
     birthday = DateField(_l('Birthday'), validators=[Optional()])
     info = TextAreaField(_l('Info'), validators=[Length(max=200)])
     submit = SubmitField(_l('Submit'))
+
+    def __init__(self, source_phone=None, *args, **kwargs):
+        super(ClientForm, self).__init__(*args, **kwargs)
+        self.source_phone = source_phone
+
+    def validate_phone(self, field):
+        print('call')
+        if field.data != self.source_phone:
+            if Client.find_object({'phone': field.data}):
+                flash(_l('Please use a different phone'))
+                raise ValidationError(_l('Please use a different phone'))
 
 
 class ClientFileForm(FlaskForm):
@@ -176,7 +191,7 @@ class ServiceForm(FlaskForm):
 
 class LocationForm(FlaskForm):
     name = StringField(_l('Title'), validators=[DataRequired()])
-    phone = TelField(_l('Phone'), validators=[DataRequired(), validate_phone])
+    phone = TelField(_l('Phone'), validators=[DataRequired(), validate_phone_global])
     address = StringField(_l('Address'), validators=[DataRequired()])
     schedule = SelectField(_l('Schedule'), choices=[], coerce=int,
                            validate_choice=False)
@@ -203,13 +218,16 @@ class AppointmentForm(FlaskForm):
 
     def validate_location(self, field):
         if not self.location.data:
+            flash(_l('Please select location'))
             raise ValidationError(_l('Please select location'))
 
     def validate_services(self, field):
         if len(field.data) == 0:
+            flash(_l('Please select services'))
             raise ValidationError(_l('Please select services'))
         else:
             if not self.location.data:
+                flash(_l('Please select location'))
                 raise ValidationError(_l('Please select location'))
             location = Location.query.get_or_404(self.location.data)
             services_id = [x.id for x in location.services]
@@ -223,18 +241,22 @@ class AppointmentForm(FlaskForm):
 
     def validate_client(self, field):
         if not self.client.data:
+            flash(_l('Please select client'))
             raise ValidationError(_l('Please select client'))
 
     def validate_staff(self, field):
         if not self.staff.data:
+            flash(_l('Please select staff'))
             raise ValidationError(_l('Please select staff'))
 
     def validate_date(self, field):
         if not self.date.data:
+            flash(_l('Please select date'))
             raise ValidationError(_l('Please select date'))
 
     def validate_time(self, field):
         if not field.data:
+            flash(_l('Please select time'))
             raise ValidationError(_l('Please select time'))
         time = datetime.strptime(field.data, '%H:%M').time()
         date_time = datetime(self.date.data.year,
@@ -249,8 +271,10 @@ class AppointmentForm(FlaskForm):
         duration = self.duration.data
         date = self.date.data
         if not location:
+            flash(_l('Incorrect data'))
             raise ValidationError(_l('Incorrect data'))
         if not staff:
+            flash(_l('Incorrect data'))
             raise ValidationError(_l('Incorrect data'))
         if self.appointment:
             except_id = self.appointment.id
@@ -259,6 +283,7 @@ class AppointmentForm(FlaskForm):
         intervals = get_free_time_intervals(location, date, staff, duration,
                                             except_id)
         if not intervals:
+            flash(_l('This time unavailable'))
             raise ValidationError(_l('This time unavailable'))
         time = datetime.strptime(field.data, '%H:%M').time()
         dt = datetime(date.year, date.month,
@@ -270,6 +295,7 @@ class AppointmentForm(FlaskForm):
             if time_from <= dt <= time_to:
                 check = True
         if not check:
+            flash(_l('This time unavailable'))
             raise ValidationError(_l('This time unavailable'))
 
 
@@ -317,8 +343,9 @@ class ItemFlowForm(FlaskForm):
                 self.source_item == self.item.data):
             count -= self.source_quantity
         if field.data > count:
-            raise ValidationError(_l('Quantity exceeds available %(count)s',
-                                     count=count))
+            msg = _l('Quantity exceeds available %(count)s', count=count)
+            flash(msg)
+            raise ValidationError(msg)
 
 
 class ContactForm(FlaskForm):
@@ -365,6 +392,7 @@ class CashFlowForm(FlaskForm):
 
     def validate_location(self, field):
         if not self.location.data:
+            flash(_l('Please select location'))
             raise ValidationError(_l('Please select location'))
 
 

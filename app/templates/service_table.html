@@ -36,7 +36,7 @@
           <td class="col-1 text-center">{{ s.price }}</td>
           <td class="col-1  text-center">
             <a href="{{ url_for('service_edit', id=s.id) }}"><img src="{{ url_for('static', filename='/edit.png') }}" alt="edit" width="24"></a>
-            <a href="{{ url_for('delete', class_name='service', object_id=s.id, url_back=url_for('services_table')) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
+            <a href="{{ url_for('delete', class_name='service', object_id=s.id, url_back=url_for('services_table', **request.args)) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
           </td>
         </tr>
       {% endfor %}

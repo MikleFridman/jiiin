@@ -37,7 +37,7 @@
           </td>
           <td class="col-1 text-center">
             <a href="{{ url_for('item_flow_edit', id=ifl.id, **request.args) }}"><img src="{{ url_for('static', filename='/edit.png') }}" alt="edit" width="24"></a>
-            <a href="{{ url_for('delete', class_name='item_flow', object_id=ifl.id, url_back=url_for('item_flow_table')) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
+            <a href="{{ url_for('delete', class_name='item_flow', object_id=ifl.id, url_back=url_for('item_flow_table', **request.args)) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
           </td>
         </tr>
       {% endfor %}

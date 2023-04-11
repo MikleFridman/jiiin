@@ -1,8 +1,4 @@
-{% extends "base.html" %}
-{% import 'bootstrap/wtf.html' as wtf %}
-{% block app_content %}
-
-<div id="myModal" class="modal" tabindex="-1">
+<div id="myModal" class="modal fade" tabindex="-1" data-bs-backdrop="false" style="background-color: rgba(0, 0, 0, 0.5)">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -23,9 +19,11 @@
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
+
+{% if modal %}
 <script>
     $(document).ready(function(){
         $("#myModal").modal('show');
     });
 </script>
-{% endblock %}
+{% endif %}

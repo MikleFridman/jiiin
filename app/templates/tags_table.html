@@ -25,7 +25,7 @@
           </td>
           <td class="col-1 text-center">
             <a href="{{ url_for('tag_edit', id=t.id) }}"><img src="{{ url_for('static', filename='/edit.png') }}" alt="edit" width="24"></a>
-            <a href="{{ url_for('delete', class_name='tag', object_id=t.id, url_back=url_for('tags_table')) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
+            <a href="{{ url_for('delete', class_name='tag', object_id=t.id, url_back=url_for('tags_table', **request.args)) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
           </td>
         </tr>
       {% endfor %}

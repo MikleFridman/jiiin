@@ -32,7 +32,7 @@
           <td class="text-center">{{ l.phone }}</td>
           <td class="col-1 text-center">
             <a href="{{ url_for('location_edit', id=l.id) }}"><img src="{{ url_for('static', filename='/edit.png') }}" alt="edit" width="24"></a>
-            <a href="{{ url_for('delete', class_name='location', object_id=l.id, url_back=url_for('locations_table')) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
+            <a href="{{ url_for('delete', class_name='location', object_id=l.id, url_back=url_for('locations_table', **request.args)) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
           </td>
         </tr>
       {% endfor %}

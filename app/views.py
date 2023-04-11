@@ -1,7 +1,6 @@
 import ast
 from functools import wraps
 
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import RelationshipProperty
 
 import app
@@ -41,9 +40,10 @@ def confirm(desc):
             url_back = request.args.get('url_back')
             if form.validate_on_submit():
                 return f(*args, **kwargs)
-            return render_template('confirm_form.html',
+            return render_template('base.html',
                                    form=form,
                                    desc=desc,
+                                   modal=True,
                                    url_back=url_back)
         return wrap
     return outer
@@ -159,6 +159,8 @@ def get_filter_parameters(form, class_object):
                      timedelta(days=1)).date())
                 form[search_attr_to].data = datetime.strptime(
                     request_arg_to, '%Y-%m-%d').date()
+            delattr(SearchForm, search_attr_from)
+            delattr(SearchForm, search_attr_to)
         if hasattr(SearchForm, search_attr):
             delattr(SearchForm, search_attr)
     for ra in list(request.args.keys()):
@@ -658,8 +660,8 @@ def client_create():
 @login_required
 def client_edit(id):
     url_back = url_for('clients_table', **request.args)
-    form = ClientForm()
     client = Client.get_object(id)
+    form = ClientForm(client.phone)
     if form.validate_on_submit():
         client.name = form.name.data
         client.phone = form.phone.data

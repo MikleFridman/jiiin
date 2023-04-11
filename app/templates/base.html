@@ -105,22 +105,25 @@
     <script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
     <script>
         function hide_message() {
-            $('#message').fadeOut(5000);
+            $('#messages').fadeOut(5000);
         }
     </script>
-    <div class="container mt-3">
+    <div id="messages" class="container mt-3">
         {% with messages = get_flashed_messages() %}
         {% if messages %}
             {% for message in messages %}
             <div class="alert alert-dismissible alert-warning" role="alert" id="message">
                 {{ message }}
-                <script type="text/javascript">
-                   hide_message();
-                </script>
             </div>
             {% endfor %}
             {% endif %}
         {% endwith %}
+        <script type="text/javascript">
+           hide_message();
+        </script>
+    </div>
+    <div class="container">
+        {% include '_confirm_form.html' %}
         {% block app_content %}{% endblock %}
     </div>
 {% endblock %}

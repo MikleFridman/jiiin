@@ -54,7 +54,7 @@
           <td class="col-2 text-center">{{ c.phone }}</td>
           <td class="col-1 text-center">
             <a href="{{ url_for('client_edit', id=c.id) }}"><img src="{{ url_for('static', filename='/edit.png') }}" alt="edit" width="24"></a>
-            <a href="{{ url_for('delete', class_name='client', object_id=c.id, url_back=url_for('clients_table')) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
+            <a href="{{ url_for('delete', class_name='client', object_id=c.id, url_back=url_for('clients_table', **request.args)) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
           </td>
         </tr>
       {% endfor %}
