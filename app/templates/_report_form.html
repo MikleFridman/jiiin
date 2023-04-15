@@ -2,6 +2,9 @@
 {% block app_content %}
 <div class="col-md-5 mb-2">
     <div class="row">
+        <div class="col-1 mt-1">
+            &nbsp
+        </div>
         <div class="col-11">
             <div class="accordion" id="accordionFilter">
                 <div class="accordion-item">
@@ -15,16 +18,23 @@
                         <form action="" method="POST" id="searchForm">
                             {% for field in form %}
                             <div class="row mb-1">
-                                {% if field.widget.input_type != 'hidden' %}
-                                    {{ field.label(class_="col-4 col-form-label") }}
-                                {% endif %}
-                                <div class="col-8">
-                                    {% if field.type == 'SelectField' %}
-                                        {{ field(class_="form-select") }}
-                                    {% else %}
-                                        {{ field(class_="form-control") }}
+                                {% if field.widget.input_type != 'checkbox' %}
+                                    {% if field.widget.input_type != 'hidden' %}
+                                        {{ field.label(class_="col-4 col-form-label") }}
                                     {% endif %}
-                                </div>
+                                    <div class="col-8">
+                                        {% if field.type == 'SelectField' %}
+                                            {{ field(class_="form-select") }}
+                                        {% else %}
+                                            {{ field(class_="form-control") }}
+                                        {% endif %}
+                                    </div>
+                                {% else %}
+                                    <div class="col-8 mt-3">
+                                        {{ field(class_="form-check-input") }}
+                                        {{ field.label(class_="form-check-label ms-1") }}
+                                    </div>
+                                {% endif %}
                             </div>
                             {% endfor %}
                             <button type="submit" class="btn btn-primary mt-3 mb-2">{{ _('Select') }}</button>

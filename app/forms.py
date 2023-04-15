@@ -378,6 +378,7 @@ class ReportForm(FlaskForm):
     staff = SelectField(_l('Worker'), choices=[], coerce=int)
     date_from = DateField(_l('Date from'), validators=[DataRequired()], format='%Y-%m-%d')
     date_to = DateField(_l('Date to'), validators=[DataRequired()], format='%Y-%m-%d')
+    # export_excel = BooleanField(_l('Export to Excel'))
 
 
 class CashFlowForm(FlaskForm):
@@ -394,18 +395,3 @@ class CashFlowForm(FlaskForm):
         if not self.location.data:
             flash(_l('Please select location'))
             raise ValidationError(_l('Please select location'))
-
-
-class TaskForm(FlaskForm):
-    name = StringField('Name', validators=[DataRequired()])
-    deadline = DateField('Date')
-    staff = SelectField('Worker', choices=[], coerce=int)
-    description = TextAreaField('Description', validators=[Length(max=255)])
-    submit = SubmitField('Submit')
-
-
-class TaskStatusForm(FlaskForm):
-    name = StringField('Name', validators=[DataRequired()])
-    description = TextAreaField('Description', validators=[Length(max=255)])
-    final = BooleanField('Final')
-    submit = SubmitField('Submit')

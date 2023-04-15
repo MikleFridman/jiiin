@@ -1,7 +1,11 @@
 import ast
+import json
 from functools import wraps
 
+from pandas import ExcelWriter
 from sqlalchemy.orm import RelationshipProperty
+
+import pandas as pd
 
 import app
 import hashlib
@@ -1555,6 +1559,8 @@ def report_statistics_view():
         data = Appointment.get_report_statistics(data_filter=filter_param,
                                                  data_search=search_param,
                                                  sort_mode='asc')
+        # if form.export_excel.data:
+        #     export_excel(json.dumps(data))
     elif request.method == 'GET':
         form.date_from.data = datetime.now().replace(day=1)
         form.date_to.data = datetime.now().date()
@@ -1670,111 +1676,14 @@ def get_intervals(location_id, staff_id, date, appointment_id, no_check):
     return jsonify(timeslots)
 
 
-# # Tasks block start
-# @app.route('/task_statuses/')
-# @login_required
-# def task_statuses_table():
-#     page = request.args.get('page', 1, type=int)
-#     data = TaskStatus.get_pagination(page)
-#     return render_template('task_status_table.html',
-#                            title='Task statuses',
-#                            items=data.items,
-#                            pagination=data)
-#
-#
-# @app.route('/task_statuses/create/', methods=['GET', 'POST'])
-# @login_required
-# def task_status_create():
-#     url_back = url_for('staff_table', **request.args)
-#     form = TaskStatusForm()
-#     if form.validate_on_submit():
-#         task_status = TaskStatus(cid=current_user.cid,
-#                                  name=form.name.data,
-#                                  description=form.description.data,
-#                                  final=form.final.data)
-#         db.session.add(task_status)
-#         db.session.commit()
-#         return redirect(url_for('task_statuses_table'))
-#     return render_template('data_form.html',
-#                            title='Task status (create)',
-#                            form=form,
-#                            url_back=url_back)
-#
-#
-# @app.route('/task_statuses/edit/<id>/', methods=['GET', 'POST'])
-# @login_required
-# def task_status_edit(id):
-#     url_back = url_for('task_statuses_table', **request.args)
-#     task_status = TaskStatus.get_object(id)
-#     form = TaskStatusForm()
-#     if form.validate_on_submit():
-#         task_status.name = form.name.data
-#         task_status.description = form.description.data
-#         task_status.final = form.final.data
-#         db.session.commit()
-#         return redirect(url_back)
-#     elif request.method == 'GET':
-#         form = TaskStatusForm(obj=task_status)
-#     return render_template('data_form.html',
-#                            title='Task status (edit)',
-#                            form=form,
-#                            url_back=url_back)
-#
-#
-# @app.route('/task_statuses/delete/<id>/', methods=['GET', 'POST'])
-# @login_required
-# def task_status_delete(id):
-#     task_status = TaskStatus.get_object(id)
-#     if len(task_status.progress) > 0:
-#         flash('Unable to delete an object')
-#     else:
-#         try:
-#             db.session.delete(task_status)
-#             db.session.commit()
-#             flash('Delete task status {}'.format(id))
-#         except IntegrityError:
-#             flash('Deletion error')
-#     return redirect(url_for('task_statuses_table'))
-#
-#
-# @app.route('/tasks/')
-# @login_required
-# def tasks_table():
-#     page = request.args.get('page', 1, type=int)
-#     data = Task.get_pagination(page)
-#     return render_template('task_table.html',
-#                            title='Tasks',
-#                            items=data.items,
-#                            pagination=data)
-#
-#
-# @app.route('/tasks/create', methods=['GET', 'POST'])
-# @login_required
-# def task_create():
-#     url_back = url_for('tasks_table', **request.args)
-#     form = TaskForm()
-#     form.staff.choices = Staff.get_items(True)
-#     if form.validate_on_submit():
-#         task = Task(cid=current_user.cid,
-#                     name=form.name.data,
-#                     description=form.description.data,
-#                     staff_id=form.staff.data,
-#                     author_id=current_user.id,
-#                     deadline=form.deadline.data)
-#         db.session.add(task)
-#         db.session.flush()
-#         status = TaskStatus.query.get_or_404(1)
-#         task_progress = TaskProgress(cid=current_user.cid,
-#                                      task_id=task.id,
-#                                      staff_id=form.staff.data,
-#                                      status_id=status.id)
-#         db.session.add(task_progress)
-#         db.session.commit()
-#         return redirect(url_for('tasks_table'))
-#     return render_template('data_form.html',
-#                            title='Task (create)',
-#                            form=form,
-#                            url_back=url_back)
-#
-#
-# # Tasks block end
+def export_excel(data):
+    items = json.loads(data)
+    df = pd.DataFrame([item.values() for item in items],
+                      columns=[_('Location'), _('Worker'), _('Orders'), _('Sum')])
+    writer = ExcelWriter('statistics.xlsx')
+    df.to_excel(writer, 'Sheet1', index=False)
+    try:
+        writer.save()
+        flash(_('Export complete'))
+    except PermissionError:
+        flash(_('Permission error'))

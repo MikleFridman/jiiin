@@ -51,7 +51,10 @@
           </div>
         </li>
         <li class="nav-item dropdown">
-          <a class="nav-link {% if request.path == url_for('report_statistics_view') %}active{% endif %}" href="{{ url_for('report_statistics_view') }}">{{ _('Reports') }}</a>
+          <a class="nav-link dropdown-toggle {% if request.path == url_for('report_statistics_view') %}active{% endif %}" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">{{ _('Reports') }}</a>
+          <div class="dropdown-menu">
+              <a class="dropdown-item" href="{{ url_for('report_statistics_view') }}">{{ _('Statistics') }}</a>
+          </div>
         </li>
 
 <!--            <li class="nav-item dropdown">-->
@@ -122,8 +125,10 @@
            hide_message();
         </script>
     </div>
-    <div class="container">
-        {% include '_confirm_form.html' %}
+    <div class="container mt-3">
+        {% if current_user.is_authenticated %}
+            {% include '_confirm_form.html' %}
+        {% endif %}
         {% block app_content %}{% endblock %}
     </div>
 {% endblock %}
