@@ -1,4 +1,5 @@
 import os
+import time
 
 from dotenv import load_dotenv
 from flask import Flask
@@ -42,7 +43,10 @@ babel = Babel(app)
 from app import views, models, errors
 from app.models import *
 from app.admin import *
-admin = Admin(app, name="Workshop", index_view=MyAdminView())
+from .bot import send_bot_message
+# if not app.debug:
+#     send_bot_message(app.config['ADMIN_CHAT_ID'], 'Start system')
+admin = Admin(app, name="Jiiin", index_view=MyAdminView())
 admin.add_view(CompanyAdminView(Company, db.session))
 admin.add_view(MyModelView(CompanyConfig, db.session))
 admin.add_view(MyModelView(Tariff, db.session))

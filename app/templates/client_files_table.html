@@ -4,6 +4,7 @@
   <div class="row">
     <div class="col-md-2 mb-2">
       <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('client_file_upload', client_id=client_id) }}';">{{ _('Add new') }}</button>
+      <a href="{{ url_for('clients_table') }}"><img class="ms-2" src="{{ url_for('static', filename='/relation.png') }}" alt="relation" title="{{ _('Return') }}" width="23"></a>
     </div>
     <div class="col-md-5 mb-2 text-center">
       <h4>{{ _('Files') }}</h4>

@@ -1,9 +1,14 @@
 import os
+import urllib.request
 from datetime import datetime, timedelta
+from threading import Thread
+
+import pandas as pd
 
 from flask_login import current_user
 from flask_mail import Message
-from sqlalchemy import func
+from pandas import ExcelWriter
+from sqlalchemy import func, inspect
 
 from app import app, mail
 from .models import Location, User, Staff, Service, Appointment, CompanyConfig
@@ -124,12 +129,17 @@ def get_free_time_intervals(location_id, date, staff_id, duration,
         return free_intervals
 
 
+def send_acync_mail(msg):
+    with app.app_context():
+        mail.send(msg)
+
+
 def send_mail_from_site(sender, subject, text):
     msg = Message(subject=subject,
                   sender=sender,
                   recipients=[app.config['ADMINS'][0]])
     msg.body = text
-    mail.send(msg)
+    Thread(target=send_acync_mail, args=(msg,)).start()
 
 
 def send_mail(sender, subject, recipients, text_body, html_body=None):
@@ -138,4 +148,25 @@ def send_mail(sender, subject, recipients, text_body, html_body=None):
                   recipients=recipients)
     msg.body = text_body
     msg.html = html_body
-    mail.send(msg)
+    Thread(target=send_acync_mail, args=(msg,)).start()
+
+
+def export_excel(class_object):
+    directory = os.path.join(app.config['UPLOAD_FOLDER'],
+                             str(current_user.cid))
+    file_name = class_object.__name__ + '.xlsx'
+    path = os.path.join(directory, file_name)
+    items = class_object.get_items()
+    ignore_list = {'id', 'no_active', 'timestamp_create',
+                   'timestamp_update', 'cid'}
+    column_list = [col.name for col in
+                   inspect(class_object).columns
+                   if col.name not in ignore_list]
+    df = pd.DataFrame([[getattr(item, col.name)
+                        for col in inspect(class_object).columns
+                        if col.name not in ignore_list] for item in items],
+                      columns=column_list)
+    file = ExcelWriter(path)
+    df.to_excel(file, 'Sheet1', index=True, header=True)
+    file.save()
+    urllib.request.urlretrieve(path, file_name)

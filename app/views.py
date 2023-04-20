@@ -1,18 +1,14 @@
 import ast
-import json
 from functools import wraps
 
-from pandas import ExcelWriter
 from sqlalchemy.orm import RelationshipProperty
-
-import pandas as pd
 
 import app
 import hashlib
 import os.path
 import uuid
 
-from flask import render_template, redirect, url_for, request, jsonify, send_file, session
+from flask import render_template, redirect, url_for, request, jsonify, session
 from flask_babel import _, lazy_gettext as _l
 from flask_login import login_user, logout_user, login_required
 from werkzeug.urls import url_parse
@@ -1676,14 +1672,12 @@ def get_intervals(location_id, staff_id, date, appointment_id, no_check):
     return jsonify(timeslots)
 
 
-def export_excel(data):
-    items = json.loads(data)
-    df = pd.DataFrame([item.values() for item in items],
-                      columns=[_('Location'), _('Worker'), _('Orders'), _('Sum')])
-    writer = ExcelWriter('statistics.xlsx')
-    df.to_excel(writer, 'Sheet1', index=False)
-    try:
-        writer.save()
-        flash(_('Export complete'))
-    except PermissionError:
-        flash(_('Permission error'))
+@app.route('/export/', methods=['GET', 'POST'])
+@login_required
+@confirm(_l('Export data to Excel?'))
+def export():
+    url_back = request.args.get('url_back', url_for('index'))
+    class_list = [Client, Staff, Appointment, Notice]
+    for class_object in class_list:
+        export_excel(class_object)
+    return redirect(url_back)

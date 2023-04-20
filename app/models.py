@@ -350,8 +350,6 @@ class Staff(db.Model, Entity, Splitter):
     phone = db.Column(db.String(16), index=True, unique=True, nullable=False)
     birthday = db.Column(db.Date)
     appointments = db.relationship('Appointment', backref='staff')
-    task_progress = db.relationship('TaskProgress', backref='staff',
-                                    cascade='all, delete')
     schedules = db.relationship('Schedule', secondary=staff_schedules,
                                 backref=db.backref('staff', lazy=True))
     holidays = db.relationship('Holiday', backref='staff', cascade='all, delete')
@@ -746,35 +744,3 @@ class Holiday(db.Model, Entity, Splitter):
     working_day = db.Column(db.Boolean, default=False)
     hour_from = db.Column(db.Time)
     hour_to = db.Column(db.Time)
-
-
-class TaskStatus(db.Model, Entity, Splitter):
-    name = db.Column(db.String(64), index=True, nullable=False)
-    description = db.Column(db.String(255))
-    final = db.Column(db.Boolean, default=False)
-    task_progress = db.relationship('TaskProgress', backref='status', cascade='all, delete')
-
-
-class Task(db.Model, Entity, Splitter):
-    name = db.Column(db.String(64), index=True, nullable=False)
-    description = db.Column(db.String(255))
-    deadline = db.Column(db.Date)
-    staff_id = db.Column(db.Integer, db.ForeignKey('staff.id'),
-                         nullable=False)
-    staff = db.relationship('Staff', backref='tasks')
-    closed = db.Column(db.Boolean, default=False)
-    author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    author = db.relationship('User', backref='tasks')
-    task_progress = db.relationship('TaskProgress', backref='task', cascade='all, delete')
-
-
-class TaskProgress(db.Model, Entity, Splitter):
-    task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)
-    staff_id = db.Column(db.Integer, db.ForeignKey('staff.id'),
-                         nullable=False)
-    status_id = db.Column(db.Integer, db.ForeignKey('task_status.id'),
-                          nullable=False)
-    description = db.Column(db.String(255))
-
-    def __repr__(self):
-        return f'{self.task} {self.timestamp}'
