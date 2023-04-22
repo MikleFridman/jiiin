@@ -229,7 +229,8 @@ def login():
         return redirect(url_for('index'))
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.find_object({'username': form.username.data})
+        user = User.find_object({'username': form.username.data},
+                                overall=True)
         if user is None or not user.check_password(form.password.data):
             flash(_('Invalid username or password'))
             return redirect(url_for('login'))
@@ -332,7 +333,7 @@ def reset_password_request():
         return redirect(url_for('index'))
     form = ResetPasswordRequestForm()
     if form.validate_on_submit():
-        user = User.find_object({'email': form.email.data})
+        user = User.find_object({'email': form.email.data}, overall=True)
         if user:
             temp_password = User.get_random_password()
             send_mail(subject=_('Reset password') + ' Jiiin',
@@ -1525,6 +1526,19 @@ def cash_flow_edit(id):
                            title=_('Cash flow (edit)'),
                            form=form,
                            url_back=url_back)
+
+
+@app.route('/payment_receipt/')
+def payment_receipt():
+    link = request.args.get('link')
+    if link:
+        payment = CashFlow.find_object({'link': link}, overall=True)
+        if payment:
+            services = payment.appointment[0].services
+            return render_template('receipt.html',
+                                   payment=payment,
+                                   services=services)
+    return abort(404)
 # CashFlow block end
 
 

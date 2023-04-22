@@ -127,7 +127,7 @@
         </script>
     </div>
     <div class="container mt-3">
-        {% if current_user.is_authenticated %}
+        {% if modal %}
             {% include '_confirm_form.html' %}
         {% endif %}
         {% block app_content %}{% endblock %}

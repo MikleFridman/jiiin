@@ -1,4 +1,5 @@
 import string
+import uuid
 from dataclasses import dataclass
 from random import choice
 
@@ -160,8 +161,11 @@ class Entity:
         return obj
 
     @classmethod
-    def find_object(cls, data_filter, mode_404=False):
-        param = {'cid': current_user.cid, 'no_active': False, **data_filter}
+    def find_object(cls, data_filter, mode_404=False, overall=False):
+        if overall:
+            param = {'no_active': False, **data_filter}
+        else:
+            param = {'cid': current_user.cid, 'no_active': False, **data_filter}
         if mode_404:
             obj = cls.query.filter_by(**param).first_or_404()
         else:
@@ -174,7 +178,7 @@ class Entity:
                 flash(_l('Unable to delete the selected object'))
                 return False
         db.session.delete(self)
-        # db.session.commit()
+        db.session.commit()
         flash(_l('Object successfully deleted'))
         return True
 
@@ -243,6 +247,10 @@ class Company(db.Model, Entity):
                                cascade='all, delete')
     tags = db.relationship('Tag', backref='company',
                            cascade='all, delete')
+    cash_flow = db.relationship('CashFlow', backref='company',
+                                cascade='all, delete')
+    cash = db.relationship('Cash', backref='company',
+                           cascade='all, delete')
 
     def __repr__(self):
         return self.name
@@ -298,15 +306,6 @@ class User(db.Model, UserMixin, Entity, Splitter):
 
     def __repr__(self):
         return self.username
-
-    @classmethod
-    def find_object(cls, data_filter, mode_404=False):
-        param = {'no_active': False, **data_filter}
-        if mode_404:
-            obj = cls.query.filter_by(**param).first_or_404()
-        else:
-            obj = cls.query.filter_by(**param).first()
-        return obj
 
     @staticmethod
     def get_random_password(length: int = 8):
@@ -704,6 +703,7 @@ class CashFlow(db.Model, Entity, Splitter):
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
     description = db.Column(db.String(255))
     cost = db.Column(db.Float)
+    link = db.Column(db.String(64), default=str(uuid.uuid4()))
     appointment = db.relationship('Appointment', backref='payment',
                                   uselist='False')
 

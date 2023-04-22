@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ _('Payment receipt') }}</title>
+</head>
+<style>
+div {
+  margin-top: 5px;
+}
+table {
+  width: 100%;
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+td {
+  padding:7px;
+  border-bottom: 1px solid white;
+}
+</style>
+<body>
+
+<div style="text-font: Maven Pro; width:400px; background-color: #f0f0f0; margin:10px; padding:15px;">
+    <h4 style="text-align: center">{{payment.company.name}}</h4>
+    <div><strong>Date / time:</strong> {{payment.timestamp_create.strftime('%d.%m.%y %H:%M:%S')}}</div>
+    <div><strong>Id:</strong> {{payment.id}}</div>
+    <div><strong>Address:</strong> {{payment.location.address}}</div>
+    <div><strong>Phone:</strong> {{payment.location.phone}}</div>
+    <div style="margin-top:5px; margin-bottom:5px">
+    <table>
+    {% for s in services %}
+        <tr>
+            <td>{{s.name}}</td>
+            <td style="text-align: right">{{s.price}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+<div style="text-align: right; margin-bottom:15px">
+    <strong>Total: {{ payment.cost }}</strong>
+</div>
+    <hr>
+<div style="text-align:center; margin-top:10px;">
+    Jiiin - free CRM for small business
+</div>
+<div style="text-align:center; margin-top:5px;">
+    www.jiiin.online
+</div>
+</div>
+</body>
+</html>
