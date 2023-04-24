@@ -6,9 +6,8 @@ from sqlalchemy.orm import RelationshipProperty
 import app
 import hashlib
 import os.path
-import uuid
 
-from flask import render_template, redirect, url_for, request, jsonify, session
+from flask import render_template, redirect, url_for, request, jsonify, session, send_file
 from flask_babel import _, lazy_gettext as _l
 from flask_login import login_user, logout_user, login_required
 from werkzeug.urls import url_parse
@@ -717,6 +716,8 @@ def client_file_upload(client_id):
             return redirect(url_for('client_file_upload', client_id=client_id))
         directory = os.path.join(app.config['UPLOAD_FOLDER'],
                                  str(current_user.cid))
+        if not os.path.exists(directory):
+            os.mkdir(directory)
         path = os.path.join(directory, str(uuid.uuid4()))
         if not os.path.exists(directory):
             os.makedirs(directory)
@@ -1163,6 +1164,7 @@ def appointment_edit(id):
                            title=_('Appointment (edit)'),
                            form=form,
                            appointment_id=id,
+                           payment_id=appointment.payment_id,
                            items=selected_services,
                            url_select_service=url_select_service,
                            url_back=url_back)
@@ -1182,6 +1184,27 @@ def appointment_result(appointment_id):
         form.result.data = appointment.result
     return render_template('data_form.html',
                            title=_('Result'),
+                           form=form,
+                           url_back=url_back)
+
+
+@app.route('/appointments/<appointment_id>/receipt/', methods=['GET', 'POST'])
+@login_required
+def appointment_receipt(appointment_id):
+    url_back = request.args.get('url_back', url_for('appointments_table',
+                                                    **request.args))
+    appointment = Appointment.get_object(appointment_id)
+    payment = CashFlow.get_object(appointment.payment_id, False)
+    if not payment:
+        return redirect(url_back)
+    form = ReceiptForm()
+    if form.validate_on_submit():
+        return redirect(url_back)
+    elif request.method == 'GET':
+        link = payment.link
+        form.link.data = request.host + url_for('payment_receipt', link=link)
+    return render_template('data_form.html',
+                           title=_('Payment receipt'),
                            form=form,
                            url_back=url_back)
 # Appointment block end
@@ -1531,14 +1554,15 @@ def cash_flow_edit(id):
 @app.route('/payment_receipt/')
 def payment_receipt():
     link = request.args.get('link')
+    payment = services = None
     if link:
         payment = CashFlow.find_object({'link': link}, overall=True)
-        if payment:
-            services = payment.appointment[0].services
-            return render_template('receipt.html',
-                                   payment=payment,
-                                   services=services)
-    return abort(404)
+    if payment:
+        services = payment.appointment[0].services
+    return render_template('receipt.html',
+                           payment=payment,
+                           services=services)
+
 # CashFlow block end
 
 
@@ -1569,8 +1593,6 @@ def report_statistics_view():
         data = Appointment.get_report_statistics(data_filter=filter_param,
                                                  data_search=search_param,
                                                  sort_mode='asc')
-        # if form.export_excel.data:
-        #     export_excel(json.dumps(data))
     elif request.method == 'GET':
         form.date_from.data = datetime.now().replace(day=1)
         form.date_to.data = datetime.now().date()
@@ -1692,6 +1714,42 @@ def get_intervals(location_id, staff_id, date, appointment_id, no_check):
 def export():
     url_back = request.args.get('url_back', url_for('index'))
     class_list = [Client, Staff, Appointment, Notice]
+    directory = os.path.join(app.config['UPLOAD_FOLDER'],
+                             str(current_user.cid), 'temp')
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    zip_path = os.path.join(directory, 'export.zip')
+    if os.path.exists(zip_path):
+        os.remove(zip_path)
     for class_object in class_list:
-        export_excel(class_object)
-    return redirect(url_back)
+        file_name = class_object.__name__ + '.xlsx'
+        path = os.path.join(directory, file_name)
+        items = class_object.get_items()
+        ignore_list = {'id', 'no_active', 'timestamp_create',
+                       'timestamp_update', 'cid'}
+        column_list = [col.name for col in
+                       inspect(class_object).columns
+                       if col.name not in ignore_list]
+        df = pd.DataFrame([[getattr(item, col.name)
+                            for col in inspect(class_object).columns
+                            if col.name not in ignore_list] for item in items],
+                          columns=column_list)
+        file = ExcelWriter(path)
+        df.to_excel(file, 'Sheet1', index=True, header=True)
+        file.save()
+        with zipfile.ZipFile(zip_path, mode='a') as archive:
+            archive.write(file, arcname=file_name)
+            os.remove(path)
+    return render_template('export_link.html')
+
+
+@app.route('/export_download/', methods=['GET', 'POST'])
+@login_required
+def export_download():
+    directory = os.path.join(app.config['UPLOAD_FOLDER'],
+                             str(current_user.cid), 'temp')
+    zip_path = os.path.join(directory, 'export.zip')
+    if os.path.exists(zip_path):
+        return send_file(zip_path, as_attachment=True)
+    flash(_('File not found'))
+    return render_template('export_link.html')

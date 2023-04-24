@@ -19,13 +19,13 @@ td {
 }
 </style>
 <body>
-
+{% if payment %}
 <div style="text-font: Maven Pro; width:400px; background-color: #f0f0f0; margin:10px; padding:15px;">
     <h4 style="text-align: center">{{payment.company.name}}</h4>
-    <div><strong>Date / time:</strong> {{payment.timestamp_create.strftime('%d.%m.%y %H:%M:%S')}}</div>
-    <div><strong>Id:</strong> {{payment.id}}</div>
-    <div><strong>Address:</strong> {{payment.location.address}}</div>
-    <div><strong>Phone:</strong> {{payment.location.phone}}</div>
+    <div><strong>{{ _('Date / time') }}:</strong> {{payment.timestamp_create.strftime('%d.%m.%y %H:%M:%S')}}</div>
+    <div><strong>{{ _('Id') }}:</strong> {{payment.id}}</div>
+    <div><strong>{{ _('Address') }}:</strong> {{payment.location.address}}</div>
+    <div><strong>{{ _('Phone') }}:</strong> {{payment.location.phone}}</div>
     <div style="margin-top:5px; margin-bottom:5px">
     <table>
     {% for s in services %}
@@ -37,7 +37,7 @@ td {
     </table>
 </div>
 <div style="text-align: right; margin-bottom:15px">
-    <strong>Total: {{ payment.cost }}</strong>
+    <strong>{{ _('Total') }}: {{ payment.cost }}</strong>
 </div>
     <hr>
 <div style="text-align:center; margin-top:10px;">
@@ -47,5 +47,8 @@ td {
     www.jiiin.online
 </div>
 </div>
+{% else %}
+<div>{{ _('Invalid request') }}</div>
+{% endif %}
 </body>
 </html>

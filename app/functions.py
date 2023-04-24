@@ -1,5 +1,6 @@
 import os
 import urllib.request
+import zipfile
 from datetime import datetime, timedelta
 from threading import Thread
 
@@ -149,24 +150,3 @@ def send_mail(sender, subject, recipients, text_body, html_body=None):
     msg.body = text_body
     msg.html = html_body
     Thread(target=send_acync_mail, args=(msg,)).start()
-
-
-def export_excel(class_object):
-    directory = os.path.join(app.config['UPLOAD_FOLDER'],
-                             str(current_user.cid))
-    file_name = class_object.__name__ + '.xlsx'
-    path = os.path.join(directory, file_name)
-    items = class_object.get_items()
-    ignore_list = {'id', 'no_active', 'timestamp_create',
-                   'timestamp_update', 'cid'}
-    column_list = [col.name for col in
-                   inspect(class_object).columns
-                   if col.name not in ignore_list]
-    df = pd.DataFrame([[getattr(item, col.name)
-                        for col in inspect(class_object).columns
-                        if col.name not in ignore_list] for item in items],
-                      columns=column_list)
-    file = ExcelWriter(path)
-    df.to_excel(file, 'Sheet1', index=True, header=True)
-    file.save()
-    urllib.request.urlretrieve(path, file_name)

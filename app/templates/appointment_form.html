@@ -78,6 +78,9 @@
                         </div>
                       </div>
                     </div>
+                    {% if payment_id %}
+                        <button type="button" class="btn btn-light mt-3 ms-3 mb-2" onclick="window.location.href='{{ url_for('appointment_receipt', appointment_id=appointment_id, url_back=request.path) }}'">{{ _('Receipt') }}</button>
+                    {% endif %}
                 {% endif %}
             </div>
         </div>

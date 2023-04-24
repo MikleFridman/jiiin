@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+{% block app_content %}
+<div>{{ _('Press button for download .zip archive') }}:</div>
+<button type="button" class="btn btn-light mt-3 ms-3 mb-2" onclick="window.location.href='{{ url_for('export_download') }}'">{{ _('Download') }}</button>
+{% endblock %}

@@ -22,7 +22,8 @@ def validate_phone_global(form, field):
         if not phonenumbers.is_valid_number(p):
             raise ValueError()
     except (phonenumbers.phonenumberutil.NumberParseException, ValueError):
-        raise ValidationError('Invalid phone number')
+        flash(_l('Invalid phone number'))
+        raise ValidationError(_l('Invalid phone number'))
 
 
 class RegisterForm(FlaskForm):
@@ -37,11 +38,13 @@ class RegisterForm(FlaskForm):
     def validate_username(self, username):
         user = User.query.filter_by(username=username.data).first()
         if user is not None:
+            flash(_l('Please use a different username'))
             raise ValidationError(_l('Please use a different username'))
 
     def validate_email(self, email):
         user = User.query.filter_by(email=email.data).first()
         if user is not None:
+            flash(_l('Please use a different email'))
             raise ValidationError(_l('Please use a different email'))
 
 
@@ -301,6 +304,11 @@ class AppointmentForm(FlaskForm):
 
 class ResultForm(FlaskForm):
     result = TextAreaField(_l('Result'), validators=[Length(max=255)])
+    submit = SubmitField(_l('Submit'))
+
+
+class ReceiptForm(FlaskForm):
+    link = StringField(_l('Link to payment receipt'))
     submit = SubmitField(_l('Submit'))
 
 
