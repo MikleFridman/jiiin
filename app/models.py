@@ -499,8 +499,6 @@ class Appointment(db.Model, Entity, Splitter):
               ('client_id', 'Client', Client),
               ('payment_id', 'Payment', type(None)),
               ('date_time', 'Date', Period)]
-    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow(),
-                          onupdate=datetime.utcnow)
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'),
                             nullable=False)
     date_time = db.Column(db.DateTime, nullable=False)

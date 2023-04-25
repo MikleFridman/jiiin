@@ -1,6 +1,9 @@
 import ast
+import zipfile
 from functools import wraps
 
+import pandas as pd
+from pandas import ExcelWriter
 from sqlalchemy.orm import RelationshipProperty
 
 import app
@@ -1726,11 +1729,13 @@ def export():
         path = os.path.join(directory, file_name)
         items = class_object.get_items()
         ignore_list = {'id', 'no_active', 'timestamp_create',
-                       'timestamp_update', 'cid'}
-        column_list = [col.name for col in
+                       'timestamp_update', 'cid', 'cancel', 'payment_id',
+                       'no_check_duration'}
+        column_list = [get_attr_inspect(col.name, class_object) for col in
                        inspect(class_object).columns
                        if col.name not in ignore_list]
-        df = pd.DataFrame([[getattr(item, col.name)
+        df = pd.DataFrame([[getattr(item, get_attr_inspect(col.name,
+                                                           class_object))
                             for col in inspect(class_object).columns
                             if col.name not in ignore_list] for item in items],
                           columns=column_list)

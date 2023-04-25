@@ -1,14 +1,9 @@
 import os
-import urllib.request
-import zipfile
 from datetime import datetime, timedelta
 from threading import Thread
 
-import pandas as pd
-
 from flask_login import current_user
 from flask_mail import Message
-from pandas import ExcelWriter
 from sqlalchemy import func, inspect
 
 from app import app, mail
@@ -150,3 +145,12 @@ def send_mail(sender, subject, recipients, text_body, html_body=None):
     msg.body = text_body
     msg.html = html_body
     Thread(target=send_acync_mail, args=(msg,)).start()
+
+
+def get_attr_inspect(name, class_object):
+    relationships = [rel.__str__().split('.')[1] for rel in
+                     inspect(class_object).relationships]
+    search_name = name.split('_id')[0]
+    if search_name in relationships:
+        return search_name
+    return name
