@@ -236,6 +236,8 @@ class Company(db.Model, Entity):
                             cascade='all, delete')
     clients = db.relationship('Client', backref='company',
                               cascade='all, delete')
+    client_files = db.relationship('ClientFile', backref='company',
+                                   cascade='all, delete')
     services = db.relationship('Service', backref='company',
                                cascade='all, delete')
     locations = db.relationship('Location', backref='company',
@@ -244,6 +246,8 @@ class Company(db.Model, Entity):
                               cascade='all, delete')
     appointments = db.relationship('Appointment', backref='company',
                                    cascade='all, delete')
+    schedules = db.relationship('Schedule', backref='company',
+                                cascade='all, delete')
     holidays = db.relationship('Holiday', backref='company',
                                cascade='all, delete')
     tags = db.relationship('Tag', backref='company',
@@ -349,7 +353,7 @@ class Staff(db.Model, Entity, Splitter):
     search = [('name', 'Name', str),
               ('phone', 'Phone', str)]
     name = db.Column(db.String(64), index=True, nullable=False)
-    phone = db.Column(db.String(16), index=True, unique=True, nullable=False)
+    phone = db.Column(db.String(16), index=True, nullable=False)
     birthday = db.Column(db.Date)
     appointments = db.relationship('Appointment', backref='staff')
     schedules = db.relationship('Schedule', secondary=staff_schedules,
@@ -394,7 +398,7 @@ class Client(db.Model, Entity, Splitter):
               ('name', 'Name', str),
               ('phone', 'Phone', str)]
     name = db.Column(db.String(64), index=True, nullable=False)
-    phone = db.Column(db.String(16), index=True, unique=True, nullable=False)
+    phone = db.Column(db.String(16), index=True, nullable=False)
     birthday = db.Column(db.Date)
     info = db.Column(db.Text)
     files = db.relationship('ClientFile', backref='client', cascade='all, delete')

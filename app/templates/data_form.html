@@ -8,18 +8,25 @@
             {% for field in form if field.widget.input_type != 'hidden' and field.widget.input_type != 'submit' %}
                 <div class="form-group mb-2">
                     {% if field.widget.input_type != 'checkbox' %}
-                        {{ field.label(class_="col-form-label") }}
                         {% if field.errors %}
                             {% if field.type == 'SelectField' %}
+                                {{ field.label(class_="col-form-label") }}
                                 {{ field(class_="form-select is-invalid") }}
                             {% else%}
+                                {{ field.label(class_="col-form-label") }}
                                 {{ field(class_="form-control is-invalid") }}
                             {% endif %}
                         {% else %}
                             {% if field.type == 'SelectField' %}
+                                {{ field.label(class_="col-form-label") }}
                                 {{ field(class_="form-select") }}
+                            {% elif field.type == 'URLField' %}
+                                <a href="{{ field.data }}">{{ field.label }}</a>
                             {% else%}
-                                {{ field(class_="form-control") }}
+                                <div class="mt-1">
+                                    {{ field.label(class_="col-form-label") }}
+                                    {{ field(class_="form-control") }}
+                                </div>
                             {% endif %}
                         {% endif %}
                     {% else %}
@@ -30,8 +37,8 @@
                     {% endif %}
                 </div>
             {% endfor %}
-            <button type="submit" class="btn btn-primary mt-3 mb-2">{{ _('Submit') }}</button>
-            <button type="button" class="btn btn-secondary mt-3 ms-3 mb-2" onclick="window.location.href='{{ url_back }}'">{{ _('Back') }}</button>
+            <button type="submit" class="btn btn-primary mt-2 mb-2">{{ _('Submit') }}</button>
+            <button type="button" class="btn btn-secondary mt-2 ms-3 mb-2" onclick="window.location.href='{{ url_back }}'">{{ _('Back') }}</button>
         </form>
     </div>
 </div>

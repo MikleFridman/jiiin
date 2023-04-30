@@ -7,7 +7,7 @@ from flask_wtf import FlaskForm, RecaptchaField
 from wtforms import (StringField, PasswordField, BooleanField,
                      SubmitField, TextAreaField, TelField, IntegerField,
                      FloatField, SelectField, DateField, TimeField,
-                     SelectMultipleField, FileField, HiddenField, EmailField)
+                     SelectMultipleField, FileField, HiddenField, EmailField, URLField)
 from wtforms.validators import (DataRequired, Email, EqualTo,
                                 ValidationError, Length, Optional)
 
@@ -109,13 +109,23 @@ class CompanyForm(FlaskForm):
                                     coerce=int)
     simple_mode = BooleanField(_l('Not use staff schedules'))
     show_quick_start = BooleanField(_l('Show quick start'))
+    delete_account = URLField(_l('Delete account'))
     # info = TextAreaField(_l('Info'), validators=[Length(max=200)])
+    submit = SubmitField(_l('Submit'))
+
+
+class DeleteAccountForm(FlaskForm):
+    reason = TextAreaField(_l('Reason'), validators=[DataRequired(),
+                                                     Length(min=10, max=200)])
+    confirm_delete = BooleanField(_l('Confirm deletion account and all data'),
+                                  validators=[DataRequired()])
     submit = SubmitField(_l('Submit'))
 
 
 class StaffForm(FlaskForm):
     name = StringField(_l('Name'), validators=[DataRequired()])
-    phone = TelField(_l('Phone'), validators=[DataRequired(), validate_phone_global])
+    phone = TelField(_l('Phone'), validators=[DataRequired(),
+                                              validate_phone_global])
     birthday = DateField(_l('Birthday'), validators=[Optional()])
     schedule = SelectField(_l('Schedule'), choices=[], coerce=int,
                            validate_choice=False)

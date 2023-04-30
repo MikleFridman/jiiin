@@ -39,7 +39,7 @@ def confirm(desc):
         @wraps(f)
         def wrap(*args, **kwargs):
             form = ConfirmForm()
-            url_back = request.args.get('url_back')
+            url_back = request.args.get('url_back', url_for('index'))
             if form.validate_on_submit():
                 return f(*args, **kwargs)
             return render_template('base.html',
@@ -261,6 +261,33 @@ def logout():
     return redirect(url_for('login'))
 
 
+@app.route('/delete_account/', methods=['GET', 'POST'])
+@login_required
+@confirm(_l('Confirm deletion account and all data'))
+def delete_account():
+    db.session.delete(current_user.company)
+    db.session.commit()
+    flash(_('Account successfully deleted'))
+    # send message to admin
+    # send_mail_from_site(sender, subject, text)
+    logout()
+    return redirect(url_for('index'))
+
+
+@app.route('/delete_page/', methods=['GET', 'POST'])
+@login_required
+def delete_page():
+    url_back = url_for('company_edit')
+    form = DeleteAccountForm()
+    if form.validate_on_submit():
+        if form.confirm_delete.data:
+            return redirect(url_for('delete_account'))
+    return render_template('data_form.html',
+                           title='Delete account',
+                           form=form,
+                           url_back=url_back)
+
+
 # Company block start
 @app.route('/companies/edit/', methods=['GET', 'POST'])
 @login_required
@@ -291,6 +318,7 @@ def company_edit():
         form.show_quick_start.data = CompanyConfig.get_parameter('show_quick_start')
         form.default_time_from.data = CompanyConfig.get_parameter('default_time_from')
         form.default_time_to.data = CompanyConfig.get_parameter('default_time_to')
+        form.delete_account.data = url_for('delete_page')
     return render_template('data_form.html',
                            title=_('Company (edit)'),
                            form=form,
@@ -380,6 +408,9 @@ def staff_table():
 @login_required
 def staff_create():
     url_back = url_for('staff_table', **request.args)
+    next_page = request.args.get('next')
+    if not next_page or url_parse(next_page).netloc != '':
+        next_page = url_for('staff_table')
     if CompanyConfig.get_parameter('simple_mode'):
         form = StaffFormSimple()
     else:
@@ -397,7 +428,7 @@ def staff_create():
                 schedule = Schedule.get_object(form.schedule.data)
                 staff.schedules.append(schedule)
         db.session.commit()
-        return redirect(url_for('staff_table'))
+        return redirect(next_page)
     return render_template('data_form.html',
                            title=_('Staff (create)'),
                            form=form,
@@ -530,13 +561,16 @@ def schedules_table():
 @login_required
 def schedule_create():
     url_back = url_for('schedules_table', **request.args)
+    next_page = request.args.get('next')
+    if not next_page or url_parse(next_page).netloc != '':
+        next_page = url_for('schedules_table')
     form = ScheduleForm()
     if form.validate_on_submit():
         schedule = Schedule(cid=current_user.cid,
                             name=form.name.data)
         db.session.add(schedule)
         db.session.commit()
-        return redirect(url_back)
+        return redirect(next_page)
     return render_template('data_form.html',
                            title=_('Schedule (create)'),
                            form=form,
@@ -874,6 +908,9 @@ def services_table():
 @login_required
 def service_create():
     url_back = url_for('services_table', **request.args)
+    next_page = request.args.get('next')
+    if not next_page or url_parse(next_page).netloc != '':
+        next_page = url_for('services_table')
     form = ServiceForm()
     location_list = Location.get_items(True)
     location_list.pop(0)
@@ -890,7 +927,9 @@ def service_create():
             location = Location.get_object(location_id)
             location.add_service(service)
         db.session.commit()
-        return redirect(url_for('services_table'))
+        return redirect(next_page)
+    elif request.method == 'GET':
+        form.duration.data = CompanyConfig.get_parameter('min_time_interval')
     return render_template('data_form.html',
                            title=_('Service (create)'),
                            form=form,
@@ -951,6 +990,9 @@ def locations_table():
 @login_required
 def location_create():
     url_back = url_for('locations_table', **request.args)
+    next_page = request.args.get('next')
+    if not next_page or url_parse(next_page).netloc != '':
+        next_page = url_for('locations_table')
     form = LocationForm()
     form.schedule.choices = Schedule.get_items(True)
     if form.validate_on_submit():
@@ -964,7 +1006,7 @@ def location_create():
             schedule = Schedule.get_object(form.schedule.data)
             location.schedules.append(schedule)
         db.session.commit()
-        return redirect(url_for('locations_table'))
+        return redirect(next_page)
     return render_template('data_form.html',
                            title=_('Location (create)'),
                            form=form,
