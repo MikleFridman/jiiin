@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+{% block app_content %}
+<div class="row">
+  <div class="col-md-12 mb-2 text-center">
+    <h4>{{ _('Quick start') }}</h4>
+  </div>
+</div>
+<div class="progress mb-4">
+  <div class="progress-bar progress-bar-striped" role="progressbar" style="width: {{ progress }}%;" aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100"></div>
+</div>
+<div class="row">
+{% for class in check %}
+<div class="col-sm-3">
+  {% if class['flag'] %}
+    <div class="card border-success mb-4" style="max-width: 20rem;">
+  {% else %}
+    <div class="card border-danger mb-4" style="max-width: 20rem;">
+  {% endif %}
+  <div class="card-header">{{ class['title'] }}</div>
+  <div class="card-body">
+      {% if class['flag'] %}
+        <p class="card-text">{{ _('Successfully configured') }}</p>
+      {% else %}
+        <p class="card-text">{{ class['description'] }}</p>
+      {% endif %}
+    <div><a class="card-link" href="{{ url_for(class.object.table_link) }}"> {{ _('Сonfigure') }}</a></div>
+  </div>
+</div>
+    </div>
+{% endfor%}
+</div>
+{% endblock %}

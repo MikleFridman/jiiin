@@ -108,6 +108,7 @@ class CompanyForm(FlaskForm):
     min_time_interval = SelectField(_l('Time interval (min)'), choices=choices,
                                     coerce=int)
     simple_mode = BooleanField(_l('Not use staff schedules'))
+    show_quick_start = BooleanField(_l('Show quick start'))
     # info = TextAreaField(_l('Info'), validators=[Length(max=200)])
     submit = SubmitField(_l('Submit'))
 

@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block app_content %}
-<h1>Critical error</h1>
+<h4>{{ _('Critical error') }}</h4>
 {{ message }}
 <p><a href="{{url_for('index')}}">Back</a></p>
 {% endblock %}

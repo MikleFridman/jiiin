@@ -245,6 +245,8 @@ def login():
         if not next_page or url_parse(next_page).netloc != '':
             next_page = url_for('index')
         app.logger.info('%s успешный вход в систему', user.username)
+        if current_user.company.config.show_quick_start:
+            next_page = url_for('quick_start')
         return redirect(next_page)
     return render_template('login.html',
                            title=_('Sign in'),
@@ -273,6 +275,7 @@ def company_edit():
         company.config.default_time_from = form.default_time_from.data
         company.config.default_time_to = form.default_time_to.data
         company.config.simple_mode = form.simple_mode.data
+        company.config.show_quick_start = form.show_quick_start.data
         company.config.min_time_interval = form.min_time_interval.data
         db.session.commit()
         return redirect(url_for('index'))
@@ -285,6 +288,7 @@ def company_edit():
         form.default_time_from.data = company.config.default_time_from
         form.default_time_to.data = company.config.default_time_to
         form.simple_mode.data = CompanyConfig.get_parameter('simple_mode')
+        form.show_quick_start.data = CompanyConfig.get_parameter('show_quick_start')
         form.default_time_from.data = CompanyConfig.get_parameter('default_time_from')
         form.default_time_to.data = CompanyConfig.get_parameter('default_time_to')
     return render_template('data_form.html',
@@ -1715,7 +1719,6 @@ def get_intervals(location_id, staff_id, date, appointment_id, no_check):
 @login_required
 @confirm(_l('Export data to Excel?'))
 def export():
-    url_back = request.args.get('url_back', url_for('index'))
     class_list = [Client, Staff, Appointment, Notice]
     directory = os.path.join(app.config['UPLOAD_FOLDER'],
                              str(current_user.cid), 'temp')
@@ -1758,3 +1761,32 @@ def export_download():
         return send_file(zip_path, as_attachment=True)
     flash(_('File not found'))
     return render_template('export_link.html')
+
+
+@app.route('/quick_start/')
+def quick_start():
+    check_list = [{'object': Schedule, 'title': _('Schedules'),
+                   'description':
+                       _('Necessary to create at least one schedule')},
+                  {'object': Location, 'title': _('Locations'),
+                   'description':
+                       _('Necessary to create at least one location')},
+                  {'object': Service, 'title': _('Services'),
+                   'description':
+                       _('Necessary to create at least one service')},
+                  {'object': Staff, 'title': _('Staff'),
+                   'description':
+                       _('Necessary to create at least one worker')}]
+    progress = 0
+    for cl in check_list:
+        check = bool(cl['object'].get_items(False))
+        cl['flag'] = check
+        if check:
+            progress += 1 / len(check_list) * 100
+    if progress == 100:
+        current_user.company.config.show_quick_start = False
+        db.session.commit()
+    return render_template('quick_start.html',
+                           title=_('Quick start'),
+                           check=check_list,
+                           progress=progress)

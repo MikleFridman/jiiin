@@ -94,6 +94,7 @@ locations_schedules = db.Table('locations_schedules',
 
 
 class Entity:
+    table_link = ''
     sort = 'id'
     sort_mode = 'asc'
     search = []
@@ -261,6 +262,7 @@ class CompanyConfig(db.Model, Entity, Splitter):
     default_time_from = db.Column(db.Time, default=datetime.strptime('09:00', '%H:%M').time())
     default_time_to = db.Column(db.Time, default=datetime.strptime('18:00', '%H:%M').time())
     simple_mode = db.Column(db.Boolean, default=True)
+    show_quick_start = db.Column(db.Boolean, default=True)
 
     @staticmethod
     def get_parameter(name):
@@ -342,6 +344,7 @@ class User(db.Model, UserMixin, Entity, Splitter):
 
 
 class Staff(db.Model, Entity, Splitter):
+    table_link = 'staff_table'
     sort = 'name'
     search = [('name', 'Name', str),
               ('phone', 'Phone', str)]
@@ -375,6 +378,7 @@ class Staff(db.Model, Entity, Splitter):
 
 
 class Tag(db.Model, Entity, Splitter):
+    table_link = 'tags_table'
     sort = 'name'
     search = [('name', 'Title', str)]
     name = db.Column(db.String(64), index=True, nullable=False)
@@ -384,6 +388,7 @@ class Tag(db.Model, Entity, Splitter):
 
 
 class Client(db.Model, Entity, Splitter):
+    table_link = 'clients_table'
     sort = 'name'
     search = [('tags', 'Tags', Tag),
               ('name', 'Name', str),
@@ -425,6 +430,7 @@ class ClientFile(db.Model, Entity, Splitter):
 
 
 class Service(db.Model, Entity, Splitter):
+    table_link = 'services_table'
     sort = 'name'
     search = [('name', 'Title', str)]
     name = db.Column(db.String(120), index=True, nullable=False)
@@ -447,6 +453,7 @@ class Service(db.Model, Entity, Splitter):
 
 
 class Location(db.Model, Entity, Splitter):
+    table_link = 'locations_table'
     sort = 'name'
     search = [('name', 'Title', str)]
     name = db.Column(db.String(64), index=True, nullable=False)
@@ -492,6 +499,7 @@ class Location(db.Model, Entity, Splitter):
 
 
 class Appointment(db.Model, Entity, Splitter):
+    table_link = 'appointments_table'
     sort = 'date_time'
     sort_mode = 'desc'
     search = [('location_id', 'Location', Location),
@@ -594,6 +602,7 @@ class Week:
 
 
 class Schedule(db.Model, Entity, Splitter):
+    table_link = 'schedules_table'
     sort = 'name'
     search = [('name', 'Title', str)]
     name = db.Column(db.String(64), index=True, nullable=False)
@@ -642,6 +651,7 @@ class ScheduleDay(db.Model, Entity, Splitter):
 
 
 class Item(db.Model, Entity, Splitter):
+    table_link = 'items_table'
     sort = 'name'
     search = [('name', 'Title', str)]
     name = db.Column(db.String(64), index=True, nullable=False)
@@ -670,6 +680,7 @@ class Item(db.Model, Entity, Splitter):
 
 
 class ItemFlow(db.Model, Entity, Splitter):
+    table_link = 'item_flow_table'
     sort = 'date'
     sort_mode = 'desc'
     search = [('location_id', 'Location', Location),
@@ -693,6 +704,7 @@ class Storage(db.Model, Entity, Splitter):
 
 
 class CashFlow(db.Model, Entity, Splitter):
+    table_link = 'cash_flow_table'
     sort = 'date'
     sort_mode = 'desc'
     search = [('location_id', 'Location', Location),
@@ -714,6 +726,7 @@ class Cash(db.Model, Entity, Splitter):
 
 
 class Notice(db.Model, Entity, Splitter):
+    table_link = 'notices_table'
     sort = 'date'
     sort_mode = 'desc'
     search = [('client_id', 'Client', Client),
@@ -733,6 +746,7 @@ class Notice(db.Model, Entity, Splitter):
 
 
 class Holiday(db.Model, Entity, Splitter):
+    table_link = 'holidays_table'
     sort = 'date'
     sort_mode = 'desc'
     search = [('staff_id', 'Worker', Staff),
