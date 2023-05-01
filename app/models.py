@@ -724,6 +724,9 @@ class CashFlow(db.Model, Entity, Splitter):
 
 class Cash(db.Model, Entity, Splitter):
     id = None
+    table_link = 'cash_table'
+    sort = 'location_id'
+    search = [('location_id', 'Location', Location)]
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'),
                             primary_key=True)
     cost = db.Column(db.Float)

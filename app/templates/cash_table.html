@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+  <div class="row">
+    <div class="col-md-2 mb-2">
+      &nbsp;
+    </div>
+    <div class="col-md-5 mb-2 text-center">
+      <h4>{{ _('Balance') }}</h4>
+    </div>
+    {% include '_search_form.html' %}
+  </div>
+  <table id="data" class="table table-hover border-top border-bottom border-light">
+    <thead>
+      <tr class="table-primary border-start border-end border-light text-center">
+        <th class="col-8">{{ _('Location') }}</th>
+        <th class="col-2">{{ _('Flow') }}</th>
+        <th class="col-2">{{ _('Sum') }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for cf in items %}
+        <tr class="{{ loop.cycle('table-success', 'table-default') }}  border-start border-end border-light">
+          <td class="col-8 ps-3">
+            {{ cf.location }}
+          </td>
+          <td class="col-2 text-center">
+            <a href="{{ url_for('cash_flow_table', location_id=cf.location.id) }}"><img src="{{ url_for('static', filename='/flow.png') }}" alt="edit" width="24"></a>
+          </td>
+          <td class="col-2 text-center">
+            {{ cf.cost|float }}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% import '_pagination.html' as forms %}
+{{ forms.render_pagination(pagination, 'cash_table', **request.args) }}
+{% endblock %}

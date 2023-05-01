@@ -15,6 +15,7 @@ from flask_babel import _, lazy_gettext as _l
 from flask_login import login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 
+from .bot import send_bot_message
 from app.forms import *
 from app.functions import *
 from app.models import *
@@ -219,6 +220,9 @@ def register():
         db.session.flush()
         user.set_password(form.password.data)
         db.session.commit()
+        if not app.debug:
+            send_bot_message(app.config['ADMIN_CHAT_ID'],
+                             'Registered new account: ' + form.username.data)
         return redirect(url_for('login'))
     return render_template('data_form.html',
                            form=form,
@@ -266,9 +270,12 @@ def logout():
 @confirm(_l('Confirm deletion account and all data'))
 def delete_account():
     db.session.delete(current_user.company)
+    username = current_user.username
     db.session.commit()
     flash(_('Account successfully deleted'))
-    # send message to admin
+    if not app.debug:
+        send_bot_message(app.config['ADMIN_CHAT_ID'],
+                         'Deleted account: ' + username)
     # send_mail_from_site(sender, subject, text)
     logout()
     return redirect(url_for('index'))
@@ -930,6 +937,7 @@ def service_create():
         return redirect(next_page)
     elif request.method == 'GET':
         form.duration.data = CompanyConfig.get_parameter('min_time_interval')
+        form.location.data = range(1, len(location_list)+1)
     return render_template('data_form.html',
                            title=_('Service (create)'),
                            form=form,
@@ -1491,6 +1499,20 @@ def notice_edit(id):
 
 
 # CashFlow block start
+@app.route('/cash_table/')
+@login_required
+def cash_table():
+    page = request.args.get('page', 1, type=int)
+    form = set_filter(Cash)
+    param = get_filter_parameters(form, Cash)
+    data = Cash.get_pagination(page, *param)
+    return render_template('cash_table.html',
+                           title=_('Cash desk'),
+                           items=data.items,
+                           pagination=data,
+                           form=form)
+
+
 # noinspection PyTypeChecker
 @app.route('/cash_flow/')
 @login_required
