@@ -3,6 +3,8 @@ import zipfile
 from functools import wraps
 
 import pandas as pd
+from bokeh.embed import components
+from bokeh.plotting import figure
 from pandas import ExcelWriter
 from sqlalchemy.orm import RelationshipProperty
 
@@ -372,6 +374,7 @@ def user_edit(id):
 def reset_password_request():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
+    url_back = url_for('login')
     form = ResetPasswordRequestForm()
     if form.validate_on_submit():
         user = User.find_object({'email': form.email.data}, overall=True)
@@ -391,7 +394,8 @@ def reset_password_request():
             return redirect(url_for('reset_password_request'))
     return render_template('data_form.html',
                            title=_('Reset password'),
-                           form=form)
+                           form=form,
+                           url_back=url_back)
 # User block end
 
 
@@ -689,6 +693,10 @@ def clients_table():
 def client_create():
     url_back = url_for('clients_table', **request.args)
     form = ClientForm()
+    form.phone.render_kw = {'class': 'mask-phone form-control'}
+    if request.method == 'POST':
+        if not form.phone.data[0] == '+':
+            form.phone.data = '+' + form.phone.data
     if form.validate_on_submit():
         client = Client(cid=current_user.cid,
                         name=form.name.data,
@@ -1676,13 +1684,29 @@ def report_statistics_view():
 @app.route('/dashboard_view/')
 @login_required
 def dashboard_view():
-    users_count = len(User.get_items())
-    services_count = len(Service.get_items())
-    clients_count = len(Client.get_items())
+    users_count = len(User.query.all())
+    services_count = len(Service.query.all())
+    clients_count = len(Client.query.all())
+    users = User.query.with_entities(
+        func.date(User.timestamp_create),
+        func.count(User.id)).group_by(func.date(User.timestamp_create)).all()
+    x_list = [i[0] for i in users]
+    x_list.sort()
+    chart_arg = [i[0] for i in users]
+    chart_func = [i[1] for i in users]
+    p = figure(x_range=x_list, height=250, toolbar_location=None,
+               sizing_mode='stretch_width')
+    p.vbar(x=chart_arg, top=chart_func, width=0.2)
+    p.xgrid.grid_line_color = None
+    p.y_range.start = 0
+    div, script = components(p)
     return render_template('dashboard.html',
+                           title='Dashboard',
                            users_count=users_count,
                            services_count=services_count,
-                           clients_count=clients_count)
+                           clients_count=clients_count,
+                           script=script,
+                           div=div)
 
 # Report block end
 

@@ -29,7 +29,7 @@ msgstr "На сайт"
 
 #: app/forms.py:25 app/forms.py:26
 msgid "Invalid phone number"
-msgstr "Недопустимый телефонный номер"
+msgstr "Введите корректный номер в международном формате"
 
 #: app/forms.py:30 app/templates/base.html:45
 msgid "Company"

@@ -545,8 +545,11 @@ class Appointment(db.Model, Entity, Splitter):
 
     @property
     def date_repeat(self):
-        period = min(s.repeat for s in self.services if s.repeat > 0)
-        return (self.date_time + timedelta(days=period)).date()
+        repeat_list = [s.repeat for s in self.services if s.repeat > 0]
+        if repeat_list:
+            period = min(repeat_list)
+            return (self.date_time + timedelta(days=period)).date()
+        return None
 
     @property
     def time_end(self):

@@ -171,7 +171,6 @@ class ClientForm(FlaskForm):
         self.source_phone = source_phone
 
     def validate_phone(self, field):
-        print('call')
         if field.data != self.source_phone:
             if Client.find_object({'phone': field.data}):
                 flash(_l('Please use a different phone'))
