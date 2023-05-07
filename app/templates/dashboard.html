@@ -1,14 +1,27 @@
 {% extends "base.html" %}
 {% import 'bootstrap/wtf.html' as wtf %}
 {% block app_content %}
+<script type="text/javascript" src="https://cdn.canvasjs.com/canvasjs.min.js"></script>
 <div>Users - {{users_count}}</div>
 <div>Services - {{services_count}}</div>
 <div>Clients - {{clients_count}}</div>
 <div class="charts mt-3">
-    <h4>Users</h4>
-    {{ div|safe }}
-        <script src="http://cdn.pydata.org/bokeh/release/bokeh-2.4.3.min.js"></script>
-        <script src="http://cdn.pydata.org/bokeh/release/bokeh-widgets-2.4.3.min.js"></script>
-    {{ script|safe }}
+    <div id="chart-container" style="height: 300px;"></div>
 </div>
+<script>
+    var dataPoints = [];
+    {% for date, count in users.items() %}
+        dataPoints.push({ label: "{{ date }}", y: {{ count }} })
+    {% endfor %}
+    var chart = new CanvasJS.Chart("chart-container", {
+        title: {
+            text: "Users"
+        },
+        data: [{
+            type: "spline",
+            dataPoints: dataPoints
+        }]
+    });
+    chart.render();
+</script>
 {% endblock %}

@@ -6,6 +6,7 @@ import pandas as pd
 from bokeh.embed import components
 from bokeh.plotting import figure
 from pandas import ExcelWriter
+from sqlalchemy import select
 from sqlalchemy.orm import RelationshipProperty
 
 import app
@@ -1033,9 +1034,9 @@ def location_create():
 @login_required
 def location_edit(id):
     url_back = url_for('locations_table', **request.args)
-    form = LocationForm()
-    form.schedule.choices = Schedule.get_items(True)
     location = Location.get_object(id)
+    form = LocationForm(location.phone)
+    form.schedule.choices = Schedule.get_items(True)
     if form.validate_on_submit():
         location.name = form.name.data
         location.phone = form.phone.data
@@ -1687,26 +1688,20 @@ def dashboard_view():
     users_count = len(User.query.all())
     services_count = len(Service.query.all())
     clients_count = len(Client.query.all())
-    users = User.query.with_entities(
+    users_items = User.query.with_entities(
         func.date(User.timestamp_create),
         func.count(User.id)).group_by(func.date(User.timestamp_create)).all()
-    x_list = [i[0] for i in users]
-    x_list.sort()
-    chart_arg = [i[0] for i in users]
-    chart_func = [i[1] for i in users]
-    p = figure(x_range=x_list, height=250, toolbar_location=None,
-               sizing_mode='stretch_width')
-    p.vbar(x=chart_arg, top=chart_func, width=0.2)
-    p.xgrid.grid_line_color = None
-    p.y_range.start = 0
-    div, script = components(p)
+    users = {}
+    u_count = 0
+    for u in users_items:
+        u_count += u[1]
+        users[u[0]] = u_count
     return render_template('dashboard.html',
                            title='Dashboard',
                            users_count=users_count,
                            services_count=services_count,
                            clients_count=clients_count,
-                           script=script,
-                           div=div)
+                           users=users)
 
 # Report block end
 
@@ -1852,6 +1847,7 @@ def export_download():
 
 
 @app.route('/quick_start/')
+@login_required
 def quick_start():
     check_list = [{'object': Schedule, 'title': _('Schedules'),
                    'description':

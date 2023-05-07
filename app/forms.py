@@ -210,6 +210,16 @@ class LocationForm(FlaskForm):
                            validate_choice=False)
     submit = SubmitField(_l('Submit'))
 
+    def __init__(self, source_phone=None, *args, **kwargs):
+        super(LocationForm, self).__init__(*args, **kwargs)
+        self.source_phone = source_phone
+
+    def validate_phone(self, field):
+        if field.data != self.source_phone:
+            if Location.find_object({'phone': field.data}, overall=True):
+                flash(_l('Please use a different phone'))
+                raise ValidationError(_l('Please use a different phone'))
+
 
 class AppointmentForm(FlaskForm):
     location = SelectField(_l('Location'), choices=[], coerce=int)

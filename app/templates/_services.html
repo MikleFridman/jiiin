@@ -21,11 +21,11 @@
           response.json().then(function(data) {
           urlParams = new URLSearchParams(window.location.search);
           urlParams.set('mod_services', 1);
+          tr = document.getElementById('tr_' + id);
+          tr.parentNode.removeChild(tr);
           window.location.search = urlParams;
           })
       });
-      tr = document.getElementById('tr_' + id);
-      tr.parentNode.removeChild(tr);
 
   }
 </script>
