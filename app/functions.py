@@ -156,4 +156,8 @@ def get_attr_inspect(name, class_object):
     return name
 
 
-
+def phone_number_plus(number):
+    number = str(number).strip()
+    if not number[0] == '+':
+        number = '+' + number
+    return number

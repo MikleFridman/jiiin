@@ -11,7 +11,7 @@
 {% block navbar %}
 <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
   <div class="container-fluid">
-    <a class="navbar-brand ms-3" href="{{ url_for('index') }}"> Jiiin </a>
+    <a class="navbar-brand ms-3" href="{{ url_for('index') }}" title="ver. {{ version }} ({{ version_date }})"> Jiiin </a>
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -106,7 +106,7 @@
     <script src="https://code.jquery.com/jquery-3.6.3.min.js"></script>
     <script>
         function hide_message() {
-            $('#messages').fadeOut(5000);
+            $('#messages').fadeOut(6000);
         }
     </script>
     <div id="messages" class="container mt-3">
@@ -128,5 +128,10 @@
             {% include '_confirm_form.html' %}
         {% endif %}
         {% block app_content %}{% endblock %}
+    </div>
+    <div class="container mt-3">
+        <div id="footer">
+            <p>&copy 2023 Jiiin ver. {{ version }} ({{ version_date }})</p>
+        </div>
     </div>
 {% endblock %}

@@ -1,3 +1,4 @@
+import string
 from datetime import datetime
 
 import phonenumbers
@@ -26,12 +27,45 @@ def validate_phone_global(form, field):
         raise ValidationError(_l('Invalid phone number'))
 
 
+def validate_username_global(form, field):
+    if len(field.data.strip()) < 8:
+        msg = _l('Min length username is 8 characters')
+        flash(msg)
+        raise ValidationError(msg)
+    abc = string.ascii_letters + string.digits + '_'
+    for s in field.data:
+        if s not in abc:
+            msg = _l('Username can contain only latin letters and numbers')
+            flash(msg)
+            raise ValidationError(msg)
+
+
+def validate_name_global(form, field):
+    cyrillic_lower_letters = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя'
+    cyrillic_letters = cyrillic_lower_letters + cyrillic_lower_letters.upper()
+    if len(field.data.strip()) < 8:
+        msg = _l('Min length field "%(fn)s" is 8 characters', fn=field.label)
+        flash(msg)
+        raise ValidationError(msg)
+    abc = string.ascii_letters + string.digits + string.whitespace
+    abc += '_' + cyrillic_letters
+    for s in field.data:
+        if s not in abc:
+            msg = _l('Field "%(fn)s" can contain only latin letters and numbers',
+                     fn=field.label)
+            flash(msg)
+            raise ValidationError(msg)
+
+
 class RegisterForm(FlaskForm):
-    company = StringField(_l('Company'), validators=[DataRequired()])
-    username = StringField(_l('Username'), validators=[DataRequired()])
+    company = StringField(_l('Company'),
+                          validators=[DataRequired(), validate_name_global])
+    username = StringField(_l('Username'),
+                           validators=[DataRequired(), validate_username_global])
     email = EmailField(_l('E-mail'), validators=[DataRequired(), Email()])
     password = PasswordField(_l('Password'), validators=[DataRequired()])
-    password2 = PasswordField(_l('Repeat password'), validators=[DataRequired(), EqualTo('password')])
+    password2 = PasswordField(_l('Repeat password'),
+                              validators=[DataRequired(), EqualTo('password')])
     recaptcha = RecaptchaField()
     submit = SubmitField(_l('Submit'))
 
@@ -99,7 +133,8 @@ class ResetPasswordForm(FlaskForm):
 
 
 class CompanyForm(FlaskForm):
-    name = StringField(_l('Company name'), validators=[DataRequired()])
+    name = StringField(_l('Company name'), validators=[DataRequired(),
+                                                       validate_name_global])
     registration_number = StringField(_l('Registration number'))
     default_time_from = TimeField(_l('Open from (default)'))
     default_time_to = TimeField(_l('Open until (default)'))
@@ -123,7 +158,9 @@ class DeleteAccountForm(FlaskForm):
 
 
 class StaffForm(FlaskForm):
-    name = StringField(_l('Name'), validators=[DataRequired()])
+    required_fields = ['name', 'phone']
+    name = StringField(_l('Name'), validators=[DataRequired(),
+                                               validate_name_global])
     phone = TelField(_l('Phone'), validators=[DataRequired(),
                                               validate_phone_global])
     birthday = DateField(_l('Birthday'), validators=[Optional()])
@@ -141,13 +178,19 @@ class StaffForm(FlaskForm):
                 flash(_l('Please use a different phone'))
                 raise ValidationError(_l('Please use a different phone'))
 
+    def validate_birthday(self, field):
+        if self.birthday.data >= datetime.now().date():
+            flash(_l('Invalid birthday date'))
+            raise ValidationError(_l('Invalid birthday date'))
+
 
 class StaffFormSimple(StaffForm):
     schedule = None
 
 
 class ScheduleForm(FlaskForm):
-    name = StringField(_l('Title'), validators=[DataRequired()])
+    name = StringField(_l('Title'), validators=[DataRequired(),
+                                                validate_name_global])
     submit = SubmitField(_l('Submit'))
 
 
@@ -160,8 +203,10 @@ class ScheduleDayForm(FlaskForm):
 
 
 class ClientForm(FlaskForm):
-    name = StringField(_l('Name'), validators=[DataRequired()])
-    phone = TelField(_l('Phone'), validators=[DataRequired(), validate_phone_global])
+    name = StringField(_l('Name'), validators=[DataRequired(),
+                                               validate_name_global])
+    phone = TelField(_l('Phone'), validators=[DataRequired(),
+                                              validate_phone_global])
     birthday = DateField(_l('Birthday'), validators=[Optional()])
     info = TextAreaField(_l('Info'), validators=[Length(max=200)])
     submit = SubmitField(_l('Submit'))
@@ -193,7 +238,8 @@ class TagForm(FlaskForm):
 
 
 class ServiceForm(FlaskForm):
-    name = StringField(_l('Title'), validators=[DataRequired()])
+    name = StringField(_l('Title'), validators=[DataRequired(),
+                                                validate_name_global])
     duration = IntegerField(_l('Duration'), default=0)
     price = FloatField(_l('Price'), default=0)
     repeat = IntegerField(_l('Repeat'), default=0)
@@ -203,8 +249,10 @@ class ServiceForm(FlaskForm):
 
 
 class LocationForm(FlaskForm):
-    name = StringField(_l('Title'), validators=[DataRequired()])
-    phone = TelField(_l('Phone'), validators=[DataRequired(), validate_phone_global])
+    name = StringField(_l('Title'), validators=[DataRequired(),
+                                                validate_name_global])
+    phone = TelField(_l('Phone'), validators=[DataRequired(),
+                                              validate_phone_global])
     address = StringField(_l('Address'), validators=[DataRequired()])
     schedule = SelectField(_l('Schedule'), choices=[], coerce=int,
                            validate_choice=False)
@@ -250,7 +298,6 @@ class AppointmentForm(FlaskForm):
             raise ValidationError(_l('Please select services'))
         else:
             if not self.location.data:
-                flash(_l('Please select location'))
                 raise ValidationError(_l('Please select location'))
             location = Location.query.get_or_404(self.location.data)
             services_id = [x.id for x in location.services]
@@ -341,7 +388,8 @@ class ConfirmForm(FlaskForm):
 
 
 class ItemForm(FlaskForm):
-    name = StringField(_l('Title'), validators=[DataRequired()])
+    name = StringField(_l('Title'), validators=[DataRequired(),
+                                                validate_name_global])
     description = TextAreaField('Description', validators=[Length(max=255)])
     submit = SubmitField(_l('Submit'))
 
@@ -350,7 +398,8 @@ class ItemFlowForm(FlaskForm):
     location = SelectField(_l('Location'), choices=[], coerce=int)
     date = DateField(_l('Date'))
     item = SelectField(_l('Item'), choices=[], coerce=int)
-    action = SelectField(_l('Operation'), choices=[(1, _l('Plus')), (-1, _l('Minus'))],
+    action = SelectField(_l('Operation'),
+                         choices=[(1, _l('Plus')), (-1, _l('Minus'))],
                          coerce=int)
     quantity = FloatField(_l('Quantity'), default=0)
     submit = SubmitField(_l('Submit'))
@@ -377,9 +426,11 @@ class ItemFlowForm(FlaskForm):
 
 
 class ContactForm(FlaskForm):
-    name = StringField(_l('Name'), validators=[DataRequired()])
+    name = StringField(_l('Name'), validators=[DataRequired(),
+                                               validate_name_global])
     email = StringField(_l('E-mail'), validators=[DataRequired(), Email()])
-    text = TextAreaField(_l('Text'), validators=[DataRequired(), Length(max=255)])
+    text = TextAreaField(_l('Text'), validators=[DataRequired(),
+                                                 Length(max=255)])
     submit = SubmitField(_l('Submit'))
 
 

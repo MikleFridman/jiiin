@@ -458,6 +458,7 @@ class Service(db.Model, Entity, Splitter):
 
 class Location(db.Model, Entity, Splitter):
     table_link = 'locations_table'
+    table_link = 'locations_table'
     sort = 'name'
     search = [('name', 'Title', str)]
     name = db.Column(db.String(64), index=True, nullable=False)

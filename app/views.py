@@ -1,12 +1,10 @@
 import ast
 import zipfile
 from functools import wraps
+from xml.dom import minidom
 
 import pandas as pd
-from bokeh.embed import components
-from bokeh.plotting import figure
 from pandas import ExcelWriter
-from sqlalchemy import select
 from sqlalchemy.orm import RelationshipProperty
 
 import app
@@ -24,9 +22,19 @@ from app.functions import *
 from app.models import *
 
 
+doc_version = minidom.parse('version.xml')
+VERSION = doc_version.getElementsByTagName('version')[0].firstChild.data
+VERSION_DATE = doc_version.getElementsByTagName('date')[0].firstChild.data
+
+
 @app.context_processor
 def inject_today_date():
     return {'today_date': datetime.now().date()}
+
+
+@app.context_processor
+def inject_version():
+    return {'version': VERSION, 'version_date': VERSION_DATE}
 
 
 @app.context_processor
@@ -381,13 +389,13 @@ def reset_password_request():
         user = User.find_object({'email': form.email.data}, overall=True)
         if user:
             temp_password = User.get_random_password()
+            user.set_password(temp_password)
+            db.session.commit()
             send_mail(subject=_('Reset password') + ' Jiiin',
                       sender=app.config['MAIL_DEFAULT_SENDER'],
                       recipients=[user.email],
                       text_body=render_template('reset_password.txt',
                                                 password=temp_password))
-            user.set_password(temp_password)
-            db.session.commit()
             flash(_('Temporary password has been sent to your e-mail'))
             return redirect(url_for('login'))
         else:
@@ -428,6 +436,8 @@ def staff_create():
     else:
         form = StaffForm()
         form.schedule.choices = Schedule.get_items(True)
+    if request.method == 'POST':
+        form.phone.data = phone_number_plus(form.phone.data)
     if form.validate_on_submit():
         staff = Staff(cid=current_user.cid,
                       name=form.name.data,
@@ -457,6 +467,8 @@ def staff_edit(id):
     else:
         form = StaffForm(staff.phone)
         form.schedule.choices = Schedule.get_items(True)
+    if request.method == 'POST':
+        form.phone.data = phone_number_plus(form.phone.data)
     if form.validate_on_submit():
         staff.name = form.name.data
         staff.phone = form.phone.data
@@ -694,10 +706,8 @@ def clients_table():
 def client_create():
     url_back = url_for('clients_table', **request.args)
     form = ClientForm()
-    form.phone.render_kw = {'class': 'mask-phone form-control'}
     if request.method == 'POST':
-        if not form.phone.data[0] == '+':
-            form.phone.data = '+' + form.phone.data
+        form.phone.data = phone_number_plus(form.phone.data)
     if form.validate_on_submit():
         client = Client(cid=current_user.cid,
                         name=form.name.data,
@@ -719,6 +729,8 @@ def client_edit(id):
     url_back = url_for('clients_table', **request.args)
     client = Client.get_object(id)
     form = ClientForm(client.phone)
+    if request.method == 'POST':
+        form.phone.data = phone_number_plus(form.phone.data)
     if form.validate_on_submit():
         client.name = form.name.data
         client.phone = form.phone.data
@@ -1012,6 +1024,8 @@ def location_create():
         next_page = url_for('locations_table')
     form = LocationForm()
     form.schedule.choices = Schedule.get_items(True)
+    if request.method == 'POST':
+        form.phone.data = phone_number_plus(form.phone.data)
     if form.validate_on_submit():
         location = Location(cid=current_user.cid,
                             name=form.name.data,
@@ -1037,6 +1051,8 @@ def location_edit(id):
     location = Location.get_object(id)
     form = LocationForm(location.phone)
     form.schedule.choices = Schedule.get_items(True)
+    if request.method == 'POST':
+        form.phone.data = phone_number_plus(form.phone.data)
     if form.validate_on_submit():
         location.name = form.name.data
         location.phone = form.phone.data
