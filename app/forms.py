@@ -221,6 +221,11 @@ class ClientForm(FlaskForm):
                 flash(_l('Please use a different phone'))
                 raise ValidationError(_l('Please use a different phone'))
 
+    def validate_birthday(self, field):
+        if self.birthday.data >= datetime.now().date():
+            flash(_l('Invalid birthday date'))
+            raise ValidationError(_l('Invalid birthday date'))
+
 
 class ClientFileForm(FlaskForm):
     file = FileField('')
@@ -235,6 +240,9 @@ class ClientTagForm(FlaskForm):
 class TagForm(FlaskForm):
     name = StringField(_l('Title'), validators=[DataRequired()])
     submit = SubmitField(_l('Submit'))
+
+    def validate_name(self, field):
+        self.name.data = self.name.data.strip().replace(' ', '_').lower()
 
 
 class ServiceForm(FlaskForm):

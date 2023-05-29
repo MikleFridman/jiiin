@@ -1779,24 +1779,31 @@ def get_services():
     return jsonify(session['services'])
 
 
-@app.route('/get_intervals/<location_id>/<staff_id>/<date>/<appointment_id>/'
+@app.route('/get_intervals/<location_id>/<staff_id>/<date_string>/<appointment_id>/'
            '<no_check>/')
 @login_required
-def get_intervals(location_id, staff_id, date, appointment_id, no_check):
+def get_intervals(location_id, staff_id, date_string, appointment_id, no_check):
     timeslots = []
+    try:
+        date = datetime.strptime(date_string, '%Y-%m-%d')
+    except ValueError:
+        return jsonify(timeslots)
     current_time = None
     if no_check == 'true':
-        duration = timedelta(minutes=CompanyConfig.get_parameter('min_time_interval'))
+        duration = timedelta(
+            minutes=CompanyConfig.get_parameter('min_time_interval'))
     else:
         duration = get_duration(session['services'])
     if int(appointment_id):
-        intervals = get_free_time_intervals(int(location_id), datetime.strptime(
-            date, '%Y-%m-%d').date(), int(staff_id), duration, appointment_id)
+        intervals = get_free_time_intervals(
+            int(location_id), date.date(),
+            int(staff_id), duration, appointment_id)
         appointment = Appointment.get_object(appointment_id)
         current_time = appointment.date_time.time().strftime('%H:%M')
     else:
-        intervals = get_free_time_intervals(int(location_id), datetime.strptime(
-            date, '%Y-%m-%d').date(), int(staff_id), duration)
+        intervals = get_free_time_intervals(
+            int(location_id), date.date(),
+            int(staff_id), duration)
     delta_config = CompanyConfig.get_parameter('min_time_interval')
     for interval in intervals:
         start = interval[0] + timedelta(minutes=14)
