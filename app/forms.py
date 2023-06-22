@@ -1,5 +1,5 @@
 import string
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import phonenumbers
 from flask import flash
@@ -55,6 +55,13 @@ def validate_name_global(form, field):
                      fn=field.label)
             flash(msg)
             raise ValidationError(msg)
+
+
+def validate_birthday_global(form, field):
+    if (not isinstance(field.data, type(datetime.now().date())) or
+            field.data >= datetime.now().date()):
+        flash(_l('Invalid birthday date'))
+        raise ValidationError(_l('Invalid birthday date'))
 
 
 class RegisterForm(FlaskForm):
@@ -163,7 +170,8 @@ class StaffForm(FlaskForm):
                                                validate_name_global])
     phone = TelField(_l('Phone'), validators=[DataRequired(),
                                               validate_phone_global])
-    birthday = DateField(_l('Birthday'), validators=[Optional()])
+    birthday = DateField(_l('Birthday'), validators=[Optional(),
+                                                     validate_birthday_global])
     schedule = SelectField(_l('Schedule'), choices=[], coerce=int,
                            validate_choice=False)
     submit = SubmitField(_l('Submit'))
@@ -177,11 +185,6 @@ class StaffForm(FlaskForm):
             if Staff.find_object({'phone': field.data}):
                 flash(_l('Please use a different phone'))
                 raise ValidationError(_l('Please use a different phone'))
-
-    def validate_birthday(self, field):
-        if self.birthday.data >= datetime.now().date():
-            flash(_l('Invalid birthday date'))
-            raise ValidationError(_l('Invalid birthday date'))
 
 
 class StaffFormSimple(StaffForm):
@@ -201,13 +204,20 @@ class ScheduleDayForm(FlaskForm):
     hour_to = TimeField(_l('To hour'))
     submit = SubmitField(_l('Submit'))
 
+    def validate_hour_from(self, field):
+        if (datetime.combine(datetime.now(), self.hour_to.data) -
+                datetime.combine(datetime.now(), field.data) < timedelta(seconds=0)):
+            flash(_l('Incorrect time interval'))
+            raise ValidationError(_l('Incorrect time interval'))
+
 
 class ClientForm(FlaskForm):
     name = StringField(_l('Name'), validators=[DataRequired(),
                                                validate_name_global])
     phone = TelField(_l('Phone'), validators=[DataRequired(),
                                               validate_phone_global])
-    birthday = DateField(_l('Birthday'), validators=[Optional()])
+    birthday = DateField(_l('Birthday'), validators=[Optional(),
+                                                     validate_birthday_global])
     info = TextAreaField(_l('Info'), validators=[Length(max=200)])
     submit = SubmitField(_l('Submit'))
 
@@ -220,11 +230,6 @@ class ClientForm(FlaskForm):
             if Client.find_object({'phone': field.data}):
                 flash(_l('Please use a different phone'))
                 raise ValidationError(_l('Please use a different phone'))
-
-    def validate_birthday(self, field):
-        if self.birthday.data >= datetime.now().date():
-            flash(_l('Invalid birthday date'))
-            raise ValidationError(_l('Invalid birthday date'))
 
 
 class ClientFileForm(FlaskForm):

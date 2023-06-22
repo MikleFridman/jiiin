@@ -5,11 +5,12 @@
           <td class="col-8 ps-3">
             {{ s.name }}
           </td>
-          <td class="col-3 text-center">{{ s.duration }} {{ _('min') }}</td>
-          <td class="col-1 text-center">
-            <a href="" id="{{ s.id }}" onclick="delete_service(id)">
-              <img src="{{ url_for('static', filename='/delete.png') }}" alt="hidden" width="22">
-            </a>
+          <td class="col-2 text-center">{{ s.duration }} {{ _('min') }}</td>
+          <td class="col-2 text-center">
+<!--            <a href="" id="{{ s.id }}" onclick="delete_service(id)">-->
+<!--              <img src="{{ url_for('static', filename='/delete.png') }}" alt="hidden" width="22">-->
+<!--            </a>-->
+            {{ s.price }}
           </td>
         </tr>
       {% endfor %}
@@ -26,6 +27,5 @@
           window.location.search = urlParams;
           })
       });
-
   }
 </script>

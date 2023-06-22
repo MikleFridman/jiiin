@@ -234,6 +234,7 @@ def register():
         if not app.debug:
             send_bot_message(app.config['ADMIN_CHAT_ID'],
                              'Registered new account: ' + form.username.data)
+        flash(_('Registration successfully'))
         return redirect(url_for('login'))
     return render_template('data_form.html',
                            form=form,
