@@ -477,6 +477,7 @@ def staff_edit(id):
         if not CompanyConfig.get_parameter('simple_mode'):
             if form.schedule.data:
                 schedule = Schedule.get_object(form.schedule.data)
+                staff.schedules.clear()
                 staff.schedules.append(schedule)
             else:
                 staff.schedules.clear()
@@ -1790,11 +1791,12 @@ def get_intervals(location_id, staff_id, date_string, appointment_id, no_check):
     except ValueError:
         return jsonify(timeslots)
     current_time = None
+    min_time_interval = timedelta(
+        minutes=CompanyConfig.get_parameter('min_time_interval'))
     if no_check == 'true':
-        duration = timedelta(
-            minutes=CompanyConfig.get_parameter('min_time_interval'))
+        duration = min_time_interval
     else:
-        duration = get_duration(session['services'])
+        duration = get_duration(session.get('services', min_time_interval))
     if int(appointment_id):
         intervals = get_free_time_intervals(
             int(location_id), date.date(),
