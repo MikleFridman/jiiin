@@ -1061,6 +1061,7 @@ def location_edit(id):
         location.address = form.address.data
         if form.schedule.data:
             schedule = Schedule.get_object(form.schedule.data)
+            location.schedules.clear()
             location.schedules.append(schedule)
         else:
             location.schedules.clear()
@@ -1796,7 +1797,7 @@ def get_intervals(location_id, staff_id, date_string, appointment_id, no_check):
     if no_check == 'true':
         duration = min_time_interval
     else:
-        duration = get_duration(session.get('services', min_time_interval))
+        duration = get_duration(session.get('services', None))
     if int(appointment_id):
         intervals = get_free_time_intervals(
             int(location_id), date.date(),

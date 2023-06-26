@@ -52,15 +52,21 @@ def get_interval_intersection(list_1, list_2):
         return []
     time_list = []
     for item in list_1:
-        time_list.append(('start', item[0]))
-        time_list.append(('end', item[1]))
+        time_list.append(('start', item[0], 1))
+        time_list.append(('end', item[1], 1))
     for item in list_2:
-        time_list.append(('start', item[0]))
-        time_list.append(('end', item[1]))
+        time_list.append(('start', item[0], 2))
+        time_list.append(('end', item[1], 2))
     time_list.sort(key=lambda x: x[1])
     intervals = []
     flag = ''
+    check = check_sum = 0
     for time in time_list:
+        if not check:
+            check = time[2]
+        if not time[2] == check:
+            check = time[2]
+            check_sum += 1
         if time[0] == flag:
             prev_time = time
         else:
@@ -69,6 +75,8 @@ def get_interval_intersection(list_1, list_2):
                 prev_time = time
             else:
                 intervals.append((prev_time[1], time[1]))
+    if check_sum == 1:
+        return []
     return intervals
 
 

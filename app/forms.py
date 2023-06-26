@@ -5,6 +5,7 @@ import phonenumbers
 from flask import flash
 from flask_babel import lazy_gettext as _l
 from flask_wtf import FlaskForm, RecaptchaField
+from sqlalchemy import func
 from wtforms import (StringField, PasswordField, BooleanField,
                      SubmitField, TextAreaField, TelField, IntegerField,
                      FloatField, SelectField, DateField, TimeField,
@@ -12,8 +13,8 @@ from wtforms import (StringField, PasswordField, BooleanField,
 from wtforms.validators import (DataRequired, Email, EqualTo,
                                 ValidationError, Length, Optional)
 
-from .functions import get_languages, get_free_time_intervals
-from .models import Item, Week, Client, User, Staff, Location, Service
+from .functions import get_languages, get_free_time_intervals, get_interval_intersection
+from .models import Item, Week, Client, User, Staff, Location, Service, Appointment
 
 
 # global validators
@@ -326,6 +327,23 @@ class AppointmentForm(FlaskForm):
         if not self.client.data:
             flash(_l('Please select client'))
             raise ValidationError(_l('Please select client'))
+        filter_param = dict(client_id=self.client.data)
+        search_param = [func.date(Appointment.date_time).is_(self.date.data)]
+        if self.appointment:
+            search_param.append(Appointment.id.is_not(self.appointment.id))
+        appointments = Appointment.get_items(data_filter=filter_param,
+                                             data_search=search_param)
+        client_intervals = []
+        current_date_time = datetime.combine(self.date.data,
+                                             datetime.strptime(self.time.data,
+                                                               '%H:%M').time())
+        current_interval = [(current_date_time,
+                             current_date_time + self.duration.data)]
+        for ap in appointments:
+            client_intervals.append((ap.date_time, ap.date_time + ap.duration))
+        if get_interval_intersection(client_intervals, current_interval):
+            flash(_l('Time is busy'))
+            raise ValidationError(_l('Time is busy'))
 
     def validate_staff(self, field):
         if not self.staff.data:
