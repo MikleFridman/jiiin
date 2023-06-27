@@ -328,9 +328,9 @@ class AppointmentForm(FlaskForm):
             flash(_l('Please select client'))
             raise ValidationError(_l('Please select client'))
         filter_param = dict(client_id=self.client.data)
-        search_param = [func.date(Appointment.date_time).is_(self.date.data)]
+        search_param = [func.date(Appointment.date_time) == self.date.data]
         if self.appointment:
-            search_param.append(Appointment.id.is_not(self.appointment.id))
+            search_param.append(Appointment.id != self.appointment.id)
         appointments = Appointment.get_items(data_filter=filter_param,
                                              data_search=search_param)
         client_intervals = []
@@ -342,8 +342,8 @@ class AppointmentForm(FlaskForm):
         for ap in appointments:
             client_intervals.append((ap.date_time, ap.date_time + ap.duration))
         if get_interval_intersection(client_intervals, current_interval):
-            flash(_l('Time is busy'))
-            raise ValidationError(_l('Time is busy'))
+            flash(_l('Client is busy at this time'))
+            raise ValidationError(_l('Client is busy at this time'))
 
     def validate_staff(self, field):
         if not self.staff.data:
