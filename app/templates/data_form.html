@@ -37,7 +37,7 @@
                     {% endif %}
                 </div>
             {% endfor %}
-            <button type="submit" class="btn btn-primary mt-2 mb-2">{{ _('Submit') }}</button>
+            {{ form.submit(class_="btn btn-primary mt-2 mb-2") }}
             <button type="button" class="btn btn-secondary mt-2 ms-3 mb-2" onclick="window.location.href='{{ url_back }}'">{{ _('Back') }}</button>
         </form>
     </div>

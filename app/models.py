@@ -307,6 +307,7 @@ class User(db.Model, UserMixin, Entity, Splitter):
     email = db.Column(db.String(120), index=True, unique=True, nullable=False)
     password_hash = db.Column(db.String(128))
     language = db.Column(db.String(2))
+    start_page = db.Column(db.String(32))
     roles = db.relationship('Role', secondary=roles_users,
                             backref=db.backref('users', lazy='dynamic'))
 
@@ -433,29 +434,6 @@ class ClientFile(db.Model, Entity, Splitter):
     hash = db.Column(db.String(64))
 
 
-class Service(db.Model, Entity, Splitter):
-    table_link = 'services_table'
-    sort = 'name'
-    search = [('name', 'Title', str)]
-    name = db.Column(db.String(120), index=True, nullable=False)
-    duration = db.Column(db.Integer)
-    price = db.Column(db.Float)
-    repeat = db.Column(db.Integer)
-    appointments = db.relationship('Appointment',
-                                   secondary=appointments_services,
-                                   lazy='subquery',
-                                   backref=db.backref('services', lazy=True))
-
-    def __repr__(self):
-        active = ''
-        if self.no_active:
-            active = '(no active)'
-        return '{} {}'.format(self.name, active)
-
-    def short_name(self):
-        return self.name[:25]
-
-
 class Location(db.Model, Entity, Splitter):
     table_link = 'locations_table'
     sort = 'name'
@@ -500,6 +478,30 @@ class Location(db.Model, Entity, Splitter):
 
     def is_service(self, service):
         return service in self.services
+
+
+class Service(db.Model, Entity, Splitter):
+    table_link = 'services_table'
+    sort = 'name'
+    search = [('locations', 'Location', Location),
+              ('name', 'Title', str)]
+    name = db.Column(db.String(120), index=True, nullable=False)
+    duration = db.Column(db.Integer)
+    price = db.Column(db.Float)
+    repeat = db.Column(db.Integer)
+    appointments = db.relationship('Appointment',
+                                   secondary=appointments_services,
+                                   lazy='subquery',
+                                   backref=db.backref('services', lazy=True))
+
+    def __repr__(self):
+        active = ''
+        if self.no_active:
+            active = '(no active)'
+        return '{} {}'.format(self.name, active)
+
+    def short_name(self):
+        return self.name[:25]
 
 
 class Appointment(db.Model, Entity, Splitter):

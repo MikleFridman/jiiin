@@ -183,6 +183,11 @@ def get_filter_parameters(form, class_object):
     form.filter.data = check_filter
     if hasattr(SearchForm, 'filter'):
         delattr(SearchForm, 'filter')
+    choice_mode = request.args.get('choice_mode', None)
+    if choice_mode:
+        form.choice_mode.data = choice_mode
+    if hasattr(SearchForm, 'choice_mode'):
+        delattr(SearchForm, 'choice_mode')
     return filter_param, search_param
 
 
@@ -208,7 +213,11 @@ def sendmail():
 @app.route('/index/')
 def index():
     if current_user.is_authenticated:
-        return redirect(url_for('appointments_table'))
+        start_page = current_user.start_page
+        if start_page:
+            return redirect(url_for(start_page))
+        else:
+            return redirect(url_for('appointments_table'))
     return render_template('index.html')
 
 
@@ -361,6 +370,10 @@ def user_edit(id):
             user.language = form.language.data
         else:
             user.language = None
+        if form.start_page.data:
+            user.start_page = form.start_page.data
+        else:
+            user.start_page = None
         if form.password.data.strip() != '':
             if not user.check_password(form.password_old.data):
                 flash('Invalid password')
@@ -374,6 +387,7 @@ def user_edit(id):
         form.username.data = user.username
         form.email.data = user.email
         form.language.data = user.language
+        form.start_page.data = user.start_page
     return render_template('data_form.html',
                            title=_('User (edit)'),
                            form=form,
@@ -499,6 +513,7 @@ def staff_edit(id):
                            url_back=url_back)
 
 
+# noinspection PyTypeChecker
 @app.route('/holidays/')
 @login_required
 def holidays_table():
@@ -621,6 +636,7 @@ def schedule_edit(id):
                            url_back=url_back)
 
 
+# noinspection PyTypeChecker
 @app.route('/schedules/<schedule_id>/schedule_days/')
 @login_required
 def schedule_days_table(schedule_id):
@@ -644,7 +660,7 @@ def schedule_day_create(schedule_id):
     url_back = url_for('schedule_days_table', schedule_id=schedule_id,
                        **request.args)
     schedule = Schedule.get_object(schedule_id)
-    form = ScheduleDayForm()
+    form = ScheduleDayForm(schedule=schedule)
     if form.validate_on_submit():
         schedule_day = ScheduleDay(cid=current_user.cid,
                                    schedule_id=schedule.id,
@@ -668,7 +684,7 @@ def schedule_day_edit(schedule_id, id):
     schedule = Schedule.get_object(schedule_id)
     param = {'schedule_id': schedule.id, 'id': id}
     schedule_day = ScheduleDay.find_object(param, True)
-    form = ScheduleDayForm()
+    form = ScheduleDayForm(schedule=schedule, schedule_day=schedule_day)
     if form.validate_on_submit():
         schedule_day.day_number = form.weekday.data
         schedule_day.hour_from = form.hour_from.data
@@ -1024,7 +1040,7 @@ def location_create():
     next_page = request.args.get('next')
     if not next_page or url_parse(next_page).netloc != '':
         next_page = url_for('locations_table')
-    form = LocationForm()
+    form = LocationFormCreate()
     form.schedule.choices = Schedule.get_items(True)
     if request.method == 'POST':
         form.phone.data = phone_number_plus(form.phone.data)
@@ -1074,10 +1090,42 @@ def location_edit(id):
         form.name.data = location.name
         form.address.data = location.address
         form.phone.data = location.phone
+        url_back_confirm = url_for('location_edit', id=id)
+        form.add_services.data = url_for('location_add_all_services',
+                                         id=id,
+                                         url_back=url_back_confirm)
+        form.delete_services.data = url_for('location_delete_all_services',
+                                            id=id,
+                                            url_back=url_back_confirm)
     return render_template('data_form.html',
                            title=_('Location (edit)'),
                            form=form,
                            url_back=url_back)
+
+
+@app.route('/locations/add_all_services/<id>/', methods=['GET', 'POST'])
+@login_required
+@confirm(_l('Add all services?'))
+def location_add_all_services(id):
+    url_back = url_for('location_edit', id=id)
+    location = Location.get_object(id)
+    services = Service.get_items()
+    for service in services:
+        location.services.append(service)
+    db.session.commit()
+    return redirect(url_back)
+
+
+@app.route('/locations/delete_all_services/<id>/', methods=['GET', 'POST'])
+@login_required
+@confirm(_l('Delete all services?'))
+def location_delete_all_services(id):
+    url_back = url_for('location_edit', id=id)
+    location = Location.get_object(id)
+    location.services.clear()
+    db.session.commit()
+    db.session.commit()
+    return redirect(url_back)
 # Location block end
 
 
@@ -1122,12 +1170,13 @@ def appointment_create():
     form.location.choices = Location.get_items(True)
     form.staff.choices = Staff.get_items(True)
     form.client.choices = Client.get_items(True)
-    form.duration.data = get_duration(selected_services_id)
-    selected_services = []
-    for service_id in selected_services_id:
-        service = Service.get_object(service_id)
-        selected_services.append(service)
-    form.services.data = ','.join(list(str(s) for s in selected_services_id))
+    if selected_services_id:
+        form.duration.data = get_duration(selected_services_id)
+        selected_services = []
+        for service_id in selected_services_id:
+            service = Service.get_object(service_id)
+            selected_services.append(service)
+        form.services.data = ','.join(list(str(s) for s in selected_services_id))
     if form.validate_on_submit():
         time = datetime.strptime(form.time.data, '%H:%M').time()
         appointment = Appointment(cid=current_user.cid,
@@ -1527,6 +1576,7 @@ def notice_edit(id):
 
 
 # CashFlow block start
+# noinspection PyTypeChecker
 @app.route('/cash_table/')
 @login_required
 def cash_table():
@@ -1810,7 +1860,7 @@ def get_intervals(location_id, staff_id, date_string, appointment_id, no_check):
             int(staff_id), duration)
     delta_config = CompanyConfig.get_parameter('min_time_interval')
     for interval in intervals:
-        start = interval[0] + timedelta(minutes=14)
+        start = interval[0] + timedelta(minutes=4)
         start = start - timedelta(minutes=start.minute % delta_config,
                                   seconds=start.second,
                                   microseconds=start.microsecond)

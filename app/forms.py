@@ -11,10 +11,11 @@ from wtforms import (StringField, PasswordField, BooleanField,
                      FloatField, SelectField, DateField, TimeField,
                      SelectMultipleField, FileField, HiddenField, EmailField, URLField)
 from wtforms.validators import (DataRequired, Email, EqualTo,
-                                ValidationError, Length, Optional)
+                                ValidationError, Length, Optional, NumberRange)
 
+import config
 from .functions import get_languages, get_free_time_intervals, get_interval_intersection
-from .models import Item, Week, Client, User, Staff, Location, Service, Appointment
+from .models import Item, Week, Client, User, Staff, Location, Service, Appointment, ScheduleDay
 
 
 # global validators
@@ -105,6 +106,12 @@ class UserForm(RegisterForm):
 class UserFormEdit(UserForm):
     language = SelectField(_l('Language'), choices=get_languages(), coerce=str,
                            validators=[Optional()])
+    start_page = SelectField(_l('Start page'),
+                             choices=[('', _l('-Select-')),
+                                      ('appointments_table', _l('Timetable')),
+                                      ('clients_table', _l('Clients')),
+                                      ('notices_table', _l('Notices'))],
+                             coerce=str, validators=[Optional()])
     password_old = PasswordField(_l('Password'))
     password = PasswordField(_l('Password new'))
     password2 = PasswordField(_l('Repeat password new'),
@@ -187,6 +194,11 @@ class StaffForm(FlaskForm):
                 flash(_l('Please use a different phone'))
                 raise ValidationError(_l('Please use a different phone'))
 
+    def validate_schedule(self, field):
+        if not self.schedule.data:
+            flash(_l('Please select schedule'))
+            raise ValidationError(_l('Please select schedule'))
+
 
 class StaffFormSimple(StaffForm):
     schedule = None
@@ -205,11 +217,35 @@ class ScheduleDayForm(FlaskForm):
     hour_to = TimeField(_l('To hour'))
     submit = SubmitField(_l('Submit'))
 
+    def __init__(self, schedule=None, schedule_day=None, *args, **kwargs):
+        super(ScheduleDayForm, self).__init__(*args, **kwargs)
+        self.schedule = schedule
+        self.schedule_day = schedule_day
+
     def validate_hour_from(self, field):
+        if not self.hour_from.data:
+            flash(_l('Please select time'))
+            raise ValidationError(_l('Please select time'))
         if (datetime.combine(datetime.now(), self.hour_to.data) -
                 datetime.combine(datetime.now(), field.data) < timedelta(seconds=0)):
             flash(_l('Incorrect time interval'))
             raise ValidationError(_l('Incorrect time interval'))
+
+    def validate_hour_to(self, field):
+        if not self.hour_to.data:
+            flash(_l('Please select time'))
+            raise ValidationError(_l('Please select time'))
+
+    def validate_weekday(self, field):
+        filter_param = dict(schedule_id=self.schedule.id, day_number=field.data)
+        search_param = []
+        if self.schedule_day:
+            search_param.append(ScheduleDay.id != self.schedule_day.id)
+        days = ScheduleDay.get_items(data_filter=filter_param,
+                                     data_search=search_param)
+        if days:
+            flash(_l('Incorrect weekday'))
+            raise ValidationError(_l('Incorrect weekday'))
 
 
 class ClientForm(FlaskForm):
@@ -254,12 +290,26 @@ class TagForm(FlaskForm):
 class ServiceForm(FlaskForm):
     name = StringField(_l('Title'), validators=[DataRequired(),
                                                 validate_name_global])
-    duration = IntegerField(_l('Duration'), default=0)
-    price = FloatField(_l('Price'), default=0)
-    repeat = IntegerField(_l('Repeat'), default=0)
+    duration = IntegerField(_l('Duration'), default=0,
+                            validators=[NumberRange(min=0, max=365)])
+    price = FloatField(_l('Price'), default=0,
+                       validators=[NumberRange(min=0, max=1000000)])
+    repeat = IntegerField(_l('Repeat'), default=0,
+                          validators=[NumberRange(min=0, max=365)])
     location = SelectMultipleField(_l('Locations'), choices=[],
                                    validate_choice=False, coerce=int)
     submit = SubmitField(_l('Submit'))
+
+    def validate_location(self, field):
+        if not self.location.data:
+            flash(_l('Please select location'))
+            raise ValidationError(_l('Please select location'))
+
+    def validate_price(self, field):
+        max_price = config.Config.MAX_PRICE
+        if self.price.data > max_price:
+            flash(_l('Price cannot exceed %(mp)s', mp=max_price))
+            raise ValidationError(_l('Price cannot exceed %(mp)s', mp=max_price))
 
 
 class LocationForm(FlaskForm):
@@ -270,6 +320,8 @@ class LocationForm(FlaskForm):
     address = StringField(_l('Address'), validators=[DataRequired()])
     schedule = SelectField(_l('Schedule'), choices=[], coerce=int,
                            validate_choice=False)
+    add_services = URLField(_l('Add all services'))
+    delete_services = URLField(_l('Delete all services'))
     submit = SubmitField(_l('Submit'))
 
     def __init__(self, source_phone=None, *args, **kwargs):
@@ -281,6 +333,16 @@ class LocationForm(FlaskForm):
             if Location.find_object({'phone': field.data}, overall=True):
                 flash(_l('Please use a different phone'))
                 raise ValidationError(_l('Please use a different phone'))
+
+    def validate_schedule(self, field):
+        if not self.schedule.data:
+            flash(_l('Please select schedule'))
+            raise ValidationError(_l('Please select schedule'))
+
+
+class LocationFormCreate(LocationForm):
+    add_services = None
+    delete_services = None
 
 
 class AppointmentForm(FlaskForm):
@@ -327,23 +389,24 @@ class AppointmentForm(FlaskForm):
         if not self.client.data:
             flash(_l('Please select client'))
             raise ValidationError(_l('Please select client'))
-        filter_param = dict(client_id=self.client.data)
-        search_param = [func.date(Appointment.date_time) == self.date.data]
-        if self.appointment:
-            search_param.append(Appointment.id != self.appointment.id)
-        appointments = Appointment.get_items(data_filter=filter_param,
-                                             data_search=search_param)
-        client_intervals = []
-        current_date_time = datetime.combine(self.date.data,
-                                             datetime.strptime(self.time.data,
-                                                               '%H:%M').time())
-        current_interval = [(current_date_time,
-                             current_date_time + self.duration.data)]
-        for ap in appointments:
-            client_intervals.append((ap.date_time, ap.date_time + ap.duration))
-        if get_interval_intersection(client_intervals, current_interval):
-            flash(_l('Client is busy at this time'))
-            raise ValidationError(_l('Client is busy at this time'))
+        if self.date.data and self.time.data:
+            filter_param = dict(client_id=self.client.data)
+            search_param = [func.date(Appointment.date_time) == self.date.data]
+            if self.appointment:
+                search_param.append(Appointment.id != self.appointment.id)
+            appointments = Appointment.get_items(data_filter=filter_param,
+                                                 data_search=search_param)
+            client_intervals = []
+            current_date_time = datetime.combine(self.date.data,
+                                                 datetime.strptime(self.time.data,
+                                                                   '%H:%M').time())
+            current_interval = [(current_date_time,
+                                 current_date_time + self.duration.data)]
+            for ap in appointments:
+                client_intervals.append((ap.date_time, ap.date_time + ap.duration))
+            if get_interval_intersection(client_intervals, current_interval):
+                flash(_l('Client is busy at this time'))
+                raise ValidationError(_l('Client is busy at this time'))
 
     def validate_staff(self, field):
         if not self.staff.data:
@@ -415,7 +478,7 @@ class SearchForm(FlaskForm):
 
 
 class ConfirmForm(FlaskForm):
-    submit = SubmitField(_l('Submit'))
+    submit = SubmitField(_l('Confirm'))
 
 
 class ItemForm(FlaskForm):
@@ -462,7 +525,7 @@ class ContactForm(FlaskForm):
     email = StringField(_l('E-mail'), validators=[DataRequired(), Email()])
     text = TextAreaField(_l('Text'), validators=[DataRequired(),
                                                  Length(max=255)])
-    submit = SubmitField(_l('Submit'))
+    submit = SubmitField(_l('Send'))
 
 
 class NoticeForm(FlaskForm):
@@ -489,6 +552,7 @@ class ReportForm(FlaskForm):
     date_from = DateField(_l('Date from'), validators=[DataRequired()], format='%Y-%m-%d')
     date_to = DateField(_l('Date to'), validators=[DataRequired()], format='%Y-%m-%d')
     # export_excel = BooleanField(_l('Export to Excel'))
+    submit = SubmitField(_l('Submit'))
 
 
 class CashFlowForm(FlaskForm):
