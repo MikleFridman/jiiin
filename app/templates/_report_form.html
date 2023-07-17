@@ -16,7 +16,8 @@
                     <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionFilter" style="">
                       <div class="accordion-body mb-0 pb-1">
                         <form action="" method="POST" id="searchForm">
-                            {% for field in form %}
+                            {{ form.hidden_tag() }}
+                            {% for field in form if field.widget.input_type != 'hidden' and field.widget.input_type != 'submit'%}
                             <div class="row mb-1">
                                 {% if field.widget.input_type != 'checkbox' %}
                                     {% if field.widget.input_type != 'hidden' %}

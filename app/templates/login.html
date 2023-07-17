@@ -25,7 +25,7 @@
             <div class="mt-3">{{ _('Forgot your password') }}?
                 <a href="{{ url_for('reset_password_request') }}">{{ _('Click to reset') }}</a>
             </div>
-            <button type="submit" class="btn btn-primary mt-3 mb-2">{{ _('Submit') }}</button>
+            {{ form.submit(class_="btn btn-primary mt-3 mb-2") }}
         </form>
     </div>
 </div>

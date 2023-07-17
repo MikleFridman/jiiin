@@ -2,27 +2,49 @@
 
 {% block app_content %}
 <h2>{{ _('Welcome to Jiiin') }}!</h2>
-<div style="align-text:justify">
-    Jiiin - бесплатная программа для учета клиентов. Что она умеет?
-</div>
-<div style="align-text:justify">
-    Здесь должен быть большой умный текст, но мы его пока не написали.
-</div>
-<div style="align-text:justify; margin-top:10px; margin-bottom:5px">На данный момент у нас есть:</div>
-<ul>
-    <li>Филиалы (адреса обслуживания)</li>
-    <li>Услуги (стоимость, длительность, привязка к филиалам)</li>
-    <li>Сотрудники</li>
-    <li>Графики работы (филиалов и сотрудников)</li>
-    <li>Клиенты (личные данные, файлы, история посещений, тэги)</li>
-    <li>Звонки (напоминание связаться с клиентом в нужный день)</li>
-    <li>Учет доходов и расходов</li>
-    <li>Квитанции об оплате (ссылка для клиента)</li>
-    <li>Статистика (по филиалам и сотрудникам)</li>
-    <li>Выгрузка данных в Excel</li>
-    <li>...</li>
+<ul class="nav nav-tabs" role="tablist">
+  <li class="nav-item" role="presentation">
+    <a class="nav-link active" data-bs-toggle="tab" href="#ru" aria-selected="true" role="tab">RU</a>
+  </li>
+  <li class="nav-item" role="presentation">
+    <a class="nav-link" data-bs-toggle="tab" href="#eng" aria-selected="false" tabindex="-1" role="tab">ENG</a>
+  </li>
 </ul>
-<div style="align-text:justify">
-    Регистрируйтесь, пользуйтесь, давайте обратную связь. Вместе мы сделаем лучший продукт!
+
+<div id="myTabContent" class="tab-content">
+    <div class="tab-pane fade show active" id="ru" role="tabpanel">
+        <div style="align-text:; margin-top:10px">
+            Jiiin - бесплатная программа для учета и записи клиентов. Что она умеет?
+        </div>
+
+        <div style="align-text:justify; margin-top:10px; margin-bottom:5px">На данный момент в ней есть:</div>
+        <ul>
+            <li>Филиалы (адреса обслуживания)</li>
+            <li>Услуги (стоимость, длительность, привязка к филиалам)</li>
+            <li>Сотрудники</li>
+            <li>Графики работы (филиалов и сотрудников)</li>
+            <li>Клиенты (личные данные, файлы, история посещений, тэги)</li>
+            <li>Звонки (напоминание связаться с клиентом в нужный день)</li>
+            <li>Учет доходов и расходов</li>
+            <li>Квитанции об оплате (ссылка для клиента)</li>
+            <li>Статистика (по филиалам и сотрудникам)</li>
+            <li>Выгрузка данных в Excel</li>
+            <li>Мультиязычный интерфейс (русский, английский)</li>
+            <li>...</li>
+        </ul>
+        <div style="align-text:justify">
+            Регистрируйтесь, пользуйтесь, давайте обратную связь. Вместе мы сделаем лучший продукт!
+        </div>
+    </div>
+
+    <div class="tab-pane fade" id="eng" role="tabpanel">
+        <div style="align-text:; margin-top:10px">
+            Jiiin - free CRM for small business.
+        </div>
+
+        <div style="align-text:justify; margin-top:10px; margin-bottom:5px">
+            Sorry, english text under writing...
+        </div>
+    </div>
 </div>
 {% endblock %}

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<div class="row mt-1">
+    <div class="col-md-4">
+        <form class="form-inline" action="" method="POST">
+            {{ form.hidden_tag() }}
+            <div class="form-group mt-2">
+                {{ form.name.label(class_="col-form-label") }}
+                {% if form.name.errors %}
+                    {{ form.name(class_="form-control is-invalid") }}
+                {% else %}
+                    {{ form.name(class_="form-control") }}
+                {% endif %}
+            </div>
+            {% if days %}
+            <table class="table-default mt-3">
+                {% for day in days%}
+                    <tr class="table-default">
+                        <td class="col-md-6 ps-1">
+                            <a class="text-decoration-none" href="{{ url_for('schedule_day_edit', schedule_id=schedule.id, id=day.id, url_back=url_for('schedule_edit', id=schedule.id, **request.args), **request.args) }}">
+                            {{ day.weekday }}
+                            </a>
+                        </td>
+                        <td class="col-md-3 text-center pe-1">{{day.hour_from.strftime('%H:%M')}} - {{day.hour_to.strftime('%H:%M')}}</td>
+                        <td class="col-md-1 text-center ps-2">
+                            <a href="{{ url_for('delete', class_name='schedule_day', object_id=day.id, url_back=url_for('schedule_edit', id=schedule.id, **request.args)) }}">
+                              <img src="{{ url_for('static', filename='/delete.png') }}" alt="hidden" width="18">
+                            </a>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </table>
+            <a class="text-decoration-none" href="{{ url_for('schedule_reset', id=schedule.id, url_back=url_for('schedule_edit', id=schedule.id)) }}">
+                <div class="mt-2">{{ _('Reset to default') }}</div>
+            </a>
+            {% endif %}
+
+            {{ form.submit(class_="btn btn-primary mt-3 mb-2") }}
+            <button type="button" class="btn btn-secondary mt-3 ms-3 mb-2" onclick="window.location.href='{{ url_back }}'">{{ _('Back') }}</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -602,17 +602,14 @@ def schedules_table():
 @login_required
 def schedule_create():
     url_back = url_for('schedules_table', **request.args)
-    next_page = request.args.get('next')
-    if not next_page or url_parse(next_page).netloc != '':
-        next_page = url_for('schedules_table')
     form = ScheduleForm()
     if form.validate_on_submit():
         schedule = Schedule(cid=current_user.cid,
                             name=form.name.data)
         db.session.add(schedule)
         db.session.commit()
-        return redirect(next_page)
-    return render_template('data_form.html',
+        return redirect(url_for('schedule_edit', id=schedule.id, **request.args))
+    return render_template('schedule_form.html',
                            title=_('Schedule (create)'),
                            form=form,
                            url_back=url_back)
@@ -621,19 +618,36 @@ def schedule_create():
 @app.route('/schedules/edit/<id>', methods=['GET', 'POST'])
 @login_required
 def schedule_edit(id):
-    url_back = url_for('schedules_table', **request.args)
+    next_page = request.args.get('next')
+    if not next_page or url_parse(next_page).netloc != '':
+        next_page = url_for('schedules_table', **request.args)
+    url_back = next_page
     schedule = Schedule.get_object(id)
+    param_filter = {'schedule_id': schedule.id}
+    days = ScheduleDay.get_items(data_filter=param_filter)
     form = ScheduleForm()
     if form.validate_on_submit():
         schedule.name = form.name.data
         db.session.commit()
-        return redirect(url_for('schedules_table'))
+        return redirect(url_back)
     elif request.method == 'GET':
         form = ScheduleForm(obj=schedule)
-    return render_template('data_form.html',
+    return render_template('schedule_form.html',
                            title=_('Schedule (edit)'),
                            form=form,
+                           schedule=schedule,
+                           days=days,
                            url_back=url_back)
+
+
+@app.route('/schedules/reset/<id>', methods=['GET', 'POST'])
+@login_required
+@confirm(_l('Reset schedule to default?'))
+def schedule_reset(id):
+    schedule = Schedule.get_object(id)
+    schedule.complete_weekday()
+    db.session.commit()
+    return redirect(url_for('schedule_edit', id=id))
 
 
 # noinspection PyTypeChecker
@@ -679,8 +693,9 @@ def schedule_day_create(schedule_id):
 @app.route('/schedules/<schedule_id>/schedule_days/edit/<id>', methods=['GET', 'POST'])
 @login_required
 def schedule_day_edit(schedule_id, id):
-    url_back = url_for('schedule_days_table', schedule_id=schedule_id,
-                       **request.args)
+    url_back = request.args.get('url_back', url_for('schedule_days_table',
+                                                    schedule_id=schedule_id,
+                                                    **request.args))
     schedule = Schedule.get_object(schedule_id)
     param = {'schedule_id': schedule.id, 'id': id}
     schedule_day = ScheduleDay.find_object(param, True)
@@ -1170,9 +1185,9 @@ def appointment_create():
     form.location.choices = Location.get_items(True)
     form.staff.choices = Staff.get_items(True)
     form.client.choices = Client.get_items(True)
+    selected_services = []
     if selected_services_id:
         form.duration.data = get_duration(selected_services_id)
-        selected_services = []
         for service_id in selected_services_id:
             service = Service.get_object(service_id)
             selected_services.append(service)

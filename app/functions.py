@@ -4,6 +4,7 @@ from threading import Thread
 
 from flask_login import current_user
 from flask_mail import Message
+from flask_babel import lazy_gettext as _l
 from sqlalchemy import func, inspect
 
 from app import app, mail
@@ -11,7 +12,7 @@ from .models import Location, User, Staff, Service, Appointment, CompanyConfig
 
 
 def get_languages():
-    languages = [('', '-Select-')]
+    languages = [('', _l('-Select-'))]
     for language, description in app.config['LANGUAGES'].items():
         languages.append((language, description))
     return languages

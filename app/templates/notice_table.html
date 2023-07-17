@@ -28,7 +28,7 @@
             {{ n.client }}
           </td>
           <td class="col-2 text-center">
-            {{ n.date.strftime('%d.%m.%y') }}
+            {{ n.date.strftime('%d.%m.%Y') }}
           </td>
           <td class="col-1 text-center">
             <a href="{{ url_for('notice_edit', id=n.id, **request.args) }}"><img src="{{ url_for('static', filename='/edit.png') }}" alt="edit" width="24"></a>

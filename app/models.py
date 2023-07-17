@@ -618,8 +618,15 @@ class Schedule(db.Model, Entity, Splitter):
     days = db.relationship('ScheduleDay', backref='schedule',
                            cascade='all, delete')
 
-    def __init__(self, **kwargs):
-        super(Schedule, self).__init__(**kwargs)
+    def __init__(self, *args, **kwargs):
+        super(Schedule, self).__init__(*args, **kwargs)
+        self.complete_weekday()
+
+    def complete_weekday(self):
+        for day in self.days:
+            db.session.delete(day)
+        self.days.clear()
+        db.session.flush()
         hour_from = current_user.company.config.default_time_from
         hour_to = current_user.company.config.default_time_to
         for dn in range(0, 7):

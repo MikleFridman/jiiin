@@ -50,7 +50,7 @@ def validate_name_global(form, field):
         flash(msg)
         raise ValidationError(msg)
     abc = string.ascii_letters + string.digits + string.whitespace
-    abc += '_' + cyrillic_letters
+    abc += '_-().' + cyrillic_letters
     for s in field.data:
         if s not in abc:
             msg = _l('Field "%(fn)s" can contain only latin letters and numbers',
@@ -95,12 +95,13 @@ class LoginForm(FlaskForm):
     username = StringField(_l('Username'), validators=[DataRequired()])
     password = PasswordField(_l('Password'), validators=[DataRequired()])
     remember_me = BooleanField(_l('Remember me'))
-    submit = SubmitField(_l('Submit'))
+    submit = SubmitField(_l('Login'))
 
 
 class UserForm(RegisterForm):
     company = None
     recaptcha = None
+    submit = SubmitField(_l('Submit'))
 
 
 class UserFormEdit(UserForm):
@@ -227,7 +228,7 @@ class ScheduleDayForm(FlaskForm):
             flash(_l('Please select time'))
             raise ValidationError(_l('Please select time'))
         if (datetime.combine(datetime.now(), self.hour_to.data) -
-                datetime.combine(datetime.now(), field.data) < timedelta(seconds=0)):
+                datetime.combine(datetime.now(), field.data) < timedelta(minutes=1)):
             flash(_l('Incorrect time interval'))
             raise ValidationError(_l('Incorrect time interval'))
 
@@ -291,7 +292,7 @@ class ServiceForm(FlaskForm):
     name = StringField(_l('Title'), validators=[DataRequired(),
                                                 validate_name_global])
     duration = IntegerField(_l('Duration'), default=0,
-                            validators=[NumberRange(min=0, max=365)])
+                            validators=[NumberRange(min=1, max=365)])
     price = FloatField(_l('Price'), default=0,
                        validators=[NumberRange(min=0, max=1000000)])
     repeat = IntegerField(_l('Repeat'), default=0,
@@ -552,7 +553,7 @@ class ReportForm(FlaskForm):
     date_from = DateField(_l('Date from'), validators=[DataRequired()], format='%Y-%m-%d')
     date_to = DateField(_l('Date to'), validators=[DataRequired()], format='%Y-%m-%d')
     # export_excel = BooleanField(_l('Export to Excel'))
-    submit = SubmitField(_l('Submit'))
+    submit = SubmitField(_l('Select'))
 
 
 class CashFlowForm(FlaskForm):
