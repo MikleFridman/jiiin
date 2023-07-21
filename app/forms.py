@@ -11,7 +11,7 @@ from wtforms import (StringField, PasswordField, BooleanField,
                      FloatField, SelectField, DateField, TimeField,
                      SelectMultipleField, FileField, HiddenField, EmailField, URLField)
 from wtforms.validators import (DataRequired, Email, EqualTo,
-                                ValidationError, Length, Optional, NumberRange)
+                                ValidationError, Length, Optional, NumberRange, InputRequired)
 
 import config
 from .functions import get_languages, get_free_time_intervals, get_interval_intersection
@@ -35,9 +35,16 @@ def validate_username_global(form, field):
         flash(msg)
         raise ValidationError(msg)
     abc = string.ascii_letters + string.digits + '_'
+    check_letters = False
     for s in field.data:
+        if s in string.ascii_letters:
+            check_letters = True
         if s not in abc:
             msg = _l('Username can contain only latin letters and numbers')
+            flash(msg)
+            raise ValidationError(msg)
+        if not check_letters:
+            msg = _l('Username must contain minimum 1 letter')
             flash(msg)
             raise ValidationError(msg)
 
@@ -51,12 +58,20 @@ def validate_name_global(form, field):
         raise ValidationError(msg)
     abc = string.ascii_letters + string.digits + string.whitespace
     abc += '_-().' + cyrillic_letters
+    letters = string.ascii_letters + cyrillic_letters
+    check_letters = False
     for s in field.data:
+        if s in letters:
+            check_letters = True
         if s not in abc:
-            msg = _l('Field "%(fn)s" can contain only latin letters and numbers',
+            msg = _l('Field "%(fn)s" can contain only letters and numbers',
                      fn=field.label)
             flash(msg)
             raise ValidationError(msg)
+    if not check_letters:
+        msg = _l('Field "%(fn)s" must contain minimum 1 letter')
+        flash(msg)
+        raise ValidationError(msg)
 
 
 def validate_birthday_global(form, field):
@@ -75,6 +90,7 @@ class RegisterForm(FlaskForm):
     password = PasswordField(_l('Password'), validators=[DataRequired()])
     password2 = PasswordField(_l('Repeat password'),
                               validators=[DataRequired(), EqualTo('password')])
+    promo_code = StringField(_l('Promo code'), validators=[validate_name_global])
     recaptcha = RecaptchaField()
     submit = SubmitField(_l('Submit'))
 
@@ -257,6 +273,7 @@ class ClientForm(FlaskForm):
     birthday = DateField(_l('Birthday'), validators=[Optional(),
                                                      validate_birthday_global])
     info = TextAreaField(_l('Info'), validators=[Length(max=200)])
+    tag_link = URLField(_l('Edit client tags'))
     submit = SubmitField(_l('Submit'))
 
     def __init__(self, source_phone=None, *args, **kwargs):
@@ -347,11 +364,11 @@ class LocationFormCreate(LocationForm):
 
 
 class AppointmentForm(FlaskForm):
-    location = SelectField(_l('Location'), choices=[], coerce=int)
+    location = SelectField(_l('Location'), choices=[], coerce=int, validators=[InputRequired()])
     date = DateField(_l('Date'), validators=[], format='%Y-%m-%d')
     time = SelectField(_l('Time'), choices=[], validate_choice=False)
-    client = SelectField(_l('Client'), choices=[], coerce=int)
-    staff = SelectField(_l('Worker'), choices=[], coerce=int)
+    client = SelectField(_l('Client'), choices=[], coerce=int, validators=[InputRequired()])
+    staff = SelectField(_l('Worker'), choices=[], coerce=int, validators=[InputRequired()])
     service = SelectMultipleField(_l('Services'), choices=[],
                                   validate_choice=False, coerce=int)
     duration = HiddenField(_l('Duration'), default=0)

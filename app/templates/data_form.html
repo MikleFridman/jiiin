@@ -10,21 +10,21 @@
                     {% if field.widget.input_type != 'checkbox' %}
                         {% if field.errors %}
                             {% if field.type == 'SelectField' %}
-                                {{ field.label(class_="col-form-label") }}
+                                {{ field.label(class_="col-form-label") }} {% if field.flags.required %}*{% endif %}
                                 {{ field(class_="form-select is-invalid") }}
                             {% else%}
-                                {{ field.label(class_="col-form-label") }}
+                                {{ field.label(class_="col-form-label") }} {% if field.flags.required %}*{% endif %}
                                 {{ field(class_="form-control is-invalid") }}
                             {% endif %}
                         {% else %}
                             {% if field.type == 'SelectField' %}
-                                {{ field.label(class_="col-form-label") }}
+                                {{ field.label(class_="col-form-label") }} {% if field.flags.required %}*{% endif %}
                                 {{ field(class_="form-select") }}
                             {% elif field.type == 'URLField' %}
-                                <a href="{{ field.data }}">{{ field.label }}</a>
+                                <a href="{{ field.data }}">{{ field.label(class_="mt-2 ms-1") }}</a>
                             {% else%}
                                 <div class="mt-1">
-                                    {{ field.label(class_="col-form-label") }}
+                                    {{ field.label(class_="col-form-label") }} {% if field.flags.required %}*{% endif %}
                                     {{ field(class_="form-control") }}
                                 </div>
                             {% endif %}
@@ -32,7 +32,7 @@
                     {% else %}
                         <div class="mt-3">
                             {{ field(class_="form-check-input") }}
-                            {{ field.label(class_="form-check-label ms-1") }}
+                            {{ field.label(class_="form-check-label ms-1") }} {% if field.flags.required %}*{% endif %}
                         </div>
                     {% endif %}
                 </div>

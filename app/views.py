@@ -46,6 +46,11 @@ def check_notices():
     return []
 
 
+@app.context_processor
+def get_interface_type():
+    return {'interface_compact': True}
+
+
 def confirm(desc):
     def outer(f):
         @wraps(f)
@@ -235,7 +240,8 @@ def register():
         db.session.add(cfg)
         user = User(cid=company.id,
                     username=form.username.data,
-                    email=form.email.data)
+                    email=form.email.data,
+                    promo_code=form.promo_code.data)
         db.session.add(user)
         db.session.flush()
         user.set_password(form.password.data)
@@ -773,6 +779,7 @@ def client_edit(id):
         return redirect(url_for('clients_table'))
     elif request.method == 'GET':
         form = ClientForm(obj=client)
+        form.tag_link.data = url_for('client_tags', client_id=client.id)
     return render_template('data_form.html',
                            title=_('Client (edit)'),
                            form=form,
@@ -851,7 +858,7 @@ def client_file_download(client_id, id):
 @app.route('/clients/<client_id>/tags/', methods=['GET', 'POST'])
 @login_required
 def client_tags(client_id):
-    url_back = url_for('clients_table', **request.args)
+    url_back = url_for('client_edit', id=client_id, **request.args)
     form = ClientTagForm()
     form.tags.choices = Tag.get_items(True)
     form.tags.choices.pop(0)

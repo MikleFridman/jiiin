@@ -12,29 +12,52 @@
   </div>
   <table id="data" class="table table-hover border-top border-bottom border-light">
     <thead>
-      <tr class="table-primary border-start border-end border-light text-center">
-        <th class="col-3">{{ _('Location') }}</th>
-        <th class="col-2">{{ _('Date / time') }}</th>
-        <th class="col-3">{{ _('Worker') }}</th>
-        <th class="col-3">{{ _('Client') }}</th>
-        <th class="col-1"></th>
-      </tr>
+
+        <tr class="d-none d-sm-table-row table-primary border-start border-end border-light text-center">
+          <th class="col-3">{{ _('Location') }}</th>
+          <th class="col-2">{{ _('Date / time') }}</th>
+          <th class="col-3">{{ _('Worker') }}</th>
+          <th class="col-3">{{ _('Client') }}</th>
+          <th class="col-1"></th>
+        </tr>
+
+        <tr class="d-table-row d-sm-none table-primary border-start border-end border-light text-center">
+          <th class="col-4">{{ _('Date / time') }}</th>
+          <th class="col-7">{{ _('Client') }}</th>
+          <th class="col-1"></th>
+        </tr>
+
     </thead>
     <tbody>
       {% for a in items %}
-        <tr class="{{ loop.cycle('table-success', 'table-default') }}  border-start border-end border-light">
-          <td class="col-3 ps-3">{{ a.location.name }}</td>
-          <td class="col-2 text-center">{{ a.date_time.strftime('%d.%m.%y %H:%M') }}-{{ (a.date_time + a.duration).strftime('%H:%M') }}</td>
-          <td class="col-3 text-center">{{ a.staff.name }}</td>
-          <td class="col-3 text-center">{{ a.client.name }}</td>
-          <td class="col-1 text-center">
-            <a href="{{ url_for('appointment_edit', id=a.id, **request.args) }}"><img src="{{ url_for('static', filename='/edit.png') }}" alt="edit" width="24"></a>
-            <a href="{{ url_for('delete', class_name='appointment', object_id=a.id, url_back=url_for('appointments_table', **request.args)) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
-          </td>
-        </tr>
+
+          <tr class="d-none d-sm-table-row {{ loop.cycle('table-success', 'table-default') }}  border-start border-end border-light">
+            <td class="col-3 ps-3">{{ a.location.name }}</td>
+            <td class="col-2 text-center">{{ a.date_time.strftime('%d.%m.%y %H:%M') }}-{{ (a.date_time + a.duration).strftime('%H:%M') }}</td>
+            <td class="col-3 text-center">{{ a.staff.name }}</td>
+            <td class="col-3 text-center">{{ a.client.name }}</td>
+            <td class="col-1 text-center">
+              <a href="{{ url_for('appointment_edit', id=a.id, **request.args) }}"><img src="{{ url_for('static', filename='/edit.png') }}" alt="edit" width="24"></a>
+              <a href="{{ url_for('delete', class_name='appointment', object_id=a.id, url_back=url_for('appointments_table', **request.args)) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
+            </td>
+          </tr>
+
+          <tr class="d-table-row d-sm-none {{ loop.cycle('table-success', 'table-default') }}  border-start border-end border-light">
+            <td class="col-4 text-center">{{ a.date_time.strftime('%d.%m.%y %H:%M') }}</td>
+            <td class="col-7 text-center">
+              <a class="text-decoration-none" href="{{ url_for('appointment_edit', id=a.id, **request.args) }}">
+                {{ a.client.name }}
+              </a>
+            </td>
+            <td class="col-1 text-center">
+              <a href="{{ url_for('delete', class_name='appointment', object_id=a.id, url_back=url_for('appointments_table', **request.args)) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
+            </td>
+          </tr>
+
       {% endfor %}
     </tbody>
   </table>
+
 {% import '_pagination.html' as forms %}
 {{ forms.render_pagination(pagination, 'appointments_table', **request.args) }}
 {% endblock %}

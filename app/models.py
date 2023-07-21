@@ -308,6 +308,7 @@ class User(db.Model, UserMixin, Entity, Splitter):
     password_hash = db.Column(db.String(128))
     language = db.Column(db.String(2))
     start_page = db.Column(db.String(32))
+    promo_code = db.Column(db.String(16))
     roles = db.relationship('Role', secondary=roles_users,
                             backref=db.backref('users', lazy='dynamic'))
 
