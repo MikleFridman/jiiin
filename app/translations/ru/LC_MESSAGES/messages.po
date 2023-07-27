@@ -45,8 +45,8 @@ msgstr "Имя пользователя должно содержать мини
 
 #: app/forms.py:56
 #, python-format
-msgid "Min length field \"%(fn)s\" is 8 characters"
-msgstr "Минимальная длина поля \"%(fn)s\" 8 символов"
+msgid "Min length field \"%(fn)s\" is 6 characters"
+msgstr "Минимальная длина поля \"%(fn)s\" 6 символов"
 
 #: app/forms.py:67
 #, python-format

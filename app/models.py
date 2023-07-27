@@ -301,7 +301,7 @@ class Role(db.Model, RoleMixin, Entity, Splitter):
         return self.name
 
 
-class User(db.Model, UserMixin, Entity, Splitter):
+class User(UserMixin, db.Model, Entity, Splitter):
     sort = 'username'
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True, nullable=False)

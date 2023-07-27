@@ -52,12 +52,12 @@ def validate_username_global(form, field):
 def validate_name_global(form, field):
     cyrillic_lower_letters = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя'
     cyrillic_letters = cyrillic_lower_letters + cyrillic_lower_letters.upper()
-    if len(field.data.strip()) < 8:
-        msg = _l('Min length field "%(fn)s" is 8 characters', fn=field.label)
+    if len(field.data.strip()) < 6:
+        msg = _l('Min length field "%(fn)s" is 6 characters', fn=field.label)
         flash(msg)
         raise ValidationError(msg)
     abc = string.ascii_letters + string.digits + string.whitespace
-    abc += '_-().' + cyrillic_letters
+    abc += '№#_-().,' + cyrillic_letters
     letters = string.ascii_letters + cyrillic_letters
     check_letters = False
     for s in field.data:
@@ -90,7 +90,8 @@ class RegisterForm(FlaskForm):
     password = PasswordField(_l('Password'), validators=[DataRequired()])
     password2 = PasswordField(_l('Repeat password'),
                               validators=[DataRequired(), EqualTo('password')])
-    promo_code = StringField(_l('Promo code'), validators=[validate_name_global])
+    promo_code = StringField(_l('Promo code'), validators=[Optional(),
+                                                           validate_name_global])
     recaptcha = RecaptchaField()
     submit = SubmitField(_l('Submit'))
 
@@ -198,7 +199,7 @@ class StaffForm(FlaskForm):
     birthday = DateField(_l('Birthday'), validators=[Optional(),
                                                      validate_birthday_global])
     schedule = SelectField(_l('Schedule'), choices=[], coerce=int,
-                           validate_choice=False)
+                           validators=[InputRequired()])
     submit = SubmitField(_l('Submit'))
 
     def __init__(self, source_phone=None, *args, **kwargs):
@@ -337,7 +338,7 @@ class LocationForm(FlaskForm):
                                               validate_phone_global])
     address = StringField(_l('Address'), validators=[DataRequired()])
     schedule = SelectField(_l('Schedule'), choices=[], coerce=int,
-                           validate_choice=False)
+                           validators=[InputRequired()])
     add_services = URLField(_l('Add all services'))
     delete_services = URLField(_l('Delete all services'))
     submit = SubmitField(_l('Submit'))
@@ -553,6 +554,12 @@ class NoticeForm(FlaskForm):
                                                                Length(max=255)])
     processed = BooleanField(_l('Processed'))
     submit = SubmitField(_l('Submit'))
+
+    def validate_date(self, field):
+        if (not isinstance(self.date.data, type(datetime.now().date())) or
+                field.data < datetime.now().date()):
+            flash(_l('Invalid date'))
+            raise ValidationError(_l('Invalid date'))
 
 
 class HolidayForm(FlaskForm):

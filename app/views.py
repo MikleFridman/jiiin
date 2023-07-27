@@ -247,8 +247,10 @@ def register():
         user.set_password(form.password.data)
         db.session.commit()
         if not app.debug:
-            send_bot_message(app.config['ADMIN_CHAT_ID'],
-                             'Registered new account: ' + form.username.data)
+            msg = 'Registered new account: ' + form.username.data
+            if form.promo_code.data:
+                msg += ' promo code: ' + form.promo_code.data
+            send_bot_message(app.config['ADMIN_CHAT_ID'], msg)
         flash(_('Registration successfully'))
         return redirect(url_for('login'))
     return render_template('data_form.html',
@@ -286,9 +288,10 @@ def login():
 
 @app.route('/logout/')
 def logout():
-    username = current_user.username
-    logout_user()
-    app.logger.info('%s выход из системы', username)
+    if current_user.is_authenticated:
+        username = current_user.username
+        logout_user()
+        app.logger.info('%s выход из системы', username)
     return redirect(url_for('login'))
 
 
@@ -527,7 +530,7 @@ def holidays_table():
     form = set_filter(Holiday)
     param = get_filter_parameters(form, Holiday)
     data = Holiday.get_pagination(page, *param)
-    return render_template('holidays_table.html',
+    return render_template('holiday_table.html',
                            title=_('Holidays'),
                            items=data.items,
                            pagination=data,
