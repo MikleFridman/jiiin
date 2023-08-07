@@ -1,3 +1,5 @@
+import base64
+import os
 import string
 import uuid
 from dataclasses import dataclass
@@ -193,6 +195,10 @@ class Entity:
                 rel_list.append(r.__str__())
         return rel_list
 
+    def get_dict(self):
+        return {col.name: getattr(self, col.name)
+                for col in inspect(type(self)).columns}
+
 
 class Splitter:
 
@@ -309,6 +315,8 @@ class User(UserMixin, db.Model, Entity, Splitter):
     language = db.Column(db.String(2))
     start_page = db.Column(db.String(32))
     promo_code = db.Column(db.String(16))
+    token = db.Column(db.String(32), index=True, unique=True)
+    token_expiration = db.Column(db.DateTime)
     roles = db.relationship('Role', secondary=roles_users,
                             backref=db.backref('users', lazy='dynamic'))
 
@@ -347,6 +355,21 @@ class User(UserMixin, db.Model, Entity, Splitter):
                 'read': read,
                 'update': update,
                 'delete': delete}
+
+    def get_token(self, lifetime=3600):
+        self.token = base64.b64encode(os.urandom(24)).decode('utf-8')
+        self.token_expiration = datetime.utcnow() + timedelta(seconds=lifetime)
+        return self.token
+
+    def revoke_token(self):
+        self.token_expiration = datetime.utcnow() - timedelta(seconds=1)
+
+    @classmethod
+    def check_token(cls, token):
+        user = cls.query.filter_by(token=token).first()
+        if not user or user.token_expiration < datetime.utcnow():
+            return None
+        return user
 
 
 class Staff(db.Model, Entity, Splitter):

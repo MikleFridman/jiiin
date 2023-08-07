@@ -134,6 +134,15 @@ def get_free_time_intervals(location_id, date, staff_id, duration,
         return free_intervals
 
 
+def time_in_intervals(dt, intervals):
+    for interval in intervals:
+        time_from = interval[0]
+        time_to = interval[1]
+        if time_from <= dt <= time_to:
+            return True
+    return False
+
+
 def send_acync_mail(msg):
     with app.app_context():
         mail.send(msg)

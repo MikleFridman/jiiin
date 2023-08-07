@@ -1857,8 +1857,7 @@ def get_services():
     return jsonify(session['services'])
 
 
-@app.route('/get_intervals/<location_id>/<staff_id>/<date_string>/<appointment_id>/'
-           '<no_check>/')
+@app.route('/get_intervals/<location_id>/<staff_id>/<date_string>/<appointment_id>/<no_check>/')
 @login_required
 def get_intervals(location_id, staff_id, date_string, appointment_id, no_check):
     timeslots = []

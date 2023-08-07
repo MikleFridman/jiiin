@@ -31,15 +31,14 @@ naming_convention = {
 db = SQLAlchemy(app=app, metadata=MetaData(naming_convention=naming_convention))
 migrate = Migrate(app, db, render_as_batch=True)
 bootstrap = Bootstrap(app)
-csrf = CSRFProtect()
-csrf.init_app(app)
+csrf = CSRFProtect(app)
 login = LoginManager(app)
 login.login_message = _l('Please log in to access this page')
 login.login_view = 'login'
 mail = Mail(app)
 babel = Babel(app)
 
-from app import views, models, errors
+from app import views, models, errors, api
 from app.models import *
 from app.admin import *
 from .bot import send_bot_message

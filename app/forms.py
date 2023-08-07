@@ -14,7 +14,7 @@ from wtforms.validators import (DataRequired, Email, EqualTo,
                                 ValidationError, Length, Optional, NumberRange, InputRequired)
 
 import config
-from .functions import get_languages, get_free_time_intervals, get_interval_intersection
+from .functions import get_languages, get_free_time_intervals, get_interval_intersection, time_in_intervals
 from .models import Item, Week, Client, User, Staff, Location, Service, Appointment, ScheduleDay
 
 
@@ -394,7 +394,7 @@ class AppointmentForm(FlaskForm):
         else:
             if not self.location.data:
                 raise ValidationError(_l('Please select location'))
-            location = Location.query.get_or_404(self.location.data)
+            location = Location.get_object(self.location.data)
             services_id = [x.id for x in location.services]
             for s in field.data.split(','):
                 if int(s) not in services_id:
@@ -471,13 +471,7 @@ class AppointmentForm(FlaskForm):
         time = datetime.strptime(field.data, '%H:%M').time()
         dt = datetime(date.year, date.month,
                       date.day, time.hour, time.minute)
-        check = False
-        for interval in intervals:
-            time_from = interval[0]
-            time_to = interval[1]
-            if time_from <= dt <= time_to:
-                check = True
-        if not check:
+        if not time_in_intervals(dt, intervals):
             flash(_l('This time unavailable'))
             raise ValidationError(_l('This time unavailable'))
 
@@ -548,12 +542,18 @@ class ContactForm(FlaskForm):
 
 
 class NoticeForm(FlaskForm):
-    client = SelectField(_l('Client'), choices=[], coerce=int)
-    date = DateField(_l('Date'))
+    client = SelectField(_l('Client'), choices=[], coerce=int,
+                         validators=[InputRequired()])
+    date = DateField(_l('Date'), validators=[DataRequired()])
     description = TextAreaField(_l('Description'), validators=[DataRequired(),
                                                                Length(max=255)])
     processed = BooleanField(_l('Processed'))
     submit = SubmitField(_l('Submit'))
+
+    def validate_client(self, field):
+        if not self.client.data:
+            flash(_l('Please select client'))
+            raise ValidationError(_l('Please select client'))
 
     def validate_date(self, field):
         if (not isinstance(self.date.data, type(datetime.now().date())) or
