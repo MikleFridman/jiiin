@@ -274,7 +274,8 @@ class ClientForm(FlaskForm):
     birthday = DateField(_l('Birthday'), validators=[Optional(),
                                                      validate_birthday_global])
     info = TextAreaField(_l('Info'), validators=[Length(max=200)])
-    tag_link = URLField(_l('Edit client tags'))
+    tag_link = URLField(_l('Client tags'))
+    files_link = URLField(_l('Client files'))
     submit = SubmitField(_l('Submit'))
 
     def __init__(self, source_phone=None, *args, **kwargs):

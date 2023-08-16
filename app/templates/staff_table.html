@@ -26,7 +26,7 @@
             {% if st.no_active %}
               <img src="{{ url_for('static', filename='/hidden.png') }}" alt="hidden" width="24">
             {% endif %}
-            {{ st.name }}
+            {{ st.name|truncate(killwords=True, length=65) }}
           </td>
           <td class="col-2 text-center">
             {% if st.birthday %}

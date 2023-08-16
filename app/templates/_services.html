@@ -1,9 +1,9 @@
   <table id="data" class="table border-top border-bottom border-light">
     <tbody>
       {% for s in items %}
-        <tr id="tr_{{ s.id }}" class="table-default border-start border-end border-light">
+        <tr id="tr_{{ s.id }}" class="d-none d-lg-table-row border-start border-end border-light">
           <td class="col-8 ps-3">
-            {{ s.name }}
+            {{ s.name|truncate(killwords=True, length=60) }}
           </td>
           <td class="col-2 text-center">{{ s.duration }} {{ _('min') }}</td>
           <td class="col-2 text-center">
@@ -11,6 +11,16 @@
 <!--              <img src="{{ url_for('static', filename='/delete.png') }}" alt="hidden" width="22">-->
 <!--            </a>-->
             {{ s.price }}
+          </td>
+        </tr>
+        <tr class="d-none d-sm-table-row d-lg-none border-start border-end border-light">
+          <td class="col-12">
+            {{ s.name|truncate(killwords=True, length=60) }}
+          </td>
+        </tr>
+        <tr class="d-sm-none table-row border-start border-end border-light">
+          <td class="col-12">
+            {{ s.name|truncate(killwords=True, length=32) }}
           </td>
         </tr>
       {% endfor %}

@@ -25,10 +25,10 @@
             {% if h.no_active %}
               <img src="{{ url_for('static', filename='/hidden.png') }}" alt="edit" width="24">
             {% endif %}
-            {{ h.staff }}
+            {{ h.staff.name|truncate(killwords=True, length=65) }}
           </td>
           <td class="col-2 text-center">
-            {{ h.date.strftime('%d.%m.%y') }}
+            {{ h.date.strftime('%d.%m.%Y') }}
           </td>
           <td class="col-1 text-center">
             <a href="{{ url_for('holiday_edit', id=h.id, **request.args) }}"><img src="{{ url_for('static', filename='/edit.png') }}" alt="edit" width="24"></a>

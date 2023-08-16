@@ -21,7 +21,7 @@
       {% for t in items %}
         <tr class="{{ loop.cycle('table-success', 'table-default') }}  border-start border-end border-light">
           <td class="col-11 ps-3">
-            {{ t.name }}
+            {{ t.name|truncate(killwords=True, length=65) }}
           </td>
           <td class="col-1 text-center">
             <a href="{{ url_for('tag_edit', id=t.id) }}"><img src="{{ url_for('static', filename='/edit.png') }}" alt="edit" width="24"></a>

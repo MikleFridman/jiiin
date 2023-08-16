@@ -26,9 +26,9 @@
             {% if l.no_active %}
               <img src="{{ url_for('static', filename='/hidden.png') }}" alt="hidden" width="24">
             {% endif %}
-            {{ l.name }}
+            {{ l.name|truncate(killwords=True, length=30) }}
           </td>
-          <td class="col-4">{{ l.address[:55] }}</td>
+          <td class="col-4">{{ l.address|truncate(killwords=True, length=60) }}</td>
           <td class="text-center">{{ l.phone }}</td>
           <td class="col-1 text-center">
             <a href="{{ url_for('location_edit', id=l.id) }}"><img src="{{ url_for('static', filename='/edit.png') }}" alt="edit" width="24"></a>

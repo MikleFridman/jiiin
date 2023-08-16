@@ -356,7 +356,7 @@ class User(UserMixin, db.Model, Entity, Splitter):
                 'update': update,
                 'delete': delete}
 
-    def get_token(self, lifetime=3600):
+    def get_token(self, lifetime=28800):
         self.token = base64.b64encode(os.urandom(24)).decode('utf-8')
         self.token_expiration = datetime.utcnow() + timedelta(seconds=lifetime)
         return self.token

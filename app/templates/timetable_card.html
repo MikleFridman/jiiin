@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+  <div class="row">
+    <div class="col-md-2 mb-2">
+      <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('services_table', choice_mode=1, **request.args) }}';">{{ _('Add new') }}</button>
+    </div>
+    <div class="col-md-5 mb-2 text-center">
+      <h4>{{ _('Timetable') }}</h4>
+    </div>
+    {% include '_search_form.html' %}
+  </div>
+<!--Screen LG-XL-->
+  <table id="data" class="table table-hover border-top border-bottom border-light">
+    <thead>
+        <tr class="d-none d-lg-table-row table-primary border-start border-end border-light text-center">
+          <th class="col-3">{{ _('Location') }}</th>
+          <th class="col-2">{{ _('Date / time') }}</th>
+          <th class="col-3">{{ _('Worker') }}</th>
+          <th class="col-3">{{ _('Client') }}</th>
+          <th class="col-1"></th>
+        </tr>
+    </thead>
+    <tbody>
+      {% for a in items %}
+          <tr class="d-none d-lg-table-row {{ loop.cycle('table-success', 'table-default') }}  border-start border-end border-light">
+            <td class="col-3 ps-3">{{ a.location.name|truncate(killwords=True, length=30) }}</td>
+            <td class="col-2 text-center">{{ a.date_time.strftime('%d.%m.%y %H:%M') }}-{{ (a.date_time + a.duration).strftime('%H:%M') }}</td>
+            <td class="col-3 text-center">{{ a.staff.name|truncate(killwords=True, length=30) }}</td>
+            <td class="col-3 text-center">{{ a.client.name|truncate(killwords=True, length=30) }}</td>
+            <td class="col-1 text-center">
+              <a href="{{ url_for('appointment_edit', id=a.id, **request.args) }}"><img src="{{ url_for('static', filename='/edit.png') }}" alt="edit" width="24"></a>
+              <a href="{{ url_for('delete', class_name='appointment', object_id=a.id, url_back=url_for('appointments_table', **request.args)) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
+            </td>
+          </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+<!--Screen SM-MD-->
+  <div class="d-none d-sm-block d-lg-none col-md-12">
+    {% for a in items %}
+      <div class="card border-primary mb-3" >
+        <a class="text-decoration-none text-reset" href="{{ url_for('appointment_edit', id=a.id, **request.args) }}">
+        <div class="card-header">
+          <div class="row">
+            <div class="col-7">
+              {{ a.location.name|truncate(killwords=True, length=40) }}
+            </div>
+            <div class="col-5 d-flex justify-content-end">
+              {{ a.date_time.strftime('%d.%m.%y %H:%M') }}
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <span class="card-text">
+            {{ a. client.name|truncate(killwords=True, length=60) }}<br/>
+            {{ a. client.phone }}
+          </span>
+        </div>
+        <ul class="list-group list-group-flush">
+          {% for service in a.services %}
+            <li class="list-group-item">{{ service.name|truncate(killwords=True, length=60) }}</li>
+          {% endfor %}
+        </ul>
+        </a>
+        <div class="card-footer">
+          <div class="row">
+            <div class="col-10">
+              <span class="me-2">{{ _('Time') }}: {{ a.duration }}</span>
+              <span>{{ _('Sum') }}: {{ a.cost }}</span>
+            </div>
+            <div class="col-2 d-flex justify-content-end">
+              <a href="{{ url_for('delete', class_name='appointment', object_id=a.id, url_back=url_for('appointments_table', **request.args)) }}"><img src="{{ url_for('static', filename='/trash_2.png') }}" alt="delete" width="24"></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+<!--Screen XS-->
+  <div class="d-sm-none col-md-12">
+    {% for a in items %}
+      <div class="card border-primary mb-3" >
+        <a class="text-decoration-none text-reset" href="{{ url_for('appointment_edit', id=a.id, **request.args) }}">
+        <div class="card-header">
+          <div class="row">
+            <div class="col-7">
+              {{ a.location.name|truncate(killwords=True, length=20) }}
+            </div>
+            <div class="col-5 d-flex justify-content-end">
+              {{ a.date_time.strftime('%d.%m.%y %H:%M') }}
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <span class="card-text">
+            {{ a. client.name|truncate(killwords=True, length=32) }}<br/>
+            {{ a. client.phone }}
+          </span>
+        </div>
+        <ul class="list-group list-group-flush">
+          {% for service in a.services %}
+            <li class="list-group-item">{{ service.name|truncate(killwords=True, length=32) }}</li>
+          {% endfor %}
+        </ul>
+        </a>
+        <div class="card-footer">
+          <div class="row">
+            <div class="col-10">
+              <span class="me-2">{{ _('Time') }}: {{ a.duration }}</span>
+              <span>{{ _('Sum') }}: {{ a.cost }}</span>
+            </div>
+            <div class="col-2 d-flex justify-content-end">
+              <a href="{{ url_for('delete', class_name='appointment', object_id=a.id, url_back=url_for('appointments_table', **request.args)) }}"><img src="{{ url_for('static', filename='/trash_2.png') }}" alt="delete" width="24"></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+{% import '_pagination.html' as forms %}
+{{ forms.render_pagination(pagination, 'appointments_table', **request.args) }}
+{% endblock %}

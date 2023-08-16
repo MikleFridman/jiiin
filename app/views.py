@@ -783,6 +783,7 @@ def client_edit(id):
     elif request.method == 'GET':
         form = ClientForm(obj=client)
         form.tag_link.data = url_for('client_tags', client_id=client.id)
+        form.files_link.data = url_for('client_files_table', client_id=client.id)
     return render_template('data_form.html',
                            title=_('Client (edit)'),
                            form=form,
@@ -1169,7 +1170,7 @@ def appointments_table():
     form = set_filter(Appointment)
     param = get_filter_parameters(form, Appointment)
     data = Appointment.get_pagination(page, *param)
-    return render_template('timetable.html',
+    return render_template('timetable_card.html',
                            title=_('Timetable'),
                            items=data.items,
                            pagination=data,
@@ -1661,8 +1662,12 @@ def cash_flow_create():
             db.session.add(cash)
         if appointment:
             appointment.payment_id = cash_flow.id
-        db.session.commit()
-        return redirect(url_back)
+        if cash.cost < 0:
+            db.session.rollback()
+            flash(_('Amount exceeds the balance in the cash box'))
+        else:
+            db.session.commit()
+            return redirect(url_back)
     elif request.method == 'GET':
         if appointment:
             location_id = appointment.location_id
@@ -1710,8 +1715,12 @@ def cash_flow_edit(id):
                         location_id=form.location.data,
                         cost=form.cost.data * form.action.data)
             db.session.add(cash)
-        db.session.commit()
-        return redirect(url_back)
+        if cash.cost < 0:
+            db.session.rollback()
+            flash(_('Amount exceeds the balance in the cash box'))
+        else:
+            db.session.commit()
+            return redirect(url_back)
     elif request.method == 'GET':
         form.location.default = cash_flow.location_id
         form.process()

@@ -11,16 +11,20 @@
   </div>
   <table id="data" class="table table-hover border-top border-bottom border-light">
     <thead>
-      <tr class="table-primary border-start border-end border-light text-center">
+      <tr class="d-none d-lg-table-row border-start border-end border-light text-center">
         <th class="col-1"></th>
         <th class="col-9">{{ _('Title') }}</th>
         <th class="col-1">{{ _('Time') }}</th>
         <th class="col-1">{{ _('Price') }}</th>
       </tr>
+      <tr class="d-lg-none table-row border-start border-end border-light text-center">
+        <th class="col-1"></th>
+        <th class="11">{{ _('Title') }}</th>
+       </tr>
     </thead>
     <tbody>
       {% for s in items %}
-        <tr class="{{ loop.cycle('table-success', 'table-default') }}  border-start border-end border-light">
+        <tr class="d-none d-lg-table-row {{ loop.cycle('table-success', 'table-default') }}  border-start border-end border-light">
           <td class="col-1 ps-3">
             {% if s.id | string() in session['services'] %}
               <input class="form-check-input" type="checkbox" value="" id="{{ s.id }}" onchange="select_checkbox(id, checked)" checked="">
@@ -32,10 +36,34 @@
             {% if s.no_active %}
               <img src="{{ url_for('static', filename='/hidden.png') }}" alt="hidden" width="24">
             {% endif %}
-            {{ s.name[:100] }}
+            {{ s.name|truncate(killwords=True, length=55) }}
           </td>
           <td class="col-1 text-center">{{ s.duration }}</td>
           <td class="col-1 text-center">{{ s.price }}</td>
+        </tr>
+        <tr class="d-none d-sm-table-row d-lg-none border-start border-end border-light">
+          <td class="col-1">
+            {% if s.id | string() in session['services'] %}
+              <input class="form-check-input" type="checkbox" value="" id="{{ s.id }}" onchange="select_checkbox(id, checked)" checked="">
+            {% else %}
+              <input class="form-check-input" type="checkbox" value="" id="{{ s.id }}" onchange="select_checkbox(id, checked)">
+            {% endif %}
+          </td>
+          <td class="col-11">
+            {{ s.name|truncate(killwords=True, length=55) }}
+          </td>
+        </tr>
+        <tr class="d-sm-none table-row border-start border-end border-light">
+          <td class="col-1">
+            {% if s.id | string() in session['services'] %}
+              <input class="form-check-input" type="checkbox" value="" id="{{ s.id }}" onchange="select_checkbox(id, checked)" checked="">
+            {% else %}
+              <input class="form-check-input" type="checkbox" value="" id="{{ s.id }}" onchange="select_checkbox(id, checked)">
+            {% endif %}
+          </td>
+          <td class="col-11">
+            {{ s.name|truncate(killwords=True, length=28) }}
+          </td>
         </tr>
       {% endfor %}
     </tbody>

@@ -13,9 +13,8 @@
   <table id="data" class="table table-hover border-top border-bottom border-light">
     <thead>
       <tr class="d-none d-sm-table-row table-primary border-start border-end border-light text-center">
-        <th class="col-6">{{ _('Name') }}</th>
+        <th class="7">{{ _('Name') }}</th>
         <th class="col-1">{{ _('History') }}</th>
-        <th class="col-1">{{ _('Files') }}</th>
         <th class="col-1">{{ _('Notices') }}</th>
         <th class="col-2">{{ _('Phone') }}</th>
         <th class="col-1"></th>
@@ -32,16 +31,11 @@
             {% if c.no_active %}
               <img src="{{ url_for('static', filename='/hidden.png') }}" alt="no_active" width="24">
             {% endif %}
-            {{ c.name }}
+            {{ c.name|truncate(killwords=True, length=65) }}
           </td>
           <td class="col-1 text-center">
             <a href="{{ url_for('appointments_table', client_id=c.id) }}">
               <img class="ms-2" src="{{ url_for('static', filename='/schedule.png') }}" alt="table" width="23">
-            </a>
-          </td>
-          <td class="col-1 text-center">
-            <a href="{{ url_for('client_files_table', client_id=c.id) }}">
-              <img class="ms-2" src="{{ url_for('static', filename='/attach.png') }}" alt="attach" width="23">
             </a>
           </td>
           <td class="col-1 text-center">
@@ -58,7 +52,7 @@
         <tr class="d-table-row d-sm-none {{ loop.cycle('table-success', 'table-default') }}  border-start border-end border-light">
           <td class="col-5 ps-3">
             <a class="text-decoration-none" href="{{ url_for('client_edit', id=c.id) }}">
-              {{ c.name }}
+              {{ c.name[:40] }}
             </a>
           </td>
           <td class="col-1 text-center">

@@ -4,7 +4,7 @@
     <form method="post">
         <div class="form-group row">
             {{ form.hidden_tag() }}
-            <div class="form-group col-md-4">
+            <div class="form-group col-md-6">
                 {{ form.location.label(class_="col-form-label") }} {% if form.location.flags.required %}*{% endif %}
                 {% if form.location.errors %}
                     {{ form.location(class_="form-select is-invalid", onchange="select_location(this.value)") }}
@@ -20,7 +20,7 @@
                     {% endif %}
                 </div>
             </div>
-            <div class="form-group col-md-4">
+            <div class="form-group col-md-6">
                 {{ form.client.label(class_="col-form-label") }} {% if form.client.flags.required %}*{% endif %}
                 {% if form.client.errors %}
                     {{ form.client(class_="form-select is-invalid", onchange="select_client(this.value)") }}
@@ -48,40 +48,48 @@
             </div>
         </div>
         <div class="form-group mt-3">
-            <div class="form-group col-md-8">
+            <div class="form-group col-md-12">
                 {{ form.service.label(class_="col-form-label") }} {% if form.service.flags.required %}*{% endif %}
                 <a href="{{ url_select_service }}"> ({{ _('select') }})</a>
                 {% include '_services.html' %}
             </div>
-            <div class="form-group col-md-8 mt-2">
+            <div class="form-group col-md-12 mt-2">
                 {{ form.no_check_duration(class_="form-check-input ms-1", onclick="handleClick()") }}
                 {{ form.no_check_duration.label(class_="form-check-label ms-3") }}
             </div>
-            <div class="form-group col-md-8 mt-2">
+            <div class="form-group col-md-12 mt-2">
                 {{ form.info.label(class_="col-form-label") }} {% if form.info.flags.required %}*{% endif %}
                 {{ form.info(class_="form-control") }}
             </div>
         </div>
         <div class="form-group mt-2">
-            <div class="form-group col-md-8">
-                <button type="submit" class="btn btn-primary mt-3 mb-2">{{ _('Submit') }}</button>
-                <button type="button" class="btn btn-secondary mt-3 ms-3 mb-2" onclick="window.location.href='{{ url_back }}'">{{ _('Back') }}</button>
-                {% if appointment_id %}
-                    <div class="btn-group" role="group" aria-label="">
-                      <button type="button" class="btn btn-light mt-3 ms-5 mb-2">{{ _('More actions') }}</button>
-                      <div class="btn-group" role="group">
-                        <button id="btnGroupDrop1" type="button" class="btn btn-light mt-3 mb-2 dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
-                        <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-                          <a class="dropdown-item" href="{{ url_for('appointment_result', appointment_id=appointment_id, url_back=request.path) }}">{{ _('Result') }}</a>
-                          <a class="dropdown-item" href="{{ url_for('cash_flow_create', appointment_id=appointment_id, url_back=request.path) }}">{{ _('Payment') }}</a>
-                          <a class="dropdown-item" href="{{ url_for('notice_create', client_id=form.client.data, url_back=request.path, appointment_id=appointment_id) }}">{{ _('Notice') }}</a>
-                        </div>
-                      </div>
+            <div class="form-group col-md-12">
+                <div class="row">
+                    <div class="col-8">
+                        <button type="submit" class="btn btn-primary mt-3 mb-2">{{ _('Submit') }}</button>
+                        <button type="button" class="btn btn-secondary mt-3 ms-3 mb-2" onclick="window.location.href='{{ url_back }}'">{{ _('Back') }}</button>
                     </div>
-                    {% if payment_id %}
-                        <button type="button" class="btn btn-light mt-3 ms-3 mb-2" onclick="window.location.href='{{ url_for('appointment_receipt', appointment_id=appointment_id, url_back=request.path) }}'">{{ _('Receipt') }}</button>
-                    {% endif %}
-                {% endif %}
+                    <div class="col-4 d-flex justify-content-end">
+                        {% if appointment_id %}
+                            <div class="btn-group" role="group" aria-label="">
+                              <button type="button" class="btn btn-light mt-3 ms-5 mb-2">
+                                  <span class="d-none d-sm-block">{{ _('More actions') }}</span>
+                                  <img class="d-sm-none" src="{{ url_for('static', filename='/dots.png') }}" alt="actions" width="24">
+                              </button>
+                              <div class="btn-group" role="group">
+                                <button id="btnGroupDrop1" type="button" class="btn btn-light mt-3 mb-2 dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
+                                <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
+                                  <a class="dropdown-item" href="{{ url_for('appointment_result', appointment_id=appointment_id, url_back=request.path) }}">{{ _('Result') }}</a>
+                                  <a class="dropdown-item" href="{{ url_for('cash_flow_create', appointment_id=appointment_id, url_back=request.path) }}">{{ _('Payment') }}</a>
+                                  <a class="dropdown-item" href="{{ url_for('notice_create', client_id=form.client.data, url_back=request.path, appointment_id=appointment_id) }}">{{ _('Notice') }}</a>
+                                </div>
+                              </div>
+                            </div>
+        <!--                    {% if payment_id %}-->
+        <!--                        <button type="button" class="btn btn-light mt-3 ms-3 mb-2" onclick="window.location.href='{{ url_for('appointment_receipt', appointment_id=appointment_id, url_back=request.path) }}'">{{ _('Receipt') }}</button>-->
+        <!--                    {% endif %}-->
+                        {% endif %}
+                    </div>
             </div>
         </div>
     </form>

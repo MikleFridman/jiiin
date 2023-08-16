@@ -41,7 +41,6 @@
               <a href="{{ url_for('delete', class_name='appointment', object_id=a.id, url_back=url_for('appointments_table', **request.args)) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
             </td>
           </tr>
-
           <tr class="d-table-row d-sm-none {{ loop.cycle('table-success', 'table-default') }}  border-start border-end border-light">
             <td class="col-4 text-center">{{ a.date_time.strftime('%d.%m.%y %H:%M') }}</td>
             <td class="col-7 text-center">
@@ -53,7 +52,6 @@
               <a href="{{ url_for('delete', class_name='appointment', object_id=a.id, url_back=url_for('appointments_table', **request.args)) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
             </td>
           </tr>
-
       {% endfor %}
     </tbody>
   </table>
