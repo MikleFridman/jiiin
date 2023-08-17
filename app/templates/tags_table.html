@@ -13,19 +13,43 @@
   <table id="data" class="table table-hover border-top border-bottom border-light">
     <thead>
       <tr class="table-primary border-start border-end border-light text-center">
-        <th class="col-6">{{ _('Title') }}</th>
+        <th class="col-11">{{ _('Title') }}</th>
         <th class="col-1"></th>
       </tr>
     </thead>
     <tbody>
       {% for t in items %}
-        <tr class="{{ loop.cycle('table-success', 'table-default') }}  border-start border-end border-light">
+        <tr class="d-none d-lg-table-row {{ loop.cycle('table-default', 'table-light') }} border-start border-end border-light">
           <td class="col-11 ps-3">
-            {{ t.name|truncate(killwords=True, length=65) }}
+            {{ t.name|truncate(killwords=True, length=60) }}
           </td>
           <td class="col-1 text-center">
             <a href="{{ url_for('tag_edit', id=t.id) }}"><img src="{{ url_for('static', filename='/edit.png') }}" alt="edit" width="24"></a>
             <a href="{{ url_for('delete', class_name='tag', object_id=t.id, url_back=url_for('tags_table', **request.args)) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
+          </td>
+        </tr>
+        <tr class="d-none d-sm-table-row d-lg-none {{ loop.cycle('table-default', 'table-light') }} border-start border-end border-light">
+          <td class="col-11">
+            <a class="text-decoration-none text-reset" href="{{ url_for('tag_edit', id=t.id) }}">
+              <div style="height:100%; width:100%">
+                {{ t.name|truncate(killwords=True, length=50) }}
+              </div>
+            </a>
+          </td>
+          <td class="col-1 text-center">
+            <a href="{{ url_for('delete', class_name='tag', object_id=t.id, url_back=url_for('tags_table', **request.args)) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash_2.png') }}" alt="delete" width="24"></a>
+          </td>
+        </tr>
+        <tr class="d-table-row d-sm-none {{ loop.cycle('table-default', 'table-light') }} border-start border-end border-light">
+          <td class="col-11">
+            <a class="text-decoration-none text-reset" href="{{ url_for('tag_edit', id=t.id) }}">
+              <div style="height:100%; width:100%">
+                {{ t.name|truncate(killwords=True, length=28) }}
+              </div>
+            </a>
+          </td>
+          <td class="col-1 text-center">
+            <a href="{{ url_for('delete', class_name='tag', object_id=t.id, url_back=url_for('tags_table', **request.args)) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash_2.png') }}" alt="delete" width="24"></a>
           </td>
         </tr>
       {% endfor %}

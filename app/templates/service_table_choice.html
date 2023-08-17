@@ -24,7 +24,7 @@
     </thead>
     <tbody>
       {% for s in items %}
-        <tr class="d-none d-lg-table-row {{ loop.cycle('table-success', 'table-default') }}  border-start border-end border-light">
+        <tr class="d-none d-lg-table-row {{ loop.cycle('table-default', 'table-light') }}  border-start border-end border-light">
           <td class="col-1 ps-3">
             {% if s.id | string() in session['services'] %}
               <input class="form-check-input" type="checkbox" value="" id="{{ s.id }}" onchange="select_checkbox(id, checked)" checked="">
@@ -41,7 +41,7 @@
           <td class="col-1 text-center">{{ s.duration }}</td>
           <td class="col-1 text-center">{{ s.price }}</td>
         </tr>
-        <tr class="d-none d-sm-table-row d-lg-none border-start border-end border-light">
+        <tr class="d-none d-sm-table-row d-lg-none {{ loop.cycle('table-default', 'table-light') }} border-start border-end border-light">
           <td class="col-1">
             {% if s.id | string() in session['services'] %}
               <input class="form-check-input" type="checkbox" value="" id="{{ s.id }}" onchange="select_checkbox(id, checked)" checked="">
@@ -50,10 +50,10 @@
             {% endif %}
           </td>
           <td class="col-11">
-            {{ s.name|truncate(killwords=True, length=55) }}
+            {{ s.name|truncate(killwords=True, length=50) }}
           </td>
         </tr>
-        <tr class="d-sm-none table-row border-start border-end border-light">
+        <tr class="d-sm-none table-row {{ loop.cycle('table-default', 'table-light') }} border-start border-end border-light">
           <td class="col-1">
             {% if s.id | string() in session['services'] %}
               <input class="form-check-input" type="checkbox" value="" id="{{ s.id }}" onchange="select_checkbox(id, checked)" checked="">

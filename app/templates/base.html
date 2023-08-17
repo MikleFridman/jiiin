@@ -9,9 +9,16 @@
 {% endblock %}
 
 {% block navbar %}
-<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+<nav class="navbar navbar-expand-lg sticky-top navbar-dark bg-primary">
   <div class="container-fluid">
     <a class="navbar-brand ms-3" href="{{ url_for('index') }}" title="ver. {{ version }} ({{ version_date }})"> Jiiin </a>
+    {% if current_user.is_authenticated %}
+      <div class="d-flex d-lg-none nav-item justify-content-end">
+          <a class="nav-link me-2 {% if request.path == url_for('user_edit', id=current_user.id) %}active{% endif %}" href="{{ url_for('user_edit', id=current_user.id) }}">
+              <img src="{{ url_for('static', filename='/profile.png') }}" alt="profile" title="{{ _('Profile') }}" width="26">
+          </a>
+      </div>
+    {% endif %}
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
@@ -79,7 +86,7 @@
               <li class="nav-item">
                   <a class="nav-link me-2 {% if request.path == url_for('sendmail') %}active{% endif %}" href="{{ url_for('sendmail', url_back=request.path) }}">{{ _('Contact us') }}</a>
               </li>
-              <li class="nav-item">
+              <li class="d-none d-lg-flex nav-item">
                   <a class="nav-link me-2 {% if request.path == url_for('user_edit', id=current_user.id) %}active{% endif %}" href="{{ url_for('user_edit', id=current_user.id) }}">
                       <img src="{{ url_for('static', filename='/profile.png') }}" alt="profile" title="{{ _('Profile') }}" width="26">
                   </a>

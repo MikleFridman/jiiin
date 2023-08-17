@@ -2,12 +2,13 @@
 {% block app_content %}
 <div class="col-md-5 mb-2">
     <div class="row">
-        <div class="col-1">
+        <div class="d-none d-lg-block col-1">
             {% if form.filter.data %}
-                <img class="ms-2 mt-2" src="{{ url_for('static', filename='/filter.png') }}" alt="time" width="22">
+                <img class="ms-2 mt-2" src="{{ url_for('static', filename='/filter.png') }}" alt="filter" width="22">
             {% endif %}
         </div>
-        <div class="col-11">
+        <!--Screen L-XL-->
+        <div class="d-none d-lg-block col-11">
             <div class="accordion" id="accordionFilter">
                 <div class="accordion-item">
                     <h2 class="accordion-header" id="headingOne">
@@ -31,6 +32,41 @@
                                     {% endif %}
                                 </div>
                             </div>
+                            {% endfor %}
+                            <button type="submit" class="btn btn-primary mt-3 mb-2">{{ _('Select') }}</button>
+                            <button type="reset" id="reset" class="btn btn-secondary mt-3 ms-3 mb-2" onclick="reset_form()">{{ _('Reset') }}</button>
+                        </form>
+                      </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!--Screem XS-MD-->
+        <div class="d-block d-lg-none col-12">
+            <div class="accordion" id="accordionFilter">
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="headingOne">
+                      <button class="accordion-button collapsed p-2" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                          {% if form.filter.data %}
+                          <img class="me-2" src="{{ url_for('static', filename='/filter.png') }}" alt="filter" width="16">
+                          {% endif %}
+                          {{ _('Click here to expand filter') }}
+                      </button>
+                    </h2>
+                    <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionFilter" style="">
+                      <div class="accordion-body mb-0 pb-1">
+                        <form action="" method="GET" id="searchForm">
+                            {% for field in form %}
+                                {% if field.widget.input_type != 'hidden' %}
+                                    {{ field.label(class_="col-4 col-form-label") }}
+                                {% endif %}
+                                <div class="col-12">
+                                    {% if field.type == 'SelectField' %}
+                                        {{ field(class_="form-select") }}
+                                    {% else %}
+                                        {{ field(class_="form-control") }}
+                                    {% endif %}
+                                </div>
                             {% endfor %}
                             <button type="submit" class="btn btn-primary mt-3 mb-2">{{ _('Select') }}</button>
                             <button type="reset" id="reset" class="btn btn-secondary mt-3 ms-3 mb-2" onclick="reset_form()">{{ _('Reset') }}</button>

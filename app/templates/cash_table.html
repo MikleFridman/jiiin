@@ -12,20 +12,48 @@
   </div>
   <table id="data" class="table table-hover border-top border-bottom border-light">
     <thead>
-      <tr class="table-primary border-start border-end border-light text-center">
-        <th class="col-8">{{ _('Location') }}</th>
-        <th class="col-2">{{ _('Flow') }}</th>
+      <tr class="d-none d-lg-table-row table-primary border-start border-end border-light text-center">
+        <th class="col-9">{{ _('Location') }}</th>
+        <th class="col-1">{{ _('Flow') }}</th>
+        <th class="col-2">{{ _('Sum') }}</th>
+      </tr>
+      <tr class="d-table-row d-lg-none table-primary border-start border-end border-light text-center">
+        <th class="col-10">{{ _('Location') }}</th>
         <th class="col-2">{{ _('Sum') }}</th>
       </tr>
     </thead>
     <tbody>
       {% for cf in items %}
-        <tr class="{{ loop.cycle('table-success', 'table-default') }}  border-start border-end border-light">
-          <td class="col-8 ps-3">
-            {{ cf.location.name|truncate(killwords=True, length=65) }}
+        <tr class="d-none d-lg-table-row {{ loop.cycle('table-default', 'table-light') }}  border-start border-end border-light">
+          <td class="col-9 ps-3">
+            {{ cf.location.name|truncate(killwords=True, length=60) }}
+          </td>
+          <td class="col-1 text-center">
+            <a href="{{ url_for('cash_flow_table', location_id=cf.location.id) }}"><img src="{{ url_for('static', filename='/flow.png') }}" alt="edit" width="24"></a>
           </td>
           <td class="col-2 text-center">
-            <a href="{{ url_for('cash_flow_table', location_id=cf.location.id) }}"><img src="{{ url_for('static', filename='/flow.png') }}" alt="edit" width="24"></a>
+            {{ cf.cost|float }}
+          </td>
+        </tr>
+        <tr class="d-none d-sm-table-row d-lg-none {{ loop.cycle('table-default', 'table-light') }}  border-start border-end border-light">
+          <td class="col-10">
+            <a class="text-decoration-none text-reset" href="{{ url_for('cash_flow_table', location_id=cf.location.id) }}">
+              <div style="height:100%; width:100%">
+                {{ cf.location.name|truncate(killwords=True, length=45) }}
+              </div>
+            </a>
+          </td>
+          <td class="col-2 text-center">
+            {{ cf.cost|float }}
+          </td>
+        </tr>
+        <tr class="d-table-row d-sm-none {{ loop.cycle('table-default', 'table-light') }}  border-start border-end border-light">
+          <td class="col-9">
+            <a class="text-decoration-none text-reset" href="{{ url_for('cash_flow_table', location_id=cf.location.id) }}">
+              <div style="height:100%; width:100%">
+                {{ cf.location.name|truncate(killwords=True, length=24) }}
+              </div>
+            </a>
           </td>
           <td class="col-2 text-center">
             {{ cf.cost|float }}

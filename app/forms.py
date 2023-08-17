@@ -34,7 +34,7 @@ def validate_username_global(form, field):
         msg = _l('Min length username is 8 characters')
         flash(msg)
         raise ValidationError(msg)
-    abc = string.ascii_letters + string.digits + '_'
+    abc = string.ascii_letters + string.digits + '_.'
     check_letters = False
     for s in field.data:
         if s in string.ascii_letters:
@@ -118,6 +118,7 @@ class LoginForm(FlaskForm):
 class UserForm(RegisterForm):
     company = None
     recaptcha = None
+    promo_code = None
     submit = SubmitField(_l('Submit'))
 
 

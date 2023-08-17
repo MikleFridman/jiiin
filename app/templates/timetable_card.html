@@ -11,23 +11,24 @@
     {% include '_search_form.html' %}
   </div>
 <!--Screen LG-XL-->
+  <div class="d-none d-lg-block">
   <table id="data" class="table table-hover border-top border-bottom border-light">
     <thead>
-        <tr class="d-none d-lg-table-row table-primary border-start border-end border-light text-center">
-          <th class="col-3">{{ _('Location') }}</th>
+        <tr class="table-row table-primary border-start border-end border-light text-center">
           <th class="col-2">{{ _('Date / time') }}</th>
+          <th class="col-2">{{ _('Location') }}</th>
           <th class="col-3">{{ _('Worker') }}</th>
-          <th class="col-3">{{ _('Client') }}</th>
+          <th class="col-4">{{ _('Client') }}</th>
           <th class="col-1"></th>
         </tr>
     </thead>
     <tbody>
       {% for a in items %}
-          <tr class="d-none d-lg-table-row {{ loop.cycle('table-success', 'table-default') }}  border-start border-end border-light">
-            <td class="col-3 ps-3">{{ a.location.name|truncate(killwords=True, length=30) }}</td>
+          <tr class="table-row {{ loop.cycle('table-default', 'table-light') }}  border-start border-end border-light">
             <td class="col-2 text-center">{{ a.date_time.strftime('%d.%m.%y %H:%M') }}-{{ (a.date_time + a.duration).strftime('%H:%M') }}</td>
-            <td class="col-3 text-center">{{ a.staff.name|truncate(killwords=True, length=30) }}</td>
-            <td class="col-3 text-center">{{ a.client.name|truncate(killwords=True, length=30) }}</td>
+            <td class="col-2 ps-3">{{ a.location.name|truncate(killwords=True, length=15) }}</td>
+            <td class="col-3 text-center">{{ a.staff.name|truncate(killwords=True, length=24) }}</td>
+            <td class="col-3 text-center">{{ a.client.name|truncate(killwords=True, length=35) }}</td>
             <td class="col-1 text-center">
               <a href="{{ url_for('appointment_edit', id=a.id, **request.args) }}"><img src="{{ url_for('static', filename='/edit.png') }}" alt="edit" width="24"></a>
               <a href="{{ url_for('delete', class_name='appointment', object_id=a.id, url_back=url_for('appointments_table', **request.args)) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
@@ -36,13 +37,14 @@
       {% endfor %}
     </tbody>
   </table>
+  </div>
 <!--Screen SM-MD-->
   <div class="d-none d-sm-block d-lg-none col-md-12">
     {% for a in items %}
       <div class="card border-primary mb-3" >
         <a class="text-decoration-none text-reset" href="{{ url_for('appointment_edit', id=a.id, **request.args) }}">
-        <div class="card-header">
-          <div class="row">
+        <div class="card-header" style="background-color: #dae2eb !important">
+          <div class="row text-dark">
             <div class="col-7">
               {{ a.location.name|truncate(killwords=True, length=40) }}
             </div>
@@ -59,12 +61,12 @@
         </div>
         <ul class="list-group list-group-flush">
           {% for service in a.services %}
-            <li class="list-group-item">{{ service.name|truncate(killwords=True, length=60) }}</li>
+            <li class="list-group-item text-body">{{ service.name|truncate(killwords=True, length=60) }}</li>
           {% endfor %}
         </ul>
         </a>
         <div class="card-footer">
-          <div class="row">
+          <div class="row text-dark">
             <div class="col-10">
               <span class="me-2">{{ _('Time') }}: {{ a.duration }}</span>
               <span>{{ _('Sum') }}: {{ a.cost }}</span>
@@ -82,8 +84,8 @@
     {% for a in items %}
       <div class="card border-primary mb-3" >
         <a class="text-decoration-none text-reset" href="{{ url_for('appointment_edit', id=a.id, **request.args) }}">
-        <div class="card-header">
-          <div class="row">
+        <div class="card-header" style="background-color: #dae2eb !important">
+          <div class="row text-dark">
             <div class="col-7">
               {{ a.location.name|truncate(killwords=True, length=20) }}
             </div>
@@ -95,19 +97,21 @@
         <div class="card-body">
           <span class="card-text">
             {{ a. client.name|truncate(killwords=True, length=32) }}<br/>
-            {{ a. client.phone }}
+            <object>
+              <a class="text-decoration-none text-primary" href="tel:{{ a. client.phone }}">{{ a. client.phone }}</a>
+            </object>
           </span>
         </div>
         <ul class="list-group list-group-flush">
           {% for service in a.services %}
-            <li class="list-group-item">{{ service.name|truncate(killwords=True, length=32) }}</li>
+            <li class="list-group-item text-body">{{ service.name|truncate(killwords=True, length=32) }}</li>
           {% endfor %}
         </ul>
         </a>
         <div class="card-footer">
-          <div class="row">
+          <div class="row text-dark">
             <div class="col-10">
-              <span class="me-2">{{ _('Time') }}: {{ a.duration }}</span>
+              <span class="me-2">{{ _('Time') }}: {{ a.duration.seconds // 3600 }}:{{ a.duration.seconds % 3600 // 60 }}</span>
               <span>{{ _('Sum') }}: {{ a.cost }}</span>
             </div>
             <div class="col-2 d-flex justify-content-end">

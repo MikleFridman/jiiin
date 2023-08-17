@@ -2,7 +2,7 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 {% block app_content %}
 <div class="row mt-1">
-    <div class="col-md-4">
+    <div class="col-md-6">
         <form class="form-inline" action="" method="POST">
             {{ form.hidden_tag() }}
             {% for field in form if field.widget.input_type != 'hidden' and field.widget.input_type != 'submit' %}

@@ -1,7 +1,7 @@
 {% macro render_pagination(pagination, endpoint) %}
   {% with param=kwargs %}
   {% with x=param.pop('page', None) %}
-    <div class='d-flex justify-content-end'>
+    <div class='d-none d-lg-block d-flex justify-content-end'>
       <ul class="pagination">
         {% if pagination.has_prev %}
           <li class="page-item">
@@ -31,6 +31,31 @@
         {% endfor %}
         {% if pagination.has_next %}
            <li class="page-item">
+            <a class="page-link" href="{{ url_for(endpoint, page=pagination.page+1, **param) }}">&raquo;</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled">
+            <a class="page-link" href="#">&raquo;</a>
+          </li>
+        {% endif %}
+      </ul>
+    </div>
+    <div class='d-block d-lg-none d-flex flex-column justify-content-center align-items-center'>
+      <ul class="pagination">
+        {% if pagination.has_prev %}
+          <li class="page-item">
+            <a class="page-link" href="{{ url_for(endpoint, page=pagination.page-1, **param) }}">&laquo;</a>
+          </li>
+        {% else %}
+          <li class="page-item disabled">
+            <a class="page-link" href="#">&laquo;</a>
+          </li>
+        {% endif %}
+        <li class="page-item active">
+          <a class="page-link" href="#">{{ pagination.page }}</a>
+        </li>
+        {% if pagination.has_next %}
+           <li class="page-item d-flex justify-content-end">
             <a class="page-link" href="{{ url_for(endpoint, page=pagination.page+1, **param) }}">&raquo;</a>
           </li>
         {% else %}

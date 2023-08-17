@@ -12,27 +12,47 @@
   </div>
   <table id="data" class="table table-hover border-top border-bottom border-light">
     <thead>
-      <tr class="table-primary border-start border-end border-light text-center">
+      <tr class="table-row table-primary border-start border-end border-light text-center">
         <th class="col-11 text-center">{{ _('Title') }}</th>
-<!--        <th class="col-2 text-center">{{ _('Days') }}</th>-->
         <th class="col-1 text-center"></th>
       </tr>
     </thead>
     <tbody>
       {% for sh in items %}
-        <tr class="{{ loop.cycle('table-success', 'table-default') }}  border-start border-end border-light">
+        <tr class="d-none d-lg-table-row {{ loop.cycle('table-default', 'table-light') }} border-start border-end border-light">
           <td class="col-11 ps-3">
             {% if sh.no_active %}
               <img src="{{ url_for('static', filename='/hidden.png') }}" alt="hidden" width="24">
             {% endif %}
-            {{ sh.name|truncate(killwords=True, length=65) }}
+            {{ sh.name|truncate(killwords=True, length=60) }}
           </td>
-<!--          <td class="col-2 text-center">-->
-<!--            <a href="{{ url_for('schedule_days_table', schedule_id=sh.id) }}"><img src="{{ url_for('static', filename='/calendar.png') }}" alt="calendar" width="24"></a>-->
-<!--          </td>-->
           <td class="col-1 text-center">
             <a href="{{ url_for('schedule_edit', id=sh.id) }}"><img src="{{ url_for('static', filename='/edit.png') }}" alt="edit" width="24"></a>
             <a href="{{ url_for('delete', class_name='schedule', object_id=sh.id, url_back=url_for('schedules_table', **request.args)) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
+          </td>
+        </tr>
+        <tr class="d-none d-sm-table-row d-lg-none {{ loop.cycle('table-default', 'table-light') }} border-start border-end border-light">
+          <td class="col-11 ps-3">
+            <a class="text-decoration-none text-reset" href="{{ url_for('schedule_edit', id=sh.id) }}">
+              <div style="height:100%; width:100%">
+                {{ sh.name|truncate(killwords=True, length=50) }}
+              </div>
+            </a>
+          </td>
+          <td class="col-1 text-center">
+            <a href="{{ url_for('delete', class_name='schedule', object_id=sh.id, url_back=url_for('schedules_table', **request.args)) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash_2.png') }}" alt="delete" width="24"></a>
+          </td>
+        </tr>
+        <tr class="d-table-row d-sm-none {{ loop.cycle('table-default', 'table-light') }} border-start border-end border-light">
+          <td class="col-11 ps-3">
+            <a class="text-decoration-none text-reset" href="{{ url_for('schedule_edit', id=sh.id) }}">
+              <div style="height:100%; width:100%">
+                {{ sh.name|truncate(killwords=True, length=28) }}
+              </div>
+            </a>
+          </td>
+          <td class="col-1 text-center">
+            <a href="{{ url_for('delete', class_name='schedule', object_id=sh.id, url_back=url_for('schedules_table', **request.args)) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash_2.png') }}" alt="delete" width="24"></a>
           </td>
         </tr>
       {% endfor %}

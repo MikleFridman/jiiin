@@ -12,27 +12,55 @@
   </div>
   <table id="data" class="table table-hover border-top border-bottom border-light">
     <thead>
-      <tr class="table-primary border-start border-end border-light text-center">
-        <th class="col-3">{{ _('Title') }}</th>
+      <tr class="d-none d-lg-table-row table-primary border-start border-end border-light text-center">
+        <th class="col-4">{{ _('Title') }}</th>
         <th class="col-5">{{ _('Address') }}</th>
-        <th class="col-3">{{ _('Phone') }}</th>
+        <th class="col-2">{{ _('Phone') }}</th>
+        <th class="col-1"></th>
+      </tr>
+      <tr class="d-table-row d-lg-none table-primary border-start border-end border-light text-center">
+        <th class="col-11">{{ _('Name') }}</th>
         <th class="col-1"></th>
       </tr>
     </thead>
     <tbody>
       {% for l in items %}
-        <tr class="{{ loop.cycle('table-success', 'table-default') }}  border-start border-end border-light">
-          <td class="col-3 ps-3">
+        <tr class="d-none d-lg-table-row {{ loop.cycle('table-default', 'table-light') }}  border-start border-end border-light">
+          <td class="col-4 ps-3">
             {% if l.no_active %}
               <img src="{{ url_for('static', filename='/hidden.png') }}" alt="hidden" width="24">
             {% endif %}
             {{ l.name|truncate(killwords=True, length=30) }}
           </td>
-          <td class="col-4">{{ l.address|truncate(killwords=True, length=60) }}</td>
-          <td class="text-center">{{ l.phone }}</td>
+          <td class="col-5">{{ l.address|truncate(killwords=True, length=40) }}</td>
+          <td class="col-2 text-center">{{ l.phone }}</td>
           <td class="col-1 text-center">
             <a href="{{ url_for('location_edit', id=l.id) }}"><img src="{{ url_for('static', filename='/edit.png') }}" alt="edit" width="24"></a>
             <a href="{{ url_for('delete', class_name='location', object_id=l.id, url_back=url_for('locations_table', **request.args)) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23"></a>
+          </td>
+        </tr>
+        <tr class="d-none d-sm-table-row d-lg-none {{ loop.cycle('table-default', 'table-light') }}  border-start border-end border-light">
+          <td class="col-11">
+            <a class="text-decoration-none text-reset" href="{{ url_for('location_edit', id=l.id) }}">
+              <div style="height:100%; width:100%">
+                {{ l.name|truncate(killwords=True, length=50) }}
+              </div>
+            </a>
+          </td>
+          <td class="col-1 text-center">
+            <a href="{{ url_for('delete', class_name='location', object_id=l.id, url_back=url_for('locations_table', **request.args)) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash_2.png') }}" alt="delete" width="24"></a>
+          </td>
+        </tr>
+        <tr class="d-table-row d-sm-none {{ loop.cycle('table-default', 'table-light') }}  border-start border-end border-light">
+          <td class="col-11">
+            <a class="text-decoration-none text-reset" href="{{ url_for('location_edit', id=l.id) }}">
+              <div style="height:100%; width:100%">
+                {{ l.name|truncate(killwords=True, length=28) }}
+              </div>
+            </a>
+          </td>
+          <td class="col-1 text-center">
+            <a href="{{ url_for('delete', class_name='location', object_id=l.id, url_back=url_for('locations_table', **request.args)) }}"><img class="ms-2" src="{{ url_for('static', filename='/trash_2.png') }}" alt="delete" width="24"></a>
           </td>
         </tr>
       {% endfor %}
