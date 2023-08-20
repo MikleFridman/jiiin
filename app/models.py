@@ -317,6 +317,7 @@ class User(UserMixin, db.Model, Entity, Splitter):
     promo_code = db.Column(db.String(16))
     token = db.Column(db.String(32), index=True, unique=True)
     token_expiration = db.Column(db.DateTime)
+    staff = db.relationship('Staff', backref='user')
     roles = db.relationship('Role', secondary=roles_users,
                             backref=db.backref('users', lazy='dynamic'))
 
@@ -380,6 +381,7 @@ class Staff(db.Model, Entity, Splitter):
     name = db.Column(db.String(64), index=True, nullable=False)
     phone = db.Column(db.String(16), index=True, nullable=False)
     birthday = db.Column(db.Date)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     appointments = db.relationship('Appointment', backref='staff')
     schedules = db.relationship('Schedule', secondary=staff_schedules,
                                 backref=db.backref('staff', lazy=True))

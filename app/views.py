@@ -51,6 +51,18 @@ def get_interface_type():
     return {'interface_compact': True}
 
 
+def admin_required(f):
+    @wraps(f)
+    def wrap(*args, **kwargs):
+        if not current_user.staff:
+            return f(*args, **kwargs)
+        else:
+            flash(_l('Access denied'))
+            url_back = request.args.get('url_back', url_for('index'))
+            return redirect(url_back)
+    return wrap
+
+
 def confirm(desc):
     def outer(f):
         @wraps(f)
@@ -70,6 +82,7 @@ def confirm(desc):
 
 @app.route('/delete/<class_name>/<object_id>/', methods=['GET', 'POST'])
 @login_required
+@admin_required
 @confirm(_l('Delete the selected object?'))
 def delete(class_name, object_id):
     class_object = Entity.get_class(class_name)
@@ -297,6 +310,7 @@ def logout():
 
 @app.route('/delete_account/', methods=['GET', 'POST'])
 @login_required
+@admin_required
 @confirm(_l('Confirm deletion account and all data'))
 def delete_account():
     db.session.delete(current_user.company)
@@ -328,6 +342,7 @@ def delete_page():
 # Company block start
 @app.route('/companies/edit/', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def company_edit():
     url_back = url_for('index', **request.args)
     form = CompanyForm()
@@ -436,6 +451,7 @@ def reset_password_request():
 # noinspection PyTypeChecker
 @app.route('/staff/')
 @login_required
+@admin_required
 def staff_table():
     page = request.args.get('page', 1, type=int)
     form = set_filter(Staff)
@@ -450,6 +466,7 @@ def staff_table():
 
 @app.route('/staff/create/', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def staff_create():
     url_back = url_for('staff_table', **request.args)
     next_page = request.args.get('next')
@@ -483,6 +500,7 @@ def staff_create():
 
 @app.route('/staff/edit/<id>/', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def staff_edit(id):
     url_back = url_for('staff_table', **request.args)
     staff = Staff.get_object(id)
@@ -512,12 +530,48 @@ def staff_edit(id):
         else:
             if staff.main_schedule:
                 form.schedule.default = staff.main_schedule.id
-                form.process()
-            form.name.data = staff.name
-            form.phone.data = staff.phone
-            form.birthday.data = staff.birthday
+            form.process(obj=staff)
+        form.user_link.data = url_for('staff_user', id=staff.id)
     return render_template('data_form.html',
                            title=_('Staff (edit)'),
+                           form=form,
+                           url_back=url_back)
+
+
+@app.route('/staff/edit/<id>/user', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def staff_user(id):
+    url_back = url_for('staff_edit', id=id, **request.args)
+    staff = Staff.get_object(id)
+    if staff.user:
+        form = StaffUserEditForm(staff.user.username, staff.user.email)
+    else:
+        form = UserForm()
+    if form.validate_on_submit():
+        if staff.user:
+            staff.user.username = form.username.data
+            staff.user.email = form.email.data
+            if form.password.data:
+                staff.user.set_password(form.password.data)
+            staff.user.no_active = form.no_active.data
+            db.session.commit()
+            flash(_('User successfully changed'))
+        else:
+            user = User(cid=current_user.cid,
+                        username=form.username.data,
+                        email=form.email.data)
+            db.session.add(user)
+            user.set_password(form.password.data)
+            db.session.flush()
+            staff.user_id = user.id
+            db.session.commit()
+            flash(_('User successfully create'))
+        return redirect(url_back)
+    elif request.method == 'GET':
+        if staff.user:
+            form.process(obj=staff.user)
+    return render_template('data_form.html',
                            form=form,
                            url_back=url_back)
 
@@ -525,6 +579,7 @@ def staff_edit(id):
 # noinspection PyTypeChecker
 @app.route('/holidays/')
 @login_required
+@admin_required
 def holidays_table():
     page = request.args.get('page', 1, type=int)
     form = set_filter(Holiday)
@@ -539,6 +594,7 @@ def holidays_table():
 
 @app.route('/holidays/create/', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def holiday_create():
     url_back = request.args.get('url_back', url_for('holidays_table',
                                                     **request.args))
@@ -562,6 +618,7 @@ def holiday_create():
 
 @app.route('/holidays/edit/<id>/', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def holiday_edit(id):
     url_back = request.args.get('url_back', url_for('holidays_table',
                                                     **request.args))
@@ -594,6 +651,7 @@ def holiday_edit(id):
 # noinspection PyTypeChecker
 @app.route('/schedules/')
 @login_required
+@admin_required
 def schedules_table():
     page = request.args.get('page', 1, type=int)
     form = set_filter(Schedule)
@@ -609,6 +667,7 @@ def schedules_table():
 
 @app.route('/schedules/create', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def schedule_create():
     url_back = url_for('schedules_table', **request.args)
     form = ScheduleForm()
@@ -626,6 +685,7 @@ def schedule_create():
 
 @app.route('/schedules/edit/<id>', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def schedule_edit(id):
     next_page = request.args.get('next')
     if not next_page or url_parse(next_page).netloc != '':
@@ -651,6 +711,7 @@ def schedule_edit(id):
 
 @app.route('/schedules/reset/<id>', methods=['GET', 'POST'])
 @login_required
+@admin_required
 @confirm(_l('Reset schedule to default?'))
 def schedule_reset(id):
     schedule = Schedule.get_object(id)
@@ -662,6 +723,7 @@ def schedule_reset(id):
 # noinspection PyTypeChecker
 @app.route('/schedules/<schedule_id>/schedule_days/')
 @login_required
+@admin_required
 def schedule_days_table(schedule_id):
     page = request.args.get('page', 1, type=int)
     form = set_filter(ScheduleDay)
@@ -679,6 +741,7 @@ def schedule_days_table(schedule_id):
 
 @app.route('/schedules/<schedule_id>/schedule_days/create', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def schedule_day_create(schedule_id):
     url_back = url_for('schedule_days_table', schedule_id=schedule_id,
                        **request.args)
@@ -701,6 +764,7 @@ def schedule_day_create(schedule_id):
 
 @app.route('/schedules/<schedule_id>/schedule_days/edit/<id>', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def schedule_day_edit(schedule_id, id):
     url_back = request.args.get('url_back', url_for('schedule_days_table',
                                                     schedule_id=schedule_id,
@@ -888,6 +952,7 @@ def client_tags(client_id):
 # noinspection PyTypeChecker
 @app.route('/tags/')
 @login_required
+@admin_required
 def tags_table():
     page = request.args.get('page', 1, type=int)
     form = set_filter(Tag)
@@ -903,6 +968,7 @@ def tags_table():
 
 @app.route('/tags/create/', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def tag_create():
     url_back = url_for('tags_table', **request.args)
     form = TagForm()
@@ -920,6 +986,7 @@ def tag_create():
 
 @app.route('/tags/edit/<id>/', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def tag_edit(id):
     url_back = url_for('tags_table', **request.args)
     tag = Tag.get_object(id)
@@ -978,6 +1045,7 @@ def services_table():
 
 @app.route('/services/create/', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def service_create():
     url_back = url_for('services_table', **request.args)
     next_page = request.args.get('next')
@@ -1011,6 +1079,7 @@ def service_create():
 
 @app.route('/services/edit/<id>/', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def service_edit(id):
     url_back = url_for('services_table', **request.args)
     form = ServiceForm()
@@ -1047,6 +1116,7 @@ def service_edit(id):
 # noinspection PyTypeChecker
 @app.route('/locations/')
 @login_required
+@admin_required
 def locations_table():
     page = request.args.get('page', 1, type=int)
     form = set_filter(Location)
@@ -1061,6 +1131,7 @@ def locations_table():
 
 @app.route('/locations/create/', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def location_create():
     url_back = url_for('locations_table', **request.args)
     next_page = request.args.get('next')
@@ -1090,6 +1161,7 @@ def location_create():
 
 @app.route('/locations/edit/<id>/', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def location_edit(id):
     url_back = url_for('locations_table', **request.args)
     location = Location.get_object(id)
@@ -1131,6 +1203,7 @@ def location_edit(id):
 
 @app.route('/locations/add_all_services/<id>/', methods=['GET', 'POST'])
 @login_required
+@admin_required
 @confirm(_l('Add all services?'))
 def location_add_all_services(id):
     url_back = url_for('location_edit', id=id)
@@ -1144,6 +1217,7 @@ def location_add_all_services(id):
 
 @app.route('/locations/delete_all_services/<id>/', methods=['GET', 'POST'])
 @login_required
+@admin_required
 @confirm(_l('Delete all services?'))
 def location_delete_all_services(id):
     url_back = url_for('location_edit', id=id)
@@ -1605,6 +1679,7 @@ def notice_edit(id):
 # noinspection PyTypeChecker
 @app.route('/cash_table/')
 @login_required
+@admin_required
 def cash_table():
     page = request.args.get('page', 1, type=int)
     form = set_filter(Cash)
@@ -1620,6 +1695,7 @@ def cash_table():
 # noinspection PyTypeChecker
 @app.route('/cash_flow/')
 @login_required
+@admin_required
 def cash_flow_table():
     page = request.args.get('page', 1, type=int)
     form = set_filter(CashFlow)
@@ -1752,6 +1828,7 @@ def payment_receipt():
 # Report block start
 @app.route('/report_statistics_view/', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def report_statistics_view():
     form = ReportForm()
     form.location.choices = Location.get_items(True)
@@ -1787,6 +1864,7 @@ def report_statistics_view():
 
 @app.route('/dashboard_view/')
 @login_required
+@admin_required
 def dashboard_view():
     users_count = len(User.query.all())
     services_count = len(Service.query.all())
@@ -1910,6 +1988,7 @@ def get_intervals(location_id, staff_id, date_string, appointment_id, no_check):
 
 @app.route('/export/', methods=['GET', 'POST'])
 @login_required
+@admin_required
 @confirm(_l('Export data to Excel?'))
 def export():
     class_list = [Client, Staff, Appointment, Notice]
@@ -1946,6 +2025,7 @@ def export():
 
 @app.route('/export_download/', methods=['GET', 'POST'])
 @login_required
+@admin_required
 def export_download():
     directory = os.path.join(app.config['UPLOAD_FOLDER'],
                              str(current_user.cid), 'temp')

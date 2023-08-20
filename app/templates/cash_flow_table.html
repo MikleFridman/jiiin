@@ -13,9 +13,9 @@
   <table id="data" class="table table-hover border-top border-bottom border-light">
     <thead>
       <tr class="d-none d-lg-table-row table-primary border-start border-end border-light text-center">
-        <th class="col-6">{{ _('Description') }}</th>
-        <th class="col-2">{{ _('Location') }}</th>
         <th class="col-1">{{ _('Date') }}</th>
+        <th class="col-2">{{ _('Location') }}</th>
+        <th class="col-6">{{ _('Description') }}</th>
         <th class="col-1">{{ _('Sum') }}</th>
         <th class="col-1"></th>
       </tr>
@@ -28,14 +28,14 @@
     <tbody>
       {% for cfl in items %}
         <tr class="d-none d-lg-table-row {{ loop.cycle('table-default', 'table-light') }} border-start border-end border-light">
-          <td class="col-6 ps-3">
-            {{ cfl.description|truncate(killwords=True, length=60) }}
+          <td class="col-1 text-center">
+            {{ cfl.date.strftime('%d.%m.%Y') }}
           </td>
           <td class="col-2 text-center">
             {{ cfl.location.name|truncate(killwords=True, length=20) }}
           </td>
-          <td class="col-1 text-center">
-            {{ cfl.date.strftime('%d.%m.%Y') }}
+          <td class="col-6">
+            {{ cfl.description|truncate(killwords=True, length=60) }}
           </td>
           <td class="col-1 text-center">
             {{ cfl.cost|float }}

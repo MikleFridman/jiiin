@@ -68,7 +68,7 @@
         <div class="card-footer">
           <div class="row text-dark">
             <div class="col-10">
-              <span class="me-2">{{ _('Time') }}: {{ a.duration }}</span>
+              <span class="me-2">{{ _('Time') }}: {{ '%02d' % (a.duration.seconds // 3600) }}:{{ '%02d' % (a.duration.seconds % 3600 // 60) }}</span>
               <span>{{ _('Sum') }}: {{ a.cost }}</span>
             </div>
             <div class="col-2 d-flex justify-content-end">
@@ -111,7 +111,7 @@
         <div class="card-footer">
           <div class="row text-dark">
             <div class="col-10">
-              <span class="me-2">{{ _('Time') }}: {{ a.duration.seconds // 3600 }}:{{ a.duration.seconds % 3600 // 60 }}</span>
+              <span class="me-2">{{ _('Time') }}: {{ '%02d' % (a.duration.seconds // 3600) }}:{{ '%02d' % (a.duration.seconds % 3600 // 60) }}</span>
               <span>{{ _('Sum') }}: {{ a.cost }}</span>
             </div>
             <div class="col-2 d-flex justify-content-end">

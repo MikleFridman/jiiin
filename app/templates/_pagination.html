@@ -1,7 +1,7 @@
 {% macro render_pagination(pagination, endpoint) %}
   {% with param=kwargs %}
   {% with x=param.pop('page', None) %}
-    <div class='d-none d-lg-block d-flex justify-content-end'>
+    <div class='d-none d-lg-flex justify-content-end'>
       <ul class="pagination">
         {% if pagination.has_prev %}
           <li class="page-item">

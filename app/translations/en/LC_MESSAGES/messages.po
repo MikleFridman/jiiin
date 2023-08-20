@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-08-13 14:26+0300\n"
+"POT-Creation-Date: 2023-08-20 13:06+0300\n"
 "PO-Revision-Date: 2023-03-06 16:13+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: en\n"
@@ -61,7 +61,7 @@ msgstr ""
 msgid "Invalid birthday date"
 msgstr ""
 
-#: app/forms.py:85 app/templates/base.html:45
+#: app/forms.py:85 app/templates/base.html:53
 msgid "Company"
 msgstr ""
 
@@ -69,15 +69,15 @@ msgstr ""
 msgid "Username"
 msgstr ""
 
-#: app/forms.py:89 app/forms.py:157 app/forms.py:539
+#: app/forms.py:89 app/forms.py:163 app/forms.py:546
 msgid "E-mail"
 msgstr ""
 
-#: app/forms.py:90 app/forms.py:113 app/forms.py:133 app/forms.py:162
+#: app/forms.py:90 app/forms.py:113 app/forms.py:134 app/forms.py:168
 msgid "Password"
 msgstr ""
 
-#: app/forms.py:91 app/forms.py:163
+#: app/forms.py:91 app/forms.py:169
 msgid "Repeat password"
 msgstr ""
 
@@ -85,22 +85,22 @@ msgstr ""
 msgid "Promo code"
 msgstr ""
 
-#: app/forms.py:96 app/forms.py:121 app/forms.py:158 app/forms.py:165
-#: app/forms.py:182 app/forms.py:190 app/forms.py:203 app/forms.py:228
-#: app/forms.py:236 app/forms.py:279 app/forms.py:294 app/forms.py:299
-#: app/forms.py:304 app/forms.py:321 app/forms.py:345 app/forms.py:380
-#: app/forms.py:482 app/forms.py:487 app/forms.py:502 app/forms.py:513
-#: app/forms.py:552 app/forms.py:572 app/forms.py:592
-#: app/templates/appointment_form.html:67
+#: app/forms.py:96 app/forms.py:122 app/forms.py:164 app/forms.py:171
+#: app/forms.py:188 app/forms.py:196 app/forms.py:210 app/forms.py:235
+#: app/forms.py:243 app/forms.py:286 app/forms.py:301 app/forms.py:306
+#: app/forms.py:311 app/forms.py:328 app/forms.py:352 app/forms.py:387
+#: app/forms.py:489 app/forms.py:494 app/forms.py:509 app/forms.py:520
+#: app/forms.py:559 app/forms.py:579 app/forms.py:599
+#: app/templates/appointment_form.html:69
 #: app/templates/staff_schedule_form.html:106 app/templates/upload_form.html:25
 msgid "Submit"
 msgstr ""
 
-#: app/forms.py:101 app/forms.py:102 app/forms.py:146 app/forms.py:147
+#: app/forms.py:101 app/forms.py:102 app/forms.py:147 app/forms.py:148
 msgid "Please use a different username"
 msgstr ""
 
-#: app/forms.py:107 app/forms.py:108 app/forms.py:152 app/forms.py:153
+#: app/forms.py:107 app/forms.py:108 app/forms.py:153 app/forms.py:154
 msgid "Please use a different email"
 msgstr ""
 
@@ -108,368 +108,383 @@ msgstr ""
 msgid "Remember me"
 msgstr ""
 
-#: app/forms.py:115 app/templates/base.html:92
+#: app/forms.py:115 app/templates/base.html:101
 msgid "Login"
 msgstr ""
 
-#: app/forms.py:125
+#: app/forms.py:126
 msgid "Language"
 msgstr ""
 
-#: app/forms.py:127
+#: app/forms.py:128
 msgid "Start page"
 msgstr ""
 
-#: app/forms.py:128 app/functions.py:15 app/models.py:137 app/models.py:631
-#: app/views.py:93
+#: app/forms.py:129 app/functions.py:15 app/models.py:137 app/models.py:633
+#: app/views.py:106
 msgid "-Select-"
 msgstr ""
 
-#: app/forms.py:129 app/templates/base.html:29
+#: app/forms.py:130 app/templates/base.html:36
 #: app/templates/quick_start.html:34 app/templates/timetable.html:9
-#: app/views.py:1174
+#: app/templates/timetable_card.html:9 app/views.py:1248
 msgid "Timetable"
 msgstr ""
 
-#: app/forms.py:130 app/templates/base.html:32
-#: app/templates/client_table.html:9 app/views.py:740
+#: app/forms.py:131 app/templates/base.html:39
+#: app/templates/client_table.html:9 app/views.py:804
 msgid "Clients"
 msgstr ""
 
-#: app/forms.py:131 app/templates/base.html:35 app/templates/base.html:74
-#: app/templates/client_table.html:19 app/templates/notice_table.html:9
-#: app/views.py:1537
+#: app/forms.py:132 app/templates/base.html:42 app/templates/base.html:83
+#: app/templates/client_table.html:18 app/templates/notice_table.html:9
+#: app/views.py:1611
 msgid "Notices"
 msgstr ""
 
-#: app/forms.py:134
+#: app/forms.py:135
 msgid "Password new"
 msgstr ""
 
-#: app/forms.py:135
+#: app/forms.py:136
 msgid "Repeat password new"
 msgstr ""
 
-#: app/forms.py:169
+#: app/forms.py:159
+msgid "Disabled"
+msgstr ""
+
+#: app/forms.py:175
 msgid "Company name"
 msgstr ""
 
-#: app/forms.py:171
+#: app/forms.py:177
 msgid "Registration number"
 msgstr ""
 
-#: app/forms.py:172
+#: app/forms.py:178
 msgid "Open from (default)"
 msgstr ""
 
-#: app/forms.py:173
+#: app/forms.py:179
 msgid "Open until (default)"
 msgstr ""
 
-#: app/forms.py:176
+#: app/forms.py:182
 msgid "Time interval (min)"
 msgstr ""
 
-#: app/forms.py:178
+#: app/forms.py:184
 msgid "Not use staff schedules"
 msgstr ""
 
-#: app/forms.py:179
+#: app/forms.py:185
 msgid "Show quick start"
 msgstr ""
 
-#: app/forms.py:180
+#: app/forms.py:186
 msgid "Delete account"
 msgstr ""
 
-#: app/forms.py:186
+#: app/forms.py:192
 msgid "Reason"
 msgstr ""
 
-#: app/forms.py:188 app/views.py:300
+#: app/forms.py:194 app/views.py:314
 msgid "Confirm deletion account and all data"
 msgstr ""
 
-#: app/forms.py:195 app/forms.py:270 app/forms.py:537
-#: app/templates/client_table.html:16 app/templates/client_table.html:24
-#: app/templates/staff_table.html:16
+#: app/forms.py:201 app/forms.py:277 app/forms.py:544
+#: app/templates/client_table.html:16 app/templates/client_table.html:23
+#: app/templates/location_table.html:22 app/templates/staff_table.html:16
+#: app/templates/staff_table.html:22
 msgid "Name"
 msgstr ""
 
-#: app/forms.py:197 app/forms.py:272 app/forms.py:338
-#: app/templates/client_table.html:20 app/templates/location_table.html:18
+#: app/forms.py:203 app/forms.py:279 app/forms.py:345
+#: app/templates/client_table.html:19 app/templates/location_table.html:18
 #: app/templates/receipt.html:28 app/templates/staff_table.html:18
 msgid "Phone"
 msgstr ""
 
-#: app/forms.py:199 app/forms.py:274 app/templates/staff_table.html:17
+#: app/forms.py:205 app/forms.py:281 app/templates/staff_table.html:17
 msgid "Birthday"
 msgstr ""
 
-#: app/forms.py:201 app/forms.py:341
+#: app/forms.py:207 app/forms.py:348
 msgid "Schedule"
 msgstr ""
 
-#: app/forms.py:212 app/forms.py:213 app/forms.py:288 app/forms.py:289
-#: app/forms.py:354 app/forms.py:355
+#: app/forms.py:209
+msgid "Access settings"
+msgstr ""
+
+#: app/forms.py:219 app/forms.py:220 app/forms.py:295 app/forms.py:296
+#: app/forms.py:361 app/forms.py:362
 msgid "Please use a different phone"
 msgstr ""
 
-#: app/forms.py:217 app/forms.py:218 app/forms.py:359 app/forms.py:360
+#: app/forms.py:224 app/forms.py:225 app/forms.py:366 app/forms.py:367
 msgid "Please select schedule"
 msgstr ""
 
-#: app/forms.py:226 app/forms.py:303 app/forms.py:311 app/forms.py:336
-#: app/forms.py:499 app/templates/client_files_table.html:17
+#: app/forms.py:233 app/forms.py:310 app/forms.py:318 app/forms.py:343
+#: app/forms.py:506 app/templates/client_files_table.html:17
 #: app/templates/item_table.html:16 app/templates/location_table.html:16
 #: app/templates/schedule_table.html:16 app/templates/service_table.html:16
-#: app/templates/service_table_choice.html:16 app/templates/tags_table.html:16
+#: app/templates/service_table.html:23
+#: app/templates/service_table_choice.html:16
+#: app/templates/service_table_choice.html:22 app/templates/tags_table.html:16
 msgid "Title"
 msgstr "Name"
 
-#: app/forms.py:233 app/templates/schedule_days_table.html:17
+#: app/forms.py:240 app/templates/schedule_days_table.html:17
 msgid "Weekday"
 msgstr ""
 
-#: app/forms.py:234 app/forms.py:570
+#: app/forms.py:241 app/forms.py:577
 msgid "From hour"
 msgstr ""
 
-#: app/forms.py:235 app/forms.py:571
+#: app/forms.py:242 app/forms.py:578
 msgid "To hour"
 msgstr ""
 
-#: app/forms.py:245 app/forms.py:246 app/forms.py:254 app/forms.py:255
-#: app/forms.py:443 app/forms.py:444
+#: app/forms.py:252 app/forms.py:253 app/forms.py:261 app/forms.py:262
+#: app/forms.py:450 app/forms.py:451
 msgid "Please select time"
 msgstr ""
 
-#: app/forms.py:249 app/forms.py:250
+#: app/forms.py:256 app/forms.py:257
 msgid "Incorrect time interval"
 msgstr ""
 
-#: app/forms.py:265 app/forms.py:266
+#: app/forms.py:272 app/forms.py:273
 msgid "Incorrect weekday"
 msgstr ""
 
-#: app/forms.py:276 app/forms.py:379
+#: app/forms.py:283 app/forms.py:386
 msgid "Info"
 msgstr ""
 
-#: app/forms.py:277
+#: app/forms.py:284
 msgid "Client tags"
 msgstr ""
 
-#: app/forms.py:278
+#: app/forms.py:285
 msgid "Client files"
 msgstr ""
 
-#: app/forms.py:298 app/templates/base.html:52 app/templates/tags_table.html:9
-#: app/views.py:881 app/views.py:898
+#: app/forms.py:305 app/templates/base.html:60 app/templates/tags_table.html:9
+#: app/views.py:945 app/views.py:963
 msgid "Tags"
 msgstr ""
 
-#: app/forms.py:313 app/forms.py:376
+#: app/forms.py:320 app/forms.py:383
 msgid "Duration"
 msgstr ""
 
-#: app/forms.py:315 app/templates/service_table.html:19
+#: app/forms.py:322 app/templates/service_table.html:19
 #: app/templates/service_table_choice.html:18
 msgid "Price"
 msgstr ""
 
-#: app/forms.py:317
+#: app/forms.py:324
 msgid "Repeat"
 msgstr ""
 
-#: app/forms.py:319 app/templates/base.html:48
+#: app/forms.py:326 app/templates/base.html:56
 #: app/templates/location_table.html:9 app/templates/service_table.html:17
-#: app/views.py:1056 app/views.py:1965
+#: app/views.py:1126 app/views.py:2045
 msgid "Locations"
 msgstr ""
 
-#: app/forms.py:325 app/forms.py:326 app/forms.py:388 app/forms.py:389
-#: app/forms.py:397 app/forms.py:596 app/forms.py:597
+#: app/forms.py:332 app/forms.py:333 app/forms.py:395 app/forms.py:396
+#: app/forms.py:404 app/forms.py:603 app/forms.py:604
 msgid "Please select location"
 msgstr ""
 
-#: app/forms.py:331 app/forms.py:332
+#: app/forms.py:338 app/forms.py:339
 #, python-format
 msgid "Price cannot exceed %(mp)s"
 msgstr ""
 
-#: app/forms.py:340 app/templates/location_table.html:17
+#: app/forms.py:347 app/templates/location_table.html:17
 #: app/templates/receipt.html:27
 msgid "Address"
 msgstr ""
 
-#: app/forms.py:343
+#: app/forms.py:350
 msgid "Add all services"
 msgstr ""
 
-#: app/forms.py:344
+#: app/forms.py:351
 msgid "Delete all services"
 msgstr ""
 
-#: app/forms.py:369 app/forms.py:506 app/forms.py:576 app/forms.py:585
+#: app/forms.py:376 app/forms.py:513 app/forms.py:583 app/forms.py:592
 #: app/templates/cash_flow_table.html:17 app/templates/cash_table.html:16
-#: app/templates/item_flow_table.html:17
+#: app/templates/cash_table.html:21 app/templates/item_flow_table.html:17
 #: app/templates/report_statistics_table.html:16
-#: app/templates/timetable.html:17
+#: app/templates/timetable.html:17 app/templates/timetable_card.html:19
 msgid "Location"
 msgstr ""
 
-#: app/forms.py:370 app/forms.py:507 app/forms.py:548 app/forms.py:568
-#: app/forms.py:586 app/templates/cash_flow_table.html:18
-#: app/templates/holiday_table.html:17 app/templates/item_flow_table.html:18
-#: app/templates/notice_table.html:16
+#: app/forms.py:377 app/forms.py:514 app/forms.py:555 app/forms.py:575
+#: app/forms.py:593 app/templates/cash_flow_table.html:16
+#: app/templates/cash_flow_table.html:23 app/templates/holiday_table.html:16
+#: app/templates/item_flow_table.html:18 app/templates/notice_table.html:16
 msgid "Date"
 msgstr ""
 
-#: app/forms.py:371 app/templates/schedule_days_table.html:18
+#: app/forms.py:378 app/templates/schedule_days_table.html:18
 #: app/templates/service_table.html:18
 #: app/templates/service_table_choice.html:17
+#: app/templates/timetable_card.html:71 app/templates/timetable_card.html:114
 msgid "Time"
 msgstr ""
 
-#: app/forms.py:372 app/forms.py:546 app/templates/notice_table.html:17
+#: app/forms.py:379 app/forms.py:553 app/templates/notice_table.html:17
 #: app/templates/timetable.html:20 app/templates/timetable.html:26
+#: app/templates/timetable_card.html:21
 msgid "Client"
 msgstr ""
 
-#: app/forms.py:373 app/forms.py:577 app/templates/holiday_table.html:16
+#: app/forms.py:380 app/forms.py:584 app/templates/holiday_table.html:17
 #: app/templates/report_statistics_table.html:17
-#: app/templates/timetable.html:19
+#: app/templates/timetable.html:19 app/templates/timetable_card.html:20
 msgid "Worker"
 msgstr ""
 
-#: app/forms.py:374 app/forms.py:377 app/templates/base.html:49
+#: app/forms.py:381 app/forms.py:384 app/templates/base.html:57
 #: app/templates/service_table.html:9 app/templates/service_table_choice.html:8
-#: app/views.py:970 app/views.py:1968
+#: app/views.py:1037 app/views.py:2048
 msgid "Services"
 msgstr ""
 
-#: app/forms.py:378
+#: app/forms.py:385
 msgid "Not control duration"
 msgstr ""
 
-#: app/forms.py:393 app/forms.py:394
+#: app/forms.py:400 app/forms.py:401
 msgid "Please select services"
 msgstr ""
 
-#: app/forms.py:403
+#: app/forms.py:410
 #, python-format
 msgid "Service %(sn)s unavailable in select location"
 msgstr ""
 
-#: app/forms.py:410 app/forms.py:411 app/forms.py:556 app/forms.py:557
+#: app/forms.py:417 app/forms.py:418 app/forms.py:563 app/forms.py:564
 msgid "Please select client"
 msgstr ""
 
-#: app/forms.py:428 app/forms.py:429
+#: app/forms.py:435 app/forms.py:436
 msgid "Client is busy at this time"
 msgstr ""
 
-#: app/forms.py:433 app/forms.py:434
+#: app/forms.py:440 app/forms.py:441
 msgid "Please select staff"
 msgstr ""
 
-#: app/forms.py:438 app/forms.py:439
+#: app/forms.py:445 app/forms.py:446
 msgid "Please select date"
 msgstr ""
 
-#: app/forms.py:458 app/forms.py:459 app/forms.py:461 app/forms.py:462
+#: app/forms.py:465 app/forms.py:466 app/forms.py:468 app/forms.py:469
 msgid "Incorrect data"
 msgstr ""
 
-#: app/forms.py:470 app/forms.py:471 app/forms.py:476 app/forms.py:477
+#: app/forms.py:477 app/forms.py:478 app/forms.py:483 app/forms.py:484
 msgid "This time unavailable"
 msgstr ""
 
-#: app/forms.py:481 app/templates/appointment_form.html:75 app/views.py:1346
+#: app/forms.py:488 app/templates/appointment_form.html:82 app/views.py:1420
 msgid "Result"
 msgstr ""
 
-#: app/forms.py:486
+#: app/forms.py:493
 msgid "Link to payment receipt"
 msgstr ""
 
-#: app/forms.py:495 app/templates/_confirm_form.html:13
+#: app/forms.py:502 app/templates/_confirm_form.html:13
 msgid "Confirm"
 msgstr ""
 
-#: app/forms.py:508 app/templates/item_flow_table.html:16
+#: app/forms.py:515 app/templates/item_flow_table.html:16
 msgid "Item"
 msgstr ""
 
-#: app/forms.py:509 app/forms.py:589
+#: app/forms.py:516 app/forms.py:596
 msgid "Operation"
 msgstr ""
 
-#: app/forms.py:510 app/forms.py:589
+#: app/forms.py:517 app/forms.py:596
 msgid "Plus"
 msgstr ""
 
-#: app/forms.py:510 app/forms.py:589
+#: app/forms.py:517 app/forms.py:596
 msgid "Minus"
 msgstr ""
 
-#: app/forms.py:512
+#: app/forms.py:519
 msgid "Quantity"
 msgstr ""
 
-#: app/forms.py:531
+#: app/forms.py:538
 #, python-format
 msgid "Quantity exceeds available %(count)s"
 msgstr ""
 
-#: app/forms.py:540
+#: app/forms.py:547
 msgid "Text"
 msgstr ""
 
-#: app/forms.py:542
+#: app/forms.py:549
 msgid "Send"
 msgstr ""
 
-#: app/forms.py:549 app/forms.py:587 app/templates/cash_flow_table.html:16
+#: app/forms.py:556 app/forms.py:594 app/templates/cash_flow_table.html:18
 msgid "Description"
 msgstr ""
 
-#: app/forms.py:551
+#: app/forms.py:558
 msgid "Processed"
 msgstr ""
 
-#: app/forms.py:562 app/forms.py:563
+#: app/forms.py:569 app/forms.py:570
 msgid "Invalid date"
 msgstr ""
 
-#: app/forms.py:567 app/templates/base.html:50 app/templates/staff_table.html:9
-#: app/views.py:445 app/views.py:1971
+#: app/forms.py:574 app/templates/base.html:58 app/templates/staff_table.html:9
+#: app/views.py:461 app/views.py:2051
 msgid "Staff"
 msgstr ""
 
-#: app/forms.py:569
+#: app/forms.py:576
 msgid "Working day"
 msgstr ""
 
-#: app/forms.py:578 app/views.py:104
+#: app/forms.py:585 app/views.py:117
 msgid "Date from"
 msgstr ""
 
-#: app/forms.py:579 app/views.py:105
+#: app/forms.py:586 app/views.py:118
 msgid "Date to"
 msgstr ""
 
-#: app/forms.py:581 app/templates/_report_form.html:41
-#: app/templates/_search_form.html:35
-#: app/templates/service_table_choice.html:49
-#: app/templates/service_table_choice.html:51
+#: app/forms.py:588 app/templates/_report_form.html:41
+#: app/templates/_search_form.html:36 app/templates/_search_form.html:71
+#: app/templates/service_table_choice.html:77
+#: app/templates/service_table_choice.html:79
 msgid "Select"
 msgstr ""
 
-#: app/forms.py:591 app/templates/cash_flow_table.html:19
-#: app/templates/cash_table.html:18
+#: app/forms.py:598 app/templates/cash_flow_table.html:19
+#: app/templates/cash_flow_table.html:24 app/templates/cash_table.html:18
+#: app/templates/cash_table.html:22
 #: app/templates/report_statistics_table.html:19
+#: app/templates/timetable_card.html:72 app/templates/timetable_card.html:115
 msgid "Sum"
 msgstr ""
 
@@ -481,296 +496,307 @@ msgstr ""
 msgid "Object successfully deleted"
 msgstr ""
 
-#: app/models.py:624
+#: app/models.py:626
 msgid "Monday"
 msgstr ""
 
-#: app/models.py:624
+#: app/models.py:626
 msgid "Tuesday"
 msgstr ""
 
-#: app/models.py:624
+#: app/models.py:626
 msgid "Wednesday"
 msgstr ""
 
-#: app/models.py:624
+#: app/models.py:626
 msgid "Thursday"
 msgstr ""
 
-#: app/models.py:625
+#: app/models.py:627
 msgid "Friday"
 msgstr ""
 
-#: app/models.py:625
+#: app/models.py:627
 msgid "Saturday"
 msgstr ""
 
-#: app/models.py:625
+#: app/models.py:627
 msgid "Sunday"
 msgstr ""
 
-#: app/views.py:73
+#: app/views.py:60
+msgid "Access denied"
+msgstr ""
+
+#: app/views.py:86
 msgid "Delete the selected object?"
 msgstr ""
 
-#: app/views.py:94
+#: app/views.py:107
 msgid "False"
 msgstr ""
 
-#: app/views.py:95
+#: app/views.py:108
 msgid "True"
 msgstr ""
 
-#: app/templates/success_sendmail.html:4 app/views.py:209
+#: app/templates/success_sendmail.html:4 app/views.py:222
 msgid "Message success send"
 msgstr ""
 
-#: app/views.py:212
+#: app/views.py:225
 msgid "Send mail"
 msgstr ""
 
-#: app/views.py:254
+#: app/views.py:267
 msgid "Registration successfully"
 msgstr ""
 
-#: app/views.py:270
+#: app/views.py:283
 msgid "Invalid username or password"
 msgstr ""
 
-#: app/views.py:275
+#: app/views.py:288
 msgid "Not found company configuration!"
 msgstr ""
 
-#: app/views.py:285
+#: app/views.py:298
 msgid "Sign in"
 msgstr ""
 
-#: app/views.py:305
+#: app/views.py:319
 msgid "Account successfully deleted"
 msgstr ""
 
-#: app/views.py:360
+#: app/views.py:375
 msgid "Company (edit)"
 msgstr ""
 
-#: app/views.py:390 app/views.py:401
+#: app/views.py:405 app/views.py:416
 msgid "User (edit)"
 msgstr ""
 
-#: app/views.py:418 app/views.py:429
+#: app/views.py:433 app/views.py:444
 msgid "Reset password"
 msgstr ""
 
-#: app/views.py:423
+#: app/views.py:438
 msgid "Temporary password has been sent to your e-mail"
 msgstr ""
 
-#: app/views.py:426
+#: app/views.py:441
 msgid "User with the specified e-mail is not registered"
 msgstr ""
 
-#: app/views.py:479
+#: app/views.py:496
 msgid "Staff (create)"
 msgstr ""
 
-#: app/views.py:520
+#: app/views.py:536
 msgid "Staff (edit)"
 msgstr ""
 
-#: app/templates/base.html:51 app/templates/holiday_table.html:9
-#: app/views.py:534
+#: app/views.py:559
+msgid "User successfully changed"
+msgstr ""
+
+#: app/views.py:569
+msgid "User successfully create"
+msgstr ""
+
+#: app/templates/base.html:59 app/templates/holiday_table.html:9
+#: app/views.py:589
 msgid "Holidays"
 msgstr ""
 
-#: app/views.py:558
+#: app/views.py:614
 msgid "Holiday (create)"
 msgstr ""
 
-#: app/views.py:587
+#: app/views.py:644
 msgid "Holiday (edit)"
 msgstr ""
 
-#: app/templates/base.html:47 app/templates/schedule_table.html:9
-#: app/views.py:604 app/views.py:1962
+#: app/templates/base.html:55 app/templates/schedule_table.html:9
+#: app/views.py:662 app/views.py:2042
 msgid "Schedules"
 msgstr ""
 
-#: app/views.py:622
+#: app/views.py:681
 msgid "Schedule (create)"
 msgstr ""
 
-#: app/views.py:645
+#: app/views.py:705
 msgid "Schedule (edit)"
 msgstr ""
 
-#: app/views.py:654
+#: app/views.py:715
 msgid "Reset schedule to default?"
 msgstr ""
 
-#: app/views.py:673
+#: app/views.py:735
 msgid "Schedule_days"
 msgstr ""
 
-#: app/views.py:697
+#: app/views.py:760
 msgid "Schedule day (create)"
 msgstr ""
 
-#: app/views.py:724
+#: app/views.py:788
 msgid "Schedule day (edit)"
 msgstr ""
 
-#: app/views.py:763
+#: app/views.py:827
 msgid "Client (create)"
 msgstr ""
 
-#: app/views.py:788
+#: app/views.py:852
 msgid "Client (edit)"
 msgstr ""
 
-#: app/templates/client_files_table.html:10 app/templates/client_table.html:18
-#: app/views.py:805
+#: app/templates/client_files_table.html:10 app/views.py:869
 msgid "Files"
 msgstr ""
 
-#: app/views.py:849
+#: app/views.py:913
 msgid "File upload"
 msgstr ""
 
-#: app/views.py:916
+#: app/views.py:982
 msgid "Tag (create)"
 msgstr ""
 
-#: app/views.py:934
+#: app/views.py:1001
 msgid "Tag (edit)"
 msgstr ""
 
-#: app/views.py:1007
+#: app/views.py:1075
 msgid "Service (create)"
 msgstr ""
 
-#: app/views.py:1040
+#: app/views.py:1109
 msgid "Service (edit)"
 msgstr ""
 
-#: app/views.py:1086
+#: app/views.py:1157
 msgid "Location (create)"
 msgstr ""
 
-#: app/views.py:1127
+#: app/views.py:1199
 msgid "Location (edit)"
 msgstr ""
 
-#: app/views.py:1134
+#: app/views.py:1207
 msgid "Add all services?"
 msgstr ""
 
-#: app/views.py:1147
+#: app/views.py:1221
 msgid "Delete all services?"
 msgstr ""
 
-#: app/views.py:1239
+#: app/views.py:1313
 msgid "Appointment (create)"
 msgstr ""
 
-#: app/views.py:1324
+#: app/views.py:1398
 msgid "Appointment (edit)"
 msgstr ""
 
-#: app/templates/receipt.html:5 app/views.py:1367
+#: app/templates/receipt.html:5 app/views.py:1441
 msgid "Payment receipt"
 msgstr ""
 
-#: app/templates/item_table.html:9 app/views.py:1383
+#: app/templates/item_table.html:9 app/views.py:1457
 msgid "Items"
 msgstr ""
 
-#: app/views.py:1402
+#: app/views.py:1476
 msgid "Item (create)"
 msgstr ""
 
-#: app/views.py:1421
+#: app/views.py:1495
 msgid "Item (edit)"
 msgstr ""
 
-#: app/views.py:1437
+#: app/views.py:1511
 msgid "Items flow"
 msgstr ""
 
-#: app/views.py:1475
+#: app/views.py:1549
 msgid "Item flow (create)"
 msgstr ""
 
-#: app/views.py:1521
+#: app/views.py:1595
 msgid "Item flow (edit)"
 msgstr ""
 
-#: app/views.py:1568
+#: app/views.py:1642
 msgid "*Previous visit"
 msgstr ""
 
-#: app/views.py:1571
+#: app/views.py:1645
 msgid "Notice (create)"
 msgstr ""
 
-#: app/views.py:1598
+#: app/views.py:1672
 msgid "Notice (edit)"
 msgstr ""
 
-#: app/templates/base.html:38 app/views.py:1614
+#: app/templates/base.html:46 app/views.py:1689
 msgid "Cash desk"
 msgstr ""
 
-#: app/templates/base.html:41 app/templates/cash_flow_table.html:9
-#: app/views.py:1629
+#: app/templates/base.html:49 app/templates/cash_flow_table.html:9
+#: app/views.py:1705
 msgid "Cash flow"
 msgstr ""
 
-#: app/views.py:1667 app/views.py:1720
+#: app/views.py:1743 app/views.py:1796
 msgid "Amount exceeds the balance in the cash box"
 msgstr ""
 
-#: app/views.py:1674
+#: app/views.py:1750
 msgid "#Payment for services"
 msgstr ""
 
-#: app/views.py:1686
+#: app/views.py:1762
 msgid "Cash flow (create)"
 msgstr ""
 
-#: app/views.py:1732
+#: app/views.py:1808
 msgid "Cash flow (edit)"
 msgstr ""
 
-#: app/templates/base.html:60 app/views.py:1783
+#: app/templates/base.html:69 app/views.py:1860
 msgid "Reports"
 msgstr ""
 
-#: app/views.py:1913
+#: app/views.py:1992
 msgid "Export data to Excel?"
 msgstr ""
 
-#: app/views.py:1955
+#: app/views.py:2035
 msgid "File not found"
 msgstr ""
 
-#: app/views.py:1964
+#: app/views.py:2044
 msgid "Necessary to create at least one schedule"
 msgstr ""
 
-#: app/views.py:1967
+#: app/views.py:2047
 msgid "Necessary to create at least one location"
 msgstr ""
 
-#: app/views.py:1970
+#: app/views.py:2050
 msgid "Necessary to create at least one service"
 msgstr ""
 
-#: app/views.py:1973
+#: app/views.py:2053
 msgid "Necessary to create at least one worker"
 msgstr ""
 
-#: app/templates/base.html:54 app/templates/quick_start.html:6
-#: app/views.py:1984
+#: app/templates/base.html:62 app/templates/quick_start.html:6
+#: app/views.py:2064
 msgid "Quick start"
 msgstr ""
 
@@ -786,18 +812,20 @@ msgstr ""
 msgid "Confirmation"
 msgstr ""
 
-#: app/templates/_confirm_form.html:14 app/templates/appointment_form.html:68
+#: app/templates/_confirm_form.html:14 app/templates/appointment_form.html:70
 #: app/templates/data_form.html:41 app/templates/schedule_form.html:40
 #: app/templates/staff_schedule_form.html:107
 #: app/templates/success_sendmail.html:5 app/templates/upload_form.html:26
 msgid "Back"
 msgstr ""
 
-#: app/templates/_report_form.html:13 app/templates/_search_form.html:15
+#: app/templates/_report_form.html:13 app/templates/_search_form.html:16
+#: app/templates/_search_form.html:53
 msgid "Click here to expand filter"
 msgstr ""
 
-#: app/templates/_report_form.html:42 app/templates/_search_form.html:36
+#: app/templates/_report_form.html:42 app/templates/_search_form.html:37
+#: app/templates/_search_form.html:72
 msgid "Reset"
 msgstr ""
 
@@ -809,19 +837,19 @@ msgstr ""
 msgid "select"
 msgstr ""
 
-#: app/templates/appointment_form.html:71
+#: app/templates/appointment_form.html:76
 msgid "More actions"
 msgstr ""
 
-#: app/templates/appointment_form.html:76
+#: app/templates/appointment_form.html:83
 msgid "Payment"
 msgstr ""
 
-#: app/templates/appointment_form.html:77
+#: app/templates/appointment_form.html:84
 msgid "Notice"
 msgstr ""
 
-#: app/templates/appointment_form.html:82
+#: app/templates/appointment_form.html:89
 msgid "Receipt"
 msgstr ""
 
@@ -829,39 +857,39 @@ msgstr ""
 msgid "Welcome to Jiiin"
 msgstr ""
 
-#: app/templates/base.html:22
-msgid "About"
-msgstr ""
-
-#: app/templates/base.html:25 app/templates/base.html:80
-msgid "Contact us"
-msgstr ""
-
-#: app/templates/base.html:40 app/templates/cash_table.html:9
-msgid "Balance"
-msgstr ""
-
-#: app/templates/base.html:55
-msgid "Settings"
-msgstr ""
-
-#: app/templates/base.html:56
-msgid "Export"
-msgstr ""
-
-#: app/templates/base.html:62 app/templates/report_statistics_table.html:9
-msgid "Statistics"
-msgstr ""
-
-#: app/templates/base.html:84
+#: app/templates/base.html:18 app/templates/base.html:93
 msgid "Profile"
 msgstr ""
 
-#: app/templates/base.html:88
+#: app/templates/base.html:29
+msgid "About"
+msgstr ""
+
+#: app/templates/base.html:32 app/templates/base.html:89
+msgid "Contact us"
+msgstr ""
+
+#: app/templates/base.html:48 app/templates/cash_table.html:9
+msgid "Balance"
+msgstr ""
+
+#: app/templates/base.html:63
+msgid "Settings"
+msgstr ""
+
+#: app/templates/base.html:64
+msgid "Export"
+msgstr ""
+
+#: app/templates/base.html:71 app/templates/report_statistics_table.html:9
+msgid "Statistics"
+msgstr ""
+
+#: app/templates/base.html:97
 msgid "Logout"
 msgstr ""
 
-#: app/templates/base.html:95
+#: app/templates/base.html:104
 msgid "Register"
 msgstr ""
 
@@ -872,7 +900,7 @@ msgstr ""
 #: app/templates/schedule_days_table.html:6 app/templates/schedule_table.html:6
 #: app/templates/service_table.html:6 app/templates/service_table_choice.html:5
 #: app/templates/staff_table.html:6 app/templates/tags_table.html:6
-#: app/templates/timetable.html:6
+#: app/templates/timetable.html:6 app/templates/timetable_card.html:6
 msgid "Add new"
 msgstr ""
 
@@ -933,7 +961,7 @@ msgid ""
 msgstr ""
 
 #: app/templates/receipt.html:25 app/templates/timetable.html:18
-#: app/templates/timetable.html:25
+#: app/templates/timetable.html:25 app/templates/timetable_card.html:18
 msgid "Date / time"
 msgstr ""
 
@@ -966,7 +994,6 @@ msgid "Don't forget to change it"
 msgstr ""
 
 #: app/templates/schedule_days_table.html:10
-#: app/templates/schedule_table.html:17
 msgid "Days"
 msgstr ""
 
@@ -974,7 +1001,7 @@ msgstr ""
 msgid "Reset to default"
 msgstr ""
 
-#: app/templates/service_table_choice.html:43
+#: app/templates/service_table_choice.html:71
 msgid "Selected services"
 msgstr ""
 
@@ -1039,5 +1066,8 @@ msgstr ""
 #~ msgstr ""
 
 #~ msgid "Edit client tags"
+#~ msgstr ""
+
+#~ msgid "User access"
 #~ msgstr ""
 

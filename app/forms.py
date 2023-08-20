@@ -154,6 +154,11 @@ class UserFormEdit(UserForm):
                 raise ValidationError(_l('Please use a different email'))
 
 
+class StaffUserEditForm(UserFormEdit):
+    password2 = password_old = start_page = language = None
+    no_active = BooleanField(_l('Disabled'))
+
+
 class ResetPasswordRequestForm(FlaskForm):
     email = EmailField(_l('E-mail'), validators=[DataRequired(), Email()])
     submit = SubmitField(_l('Submit'))
@@ -201,6 +206,7 @@ class StaffForm(FlaskForm):
                                                      validate_birthday_global])
     schedule = SelectField(_l('Schedule'), choices=[], coerce=int,
                            validators=[InputRequired()])
+    user_link = URLField(_l('Access settings'))
     submit = SubmitField(_l('Submit'))
 
     def __init__(self, source_phone=None, *args, **kwargs):

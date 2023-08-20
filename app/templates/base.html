@@ -41,6 +41,7 @@
         <li class="nav-item">
           <a class="nav-link {% if request.path == url_for('notices_table') %}active{% endif %}" href="{{ url_for('notices_table') }}">{{ _('Notices') }}</a>
         </li>
+        {% if not current_user.staff %}
         <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle {% if request.path == url_for('cash_table') or request.path == url_for('cash_flow_table') %}active{% endif %}" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">{{ _('Cash desk') }}</a>
                 <div class="dropdown-menu">
@@ -63,12 +64,13 @@
               <a class="dropdown-item" href="{{ url_for('export', url_back=request.path) }}">{{ _('Export') }}</a>
           </div>
         </li>
-        <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle {% if request.path == url_for('report_statistics_view') %}active{% endif %}" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">{{ _('Reports') }}</a>
-          <div class="dropdown-menu">
-              <a class="dropdown-item" href="{{ url_for('report_statistics_view') }}">{{ _('Statistics') }}</a>
-          </div>
-        </li>
+        {% endif %}
+<!--        <li class="nav-item dropdown">-->
+<!--          <a class="nav-link dropdown-toggle {% if request.path == url_for('report_statistics_view') %}active{% endif %}" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">{{ _('Reports') }}</a>-->
+<!--          <div class="dropdown-menu">-->
+<!--              <a class="dropdown-item" href="{{ url_for('report_statistics_view') }}">{{ _('Statistics') }}</a>-->
+<!--          </div>-->
+<!--        </li>-->
         {% endif %}
       </ul>
 
