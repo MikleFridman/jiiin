@@ -72,7 +72,14 @@
                     <div class="col-4 d-flex justify-content-end">
                         {% if appointment_id %}
                             <div class="btn-group" role="group" aria-label="">
-                              <button type="button" class="btn btn-light mt-3 ms-5 mb-2">
+                              {% if payment_id %}
+                                <div class="mt-3">
+                                    <a href="{{ url_for('appointment_receipt', appointment_id=appointment_id, url_back=request.path) }}">
+                                        <img src="{{ url_for('static', filename='/qrcode.png') }}" alt="receipt" width="40">
+                                    </a>
+                                </div>
+                              {% endif %}
+                              <button type="button" class="btn btn-light mt-3 ms-2 mb-2">
                                   <span class="d-none d-sm-block">{{ _('More actions') }}</span>
                                   <img class="d-sm-none" src="{{ url_for('static', filename='/dots.png') }}" alt="actions" width="24">
                               </button>
@@ -85,11 +92,9 @@
                                 </div>
                               </div>
                             </div>
-        <!--                    {% if payment_id %}-->
-        <!--                        <button type="button" class="btn btn-light mt-3 ms-3 mb-2" onclick="window.location.href='{{ url_for('appointment_receipt', appointment_id=appointment_id, url_back=request.path) }}'">{{ _('Receipt') }}</button>-->
-        <!--                    {% endif %}-->
                         {% endif %}
                     </div>
+                </div>
             </div>
         </div>
     </form>

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+{% block app_content %}
+<div class="row mt-1">
+    <div class="col-md-6">
+        <form class="form-inline" action="" method="POST">
+            {{ form.hidden_tag() }}
+            <div class="form-group d-flex flex-column justify-content-center align-items-center">
+                <div>
+                    <img width="240px" src="data:image/jpeg;base64,{{ qr_code }}" alt="qr_code"/>
+                </div>
+                <a href="{{ form.link.data }}">{{ form.link.label }}</a>
+            </div>
+            {{ form.submit(class_="btn btn-primary mt-3 mb-2") }}
+            <button type="button" class="btn btn-secondary mt-3 ms-3 mb-2" onclick="window.location.href='{{ url_back }}'">{{ _('Back') }}</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

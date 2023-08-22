@@ -12,6 +12,9 @@
                             {% if field.type == 'SelectField' %}
                                 {{ field.label(class_="col-form-label") }} {% if field.flags.required %}*{% endif %}
                                 {{ field(class_="form-select is-invalid") }}
+                            {% elif field.type == 'MultiCheckboxField' %}
+                                {{ field.label(class_="col-form-label") }} {% if field.flags.required %}*{% endif %}
+                                {{ field(class_="list-group is-invalid") }}
                             {% else%}
                                 {{ field.label(class_="col-form-label") }} {% if field.flags.required %}*{% endif %}
                                 {{ field(class_="form-control is-invalid") }}
@@ -20,6 +23,9 @@
                             {% if field.type == 'SelectField' %}
                                 {{ field.label(class_="col-form-label") }} {% if field.flags.required %}*{% endif %}
                                 {{ field(class_="form-select") }}
+                            {% elif field.type == 'MultiCheckboxField' %}
+                                {{ field.label(class_="col-form-label") }} {% if field.flags.required %}*{% endif %}
+                                {{ field(class_="list-group") }}
                             {% elif field.type == 'URLField' %}
                                 <a href="{{ field.data }}">{{ field.label(class_="mt-2 ms-1") }}</a>
                             {% else%}
@@ -37,8 +43,8 @@
                     {% endif %}
                 </div>
             {% endfor %}
-            {{ form.submit(class_="btn btn-primary mt-2 mb-2") }}
-            <button type="button" class="btn btn-secondary mt-2 ms-3 mb-2" onclick="window.location.href='{{ url_back }}'">{{ _('Back') }}</button>
+            {{ form.submit(class_="btn btn-primary mt-3 mb-2") }}
+            <button type="button" class="btn btn-secondary mt-3 ms-3 mb-2" onclick="window.location.href='{{ url_back }}'">{{ _('Back') }}</button>
         </form>
     </div>
 </div>

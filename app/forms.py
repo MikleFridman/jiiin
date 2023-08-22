@@ -5,17 +5,41 @@ import phonenumbers
 from flask import flash
 from flask_babel import lazy_gettext as _l
 from flask_wtf import FlaskForm, RecaptchaField
+from markupsafe import Markup
 from sqlalchemy import func
 from wtforms import (StringField, PasswordField, BooleanField,
                      SubmitField, TextAreaField, TelField, IntegerField,
                      FloatField, SelectField, DateField, TimeField,
-                     SelectMultipleField, FileField, HiddenField, EmailField, URLField)
+                     SelectMultipleField, FileField, HiddenField, EmailField,
+                     URLField, widgets)
 from wtforms.validators import (DataRequired, Email, EqualTo,
                                 ValidationError, Length, Optional, NumberRange, InputRequired)
 
 import config
 from .functions import get_languages, get_free_time_intervals, get_interval_intersection, time_in_intervals
 from .models import Item, Week, Client, User, Staff, Location, Service, Appointment, ScheduleDay
+
+
+class BootstrapListWidget(widgets.ListWidget):
+
+    def __call__(self, field, **kwargs):
+        kwargs.setdefault("id", field.id)
+        html = [f"<{self.html_tag} {widgets.html_params(**kwargs)}>"]
+        for subfield in field:
+            if self.prefix_label:
+                html.append(f"<li class='list-group-item'>{subfield.label} "
+                            f"{subfield(class_='form-check-input ms-1')}</li>")
+            else:
+                html.append(f"<li class='list-group-item'>"
+                            f"{subfield(class_='form-check-input me-1')} "
+                            f"{subfield.label}</li>")
+        html.append("</%s>" % self.html_tag)
+        return Markup("".join(html))
+
+
+class MultiCheckboxField(SelectMultipleField):
+    widget = BootstrapListWidget(prefix_label=False)
+    option_widget = widgets.CheckboxInput()
 
 
 # global validators
@@ -302,7 +326,7 @@ class ClientFileForm(FlaskForm):
 
 
 class ClientTagForm(FlaskForm):
-    tags = SelectMultipleField(_l('Tags'), choices=[], coerce=int)
+    tags = MultiCheckboxField(_l('Tags'), choices=[], coerce=int)
     submit = SubmitField(_l('Submit'))
 
 
@@ -323,8 +347,8 @@ class ServiceForm(FlaskForm):
                        validators=[NumberRange(min=0, max=1000000)])
     repeat = IntegerField(_l('Repeat'), default=0,
                           validators=[NumberRange(min=0, max=365)])
-    location = SelectMultipleField(_l('Locations'), choices=[],
-                                   validate_choice=False, coerce=int)
+    location = MultiCheckboxField(_l('Locations'), choices=[],
+                                  validate_choice=False, coerce=int)
     submit = SubmitField(_l('Submit'))
 
     def validate_location(self, field):
@@ -490,8 +514,8 @@ class ResultForm(FlaskForm):
 
 
 class ReceiptForm(FlaskForm):
-    link = StringField(_l('Link to payment receipt'))
-    submit = SubmitField(_l('Submit'))
+    link = URLField(_l('Link to payment receipt'))
+    submit = SubmitField(_l('Share'))
 
 
 class SearchForm(FlaskForm):
@@ -596,6 +620,7 @@ class CashFlowForm(FlaskForm):
     action = SelectField(_l('Operation'), choices=[(1, _l('Plus')), (-1, _l('Minus'))],
                          coerce=int)
     cost = FloatField(_l('Sum'), default=0)
+    # payment_link = URLField(_l('Link to payment receipt'))
     submit = SubmitField(_l('Submit'))
 
     def validate_location(self, field):

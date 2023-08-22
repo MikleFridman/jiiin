@@ -1,15 +1,8 @@
 {% extends "base.html" %}
 
 {% block app_content %}
-  <div class="row">
-    <div class="col-md-2 mb-2">
-      <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('cash_flow_create', **request.args) }}';">{{ _('Add new') }}</button>
-    </div>
-    <div class="col-md-5 mb-2 text-center">
-      <h4>{{ _('Cash flow') }}</h4>
-    </div>
-    {% include '_search_form.html' %}
-  </div>
+  {% import '_header.html' as forms %}
+  {{ forms.render_header(_('Cash flow'), url_for('cash_flow_create', **request.args), form) }}
   <table id="data" class="table table-hover border-top border-bottom border-light">
     <thead>
       <tr class="d-none d-lg-table-row table-primary border-start border-end border-light text-center">
@@ -20,8 +13,8 @@
         <th class="col-1"></th>
       </tr>
       <tr class="d-table-row d-lg-none table-primary border-start border-end border-light text-center">
-        <th class="col-8">{{ _('Date') }}</th>
-        <th class="col-3">{{ _('Sum') }}</th>
+        <th class="col-6">{{ _('Date') }}</th>
+        <th class="col-5">{{ _('Sum') }}</th>
         <th class="col-1"></th>
       </tr>
     </thead>
@@ -46,7 +39,7 @@
           </td>
         </tr>
         <tr class="d-none d-sm-table-row d-lg-none {{ loop.cycle('table-default', 'table-light') }} border-start border-end border-light">
-          <td class="col-8">
+          <td class="col-8 text-center">
             <a class="text-decoration-none text-reset" href="{{ url_for('cash_flow_edit', id=cfl.id, **request.args) }}">
               <div style="height:100%; width:100%">
                 {{ cfl.date.strftime('%d.%m.%Y') }}
@@ -61,14 +54,14 @@
           </td>
         </tr>
         <tr class="d-table-row d-sm-none {{ loop.cycle('table-default', 'table-light') }} border-start border-end border-light">
-          <td class="col-8">
+          <td class="col-6 text-center">
             <a class="text-decoration-none text-reset" href="{{ url_for('cash_flow_edit', id=cfl.id, **request.args) }}">
               <div style="height:100%; width:100%">
                 {{ cfl.date.strftime('%d.%m.%Y') }}
               </div>
             </a>
           </td>
-          <td class="col-3 text-center">
+          <td class="col-5 text-center">
             {{ cfl.cost|float }}
           </td>
           <td class="col-1 text-center">

@@ -1,15 +1,8 @@
 {% extends "base.html" %}
 
 {% block app_content %}
-  <div class="row">
-    <div class="col-md-2 mb-2">
-      <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('notice_create', **request.args) }}';">{{ _('Add new') }}</button>
-    </div>
-    <div class="col-md-5 mb-2 text-center">
-      <h4>{{ _('Notices') }}</h4>
-    </div>
-    {% include '_search_form.html' %}
-  </div>
+  {% import '_header.html' as forms %}
+  {{ forms.render_header(_('Notices'), url_for('notice_create', **request.args), form) }}
   <table id="data" class="table table-hover border-top border-bottom border-light">
     <thead>
       <tr class="table-primary border-start border-end border-light text-center">

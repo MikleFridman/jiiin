@@ -20,7 +20,7 @@ td {
 </style>
 <body>
 {% if payment %}
-<div style="text-font: Maven Pro; width:400px; background-color: #f0f0f0; margin:10px; padding:15px;">
+<div style="text-font: Maven Pro; width:400px; background-color: #dae2eb; margin:10px; padding:15px;">
     <h4 style="text-align: center">{{payment.company.name}}</h4>
     <div><strong>{{ _('Date / time') }}:</strong> {{payment.timestamp_create.strftime('%d.%m.%y %H:%M:%S')}}</div>
     <div><strong>{{ _('Id') }}:</strong> {{payment.id}}</div>

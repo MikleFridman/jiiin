@@ -1,16 +1,9 @@
 {% extends "base.html" %}
 
 {% block app_content %}
-  <div class="row">
-    <div class="col-md-2 mb-2">
-      <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('services_table', choice_mode=1, **request.args) }}';">{{ _('Add new') }}</button>
-    </div>
-    <div class="col-md-5 mb-2 text-center">
-      <h4>{{ _('Timetable') }}</h4>
-    </div>
-    {% include '_search_form.html' %}
-  </div>
-<!--Screen LG-XL-->
+  {% import '_header.html' as forms %}
+  {{ forms.render_header(_('Timetable'), url_for('services_table', choice_mode=1, **request.args), form) }}
+  <!--Screen LG-XL-->
   <div class="d-none d-lg-block">
   <table id="data" class="table table-hover border-top border-bottom border-light">
     <thead>
@@ -38,9 +31,16 @@
     </tbody>
   </table>
   </div>
-<!--Screen SM-MD-->
+  <!--Screen SM-MD-->
   <div class="d-none d-sm-block d-lg-none col-md-12">
+    {% set current_date = {'date': ''} %}
     {% for a in items %}
+      {% if a.date_time.date() != current_date.date %}
+        <div class="row mb-1 text-center">
+          <span>{{ a.date_time.strftime('%d.%m.%Y') }}</span>
+        </div>
+        {% if current_date.update({'date': a.date_time.date()}) %} {% endif%}
+      {% endif %}
       <div class="card border-primary mb-3" >
         <a class="text-decoration-none text-reset" href="{{ url_for('appointment_edit', id=a.id, **request.args) }}">
         <div class="card-header" style="background-color: #dae2eb !important">
@@ -58,12 +58,13 @@
             {{ a. client.name|truncate(killwords=True, length=60) }}<br/>
             {{ a. client.phone }}
           </span>
-        </div>
-        <ul class="list-group list-group-flush">
+          <div>
+          <hr>
           {% for service in a.services %}
-            <li class="list-group-item text-body">{{ service.name|truncate(killwords=True, length=60) }}</li>
+            <span class="list-group-item text-body">{{ service.name|truncate(killwords=True, length=60) }}</span>
           {% endfor %}
-        </ul>
+          </div>
+        </div>
         </a>
         <div class="card-footer">
           <div class="row text-dark">
@@ -79,9 +80,16 @@
       </div>
     {% endfor %}
   </div>
-<!--Screen XS-->
+  <!--Screen XS-->
   <div class="d-sm-none col-md-12">
+    {% set current_date = {'date': ''} %}
     {% for a in items %}
+      {% if a.date_time.date() != current_date.date %}
+        <div class="row mb-1 text-center">
+          <span>{{ a.date_time.strftime('%d.%m.%Y') }}</span>
+        </div>
+        {% if current_date.update({'date': a.date_time.date()}) %} {% endif%}
+      {% endif %}
       <div class="card border-primary mb-3" >
         <a class="text-decoration-none text-reset" href="{{ url_for('appointment_edit', id=a.id, **request.args) }}">
         <div class="card-header" style="background-color: #dae2eb !important">
@@ -101,12 +109,13 @@
               <a class="text-decoration-none text-primary" href="tel:{{ a. client.phone }}">{{ a. client.phone }}</a>
             </object>
           </span>
-        </div>
-        <ul class="list-group list-group-flush">
+          <div>
+          <hr>
           {% for service in a.services %}
-            <li class="list-group-item text-body">{{ service.name|truncate(killwords=True, length=32) }}</li>
+            <span class="list-group-item text-body">{{ service.name|truncate(killwords=True, length=32) }}</span>
           {% endfor %}
-        </ul>
+          </div>
+        </div>
         </a>
         <div class="card-footer">
           <div class="row text-dark">

@@ -1,9 +1,12 @@
 import ast
 import zipfile
+from base64 import b64encode
 from functools import wraps
+from io import BytesIO
 from xml.dom import minidom
 
 import pandas as pd
+import qrcode
 from pandas import ExcelWriter
 from sqlalchemy.orm import RelationshipProperty
 
@@ -572,6 +575,7 @@ def staff_user(id):
         if staff.user:
             form.process(obj=staff.user)
     return render_template('data_form.html',
+                           title=_('User (edit)'),
                            form=form,
                            url_back=url_back)
 
@@ -1429,17 +1433,23 @@ def appointment_receipt(appointment_id):
                                                     **request.args))
     appointment = Appointment.get_object(appointment_id)
     payment = CashFlow.get_object(appointment.payment_id, False)
+    link = str(request.host + url_for('payment_receipt', link=payment.link))
+    qr_data = qrcode.make(link)
+    buffer = BytesIO()
+    qr_data.save(buffer)
+    buffer.seek(0)
+    qr_code = b64encode(buffer.read()).decode()
     if not payment:
         return redirect(url_back)
     form = ReceiptForm()
     if form.validate_on_submit():
         return redirect(url_back)
     elif request.method == 'GET':
-        link = payment.link
-        form.link.data = request.host + url_for('payment_receipt', link=link)
-    return render_template('data_form.html',
+        form.link.data = url_for('payment_receipt', link=payment.link)
+    return render_template('receipt_form.html',
                            title=_('Payment receipt'),
                            form=form,
+                           qr_code=qr_code,
                            url_back=url_back)
 # Appointment block end
 
@@ -1804,6 +1814,8 @@ def cash_flow_edit(id):
         form.description.data = cash_flow.description
         form.cost.data = abs(cash_flow.cost)
         form.action.data = cash_flow.cost / abs(cash_flow.cost)
+        # payment_link = cash_flow.link
+        # form.payment_link.data = url_for('payment_receipt', link=payment_link)
     return render_template('data_form.html',
                            title=_('Cash flow (edit)'),
                            form=form,
