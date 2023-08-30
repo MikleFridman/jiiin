@@ -58,6 +58,10 @@ def validate_username_global(form, field):
         msg = _l('Min length username is 8 characters')
         flash(msg)
         raise ValidationError(msg)
+    if len(field.data.strip()) > 32:
+        msg = _l('Max length username is 32 characters')
+        flash(msg)
+        raise ValidationError(msg)
     abc = string.ascii_letters + string.digits + '_.'
     check_letters = False
     for s in field.data:
@@ -103,6 +107,12 @@ def validate_birthday_global(form, field):
             field.data >= datetime.now().date()):
         flash(_l('Invalid birthday date'))
         raise ValidationError(_l('Invalid birthday date'))
+
+
+def validate_date_global(form, field):
+    if not isinstance(field.data, type(datetime.now().date())):
+        flash(_l('Invalid date'))
+        raise ValidationError(_l('Invalid date'))
 
 
 class RegisterForm(FlaskForm):
@@ -397,11 +407,15 @@ class LocationFormCreate(LocationForm):
 
 
 class AppointmentForm(FlaskForm):
-    location = SelectField(_l('Location'), choices=[], coerce=int, validators=[InputRequired()])
-    date = DateField(_l('Date'), validators=[], format='%Y-%m-%d')
+    location = SelectField(_l('Location'), choices=[], coerce=int,
+                           validators=[InputRequired()])
+    date = DateField(_l('Date'), validators=[validate_date_global],
+                     format='%Y-%m-%d')
     time = SelectField(_l('Time'), choices=[], validate_choice=False)
-    client = SelectField(_l('Client'), choices=[], coerce=int, validators=[InputRequired()])
-    staff = SelectField(_l('Worker'), choices=[], coerce=int, validators=[InputRequired()])
+    client = SelectField(_l('Client'), choices=[], coerce=int,
+                         validators=[InputRequired()])
+    staff = SelectField(_l('Worker'), choices=[], coerce=int,
+                        validators=[InputRequired()])
     service = SelectMultipleField(_l('Services'), choices=[],
                                   validate_choice=False, coerce=int)
     duration = HiddenField(_l('Duration'), default=0)
@@ -463,11 +477,6 @@ class AppointmentForm(FlaskForm):
         if not self.staff.data:
             flash(_l('Please select staff'))
             raise ValidationError(_l('Please select staff'))
-
-    def validate_date(self, field):
-        if not self.date.data:
-            flash(_l('Please select date'))
-            raise ValidationError(_l('Please select date'))
 
     def validate_time(self, field):
         if not field.data:
@@ -576,7 +585,7 @@ class ContactForm(FlaskForm):
 class NoticeForm(FlaskForm):
     client = SelectField(_l('Client'), choices=[], coerce=int,
                          validators=[InputRequired()])
-    date = DateField(_l('Date'), validators=[DataRequired()])
+    date = DateField(_l('Date'), validators=[])
     description = TextAreaField(_l('Description'), validators=[DataRequired(),
                                                                Length(max=255)])
     processed = BooleanField(_l('Processed'))
@@ -596,7 +605,8 @@ class NoticeForm(FlaskForm):
 
 class HolidayForm(FlaskForm):
     staff = SelectField(_l('Staff'), choices=[], coerce=int)
-    date = DateField(_l('Date'), validators=[DataRequired()], format='%Y-%m-%d')
+    date = DateField(_l('Date'), validators=[validate_date_global],
+                     format='%Y-%m-%d')
     working_day = BooleanField(_l('Working day'))
     hour_from = TimeField(_l('From hour'), validators=[Optional()])
     hour_to = TimeField(_l('To hour'), validators=[Optional()])
@@ -614,7 +624,7 @@ class ReportForm(FlaskForm):
 
 class CashFlowForm(FlaskForm):
     location = SelectField(_l('Location'), choices=[], coerce=int)
-    date = DateField(_l('Date'))
+    date = DateField(_l('Date'), validators=[validate_date_global])
     description = StringField(_l('Description'), validators=[DataRequired(),
                                                              Length(max=120)])
     action = SelectField(_l('Operation'), choices=[(1, _l('Plus')), (-1, _l('Minus'))],

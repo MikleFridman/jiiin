@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
+{% block app_content %}
+<div class="container border">
+    <div class="row row-cols-7 text-center text-dark">
+        <div class="col border bg-secondary"><small>Sun</small></div>
+        <div class="col border bg-secondary"><small>Mon</small></div>
+        <div class="col border bg-secondary"><small>Tue</small></div>
+        <div class="col border bg-secondary"><small>Wed</small></div>
+        <div class="col border bg-secondary"><small>Thu</small></div>
+        <div class="col border bg-secondary"><small>Fri</small></div>
+        <div class="col border bg-secondary"><small>Sut</small></div>
+    </div>
+    <div class="row row-cols-7">
+    {% for date, locations in calendar.items() %}
+        <div class="col p-0 pe-1 border {% if date < today_date %}bg-light{% endif %}">
+            <div class="d-flex align-items-end flex-column" style="height: 75px;">
+                {% if date >= today_date %}
+                <div class="align-self-start ps-1">
+                    <span class="badge bg-success mb-n2"> </span>
+                    <span class="badge bg-success mb-n2"> </span>
+                    <span class="badge bg-success mb-n2"> </span>
+                    <span class="badge bg-success mb-n2"> </span>
+                </div>
+                {% endif %}
+                <div class="mt-auto"><small>{{ date.strftime('%d') }}</small></div>
+            </div>
+        </div>
+        {% if loop.index % 7 == 0 %}
+            </div>
+            <div class="row row-cols-7">
+        {% else %}
+        {% endif %}
+
+    {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -2,9 +2,10 @@ import os
 from datetime import datetime, timedelta
 from threading import Thread
 
+from flask import flash
 from flask_login import current_user
 from flask_mail import Message
-from flask_babel import lazy_gettext as _l
+from flask_babel import lazy_gettext as _l, _
 from sqlalchemy import func, inspect
 
 from app import app, mail
@@ -84,6 +85,9 @@ def get_interval_intersection(list_1, list_2):
 def get_free_time_intervals(location_id, date, staff_id, duration,
                             appointment_id=None):
     if not location_id or not date or not staff_id or not duration:
+        return []
+    if not isinstance(duration, type(timedelta(minutes=1))):
+        flash(_('Something went wrong...'))
         return []
     location = Location.get_object(location_id)
     time_open = datetime.strptime('00.00', '%H.%M')
@@ -179,3 +183,40 @@ def phone_number_plus(number):
     if not number[0] == '+':
         number = '+' + number
     return number
+
+
+def get_calendar(days=None):
+    day_start = current_day = (datetime.now().date() +
+                               timedelta(days=-datetime.now().isoweekday()))
+    if not days:
+        day_end = day_start + timedelta(days=31)
+    else:
+        day_end = day_start + timedelta(days=days)
+    calendar = {}
+    locations = Location.get_items(False)
+    while current_day < day_end:
+        dl = []
+        for location in locations:
+            time_open = datetime.strptime('00.00', '%H.%M')
+            time_close = datetime.strptime('00.00', '%H.%M')
+            if location.main_schedule:
+                wt = location.main_schedule.get_work_time(current_day)
+                time_open = wt['hour_from']
+                time_close = wt['hour_to']
+            free_time = time_close - time_open
+            busy_time = timedelta(seconds=0)
+            data_filter = {'location_id': location.id}
+            data_search = [func.date(Appointment.date_time) == current_day]
+            appointments = Appointment.get_items(False, data_filter=data_filter,
+                                                 data_search=data_search)
+            for appointment in appointments:
+                busy_time += appointment.duration
+            appointments_list = (
+                [(a.date_time, a.date_time + a.duration, a.staff) for a in appointments])
+            appointments_list.sort(key=lambda x: x[0])
+            dl.append({'location': location,
+                       'free_time': free_time-busy_time,
+                       'appointments': appointments_list})
+        calendar[current_day] = dl
+        current_day += timedelta(days=1)
+    return calendar

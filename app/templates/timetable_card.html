@@ -33,6 +33,35 @@
   </div>
   <!--Screen SM-MD-->
   <div class="d-none d-sm-block d-lg-none col-md-12">
+    <div class="row text-center mt-2 mb-2">
+      <div class="col-4">
+        {% if request.args.get('period') == 'today' %}
+          {{ _('Today') }}
+        {% else %}
+          <a class="text-decoration-none" href="{{ url_for('appointments_table', date_time_from=today_date, date_time_to=today_date, period='today') }}">
+            {{ _('Today') }}
+          </a>
+        {% endif %}
+      </div>
+      <div class="col-4">
+        {% if request.args.get('period') == 'week' %}
+            {{ _('Week') }}
+        {% else %}
+          <a class="text-decoration-none" href="{{ url_for('appointments_table', date_time_from=today_date, date_time_to=week_date, period='week') }}">
+            {{ _('Week') }}
+          </a>
+        {% endif %}
+      </div>
+      <div class="col-4">
+        {% if request.args.get('period') == 'all' %}
+          {{ _('All') }}
+        {% else %}
+          <a class="text-decoration-none" href="{{ url_for('appointments_table', period='all') }}">
+            {{ _('All') }}
+          </a>
+        {% endif %}
+      </div>
+    </div>
     {% set current_date = {'date': ''} %}
     {% for a in items %}
       {% if a.date_time.date() != current_date.date %}
@@ -58,12 +87,12 @@
             {{ a. client.name|truncate(killwords=True, length=60) }}<br/>
             {{ a. client.phone }}
           </span>
-          <div>
-          <hr>
-          {% for service in a.services %}
-            <span class="list-group-item text-body">{{ service.name|truncate(killwords=True, length=60) }}</span>
-          {% endfor %}
-          </div>
+<!--          <div>-->
+<!--            <hr>-->
+<!--            {% for service in a.services %}-->
+<!--              <span class="list-group-item text-body">{{ service.name|truncate(killwords=True, length=60) }}</span>-->
+<!--            {% endfor %}-->
+<!--          </div>-->
         </div>
         </a>
         <div class="card-footer">
@@ -82,6 +111,35 @@
   </div>
   <!--Screen XS-->
   <div class="d-sm-none col-md-12">
+    <div class="row text-center mb-2">
+      <div class="col-4">
+        {% if request.args.get('period') == 'today' %}
+          {{ _('Today') }}
+        {% else %}
+          <a class="text-decoration-none" href="{{ url_for('appointments_table', date_time_from=today_date, date_time_to=today_date, period='today') }}">
+            {{ _('Today') }}
+          </a>
+        {% endif %}
+      </div>
+      <div class="col-4">
+        {% if request.args.get('period') == 'week' %}
+            {{ _('Week') }}
+        {% else %}
+          <a class="text-decoration-none" href="{{ url_for('appointments_table', date_time_from=today_date, date_time_to=week_date, period='week') }}">
+            {{ _('Week') }}
+          </a>
+        {% endif %}
+      </div>
+      <div class="col-4">
+        {% if request.args.get('period') == 'all' %}
+          {{ _('All') }}
+        {% else %}
+          <a class="text-decoration-none" href="{{ url_for('appointments_table', period='all') }}">
+            {{ _('All') }}
+          </a>
+        {% endif %}
+      </div>
+    </div>
     {% set current_date = {'date': ''} %}
     {% for a in items %}
       {% if a.date_time.date() != current_date.date %}
@@ -109,12 +167,12 @@
               <a class="text-decoration-none text-primary" href="tel:{{ a. client.phone }}">{{ a. client.phone }}</a>
             </object>
           </span>
-          <div>
-          <hr>
-          {% for service in a.services %}
-            <span class="list-group-item text-body">{{ service.name|truncate(killwords=True, length=32) }}</span>
-          {% endfor %}
-          </div>
+<!--          <div>-->
+<!--            <hr>-->
+<!--            {% for service in a.services %}-->
+<!--              <span class="list-group-item text-body">{{ service.name|truncate(killwords=True, length=32) }}</span>-->
+<!--            {% endfor %}-->
+<!--          </div>-->
         </div>
         </a>
         <div class="card-footer">

@@ -9,29 +9,60 @@
 <div class="progress mb-4">
   <div class="progress-bar progress-bar-striped" role="progressbar" style="width: {{ progress }}%;" aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100"></div>
 </div>
-<div class="row">
-    {% for class in check %}
-        <div class="col-sm-3">
+<!--Screen SM-XL-->
+<div class="d-none d-sm-block">
+    <div class="row">
+    {% for class in check_list %}
+        <div class="col-3">
           {% if class['flag'] %}
             <div class="card border-success mb-4" style="max-width: 20rem;">
           {% else %}
             <div class="card border-danger mb-4" style="max-width: 20rem;">
           {% endif %}
-          <div class="card-header">{{ class['title'] }}</div>
-          <div class="card-body">
-              {% if class['flag'] %}
-                <p class="card-text">{{ _('Successfully configured') }}</p>
-              {% else %}
-                <p class="card-text">{{ class['description'] }}</p>
-              {% endif %}
-            <div><a class="card-link" href="{{ url_for(class.object.table_link, next=url_for('quick_start')) }}"> {{ _('Сonfigure') }}</a></div>
-          </div>
+          <a class="text-decoration-none text-reset card-link" href="{{ url_for(class.object.table_link, next=url_for('quick_start')) }}">
+              <div class="card-header">{{ class['title'] }}</div>
+              <div class="card-body">
+                  {% if class['flag'] %}
+                    <p class="card-text">{{ _('Successfully configured') }}</p>
+                  {% else %}
+                    <p class="card-text">{{ class['description'] }}</p>
+                  {% endif %}
+              </div>
+          </a>
         </div>
     </div>
     {% endfor%}
+    </div>
+</div>
+<!--Screen XS    -->
+<div class="d-block d-sm-none">
+    <div class='row'>
+    {% for class in check_list %}
+        <div class="col-12 d-flex flex-column justify-content-center align-items-center">
+          {% if class['flag'] %}
+            <div class="card border-success mb-4" style="width: 95%;">
+          {% else %}
+            <div class="card border-danger mb-4" style="width: 95%;">
+          {% endif %}
+          <a class="text-decoration-none text-reset card-link" href="{{ url_for(class.object.table_link, next=url_for('quick_start')) }}">
+              <div class="card-header">{{ class['title'] }}</div>
+              <div class="card-body">
+                  {% if class['flag'] %}
+                    <p class="card-text">{{ _('Successfully configured') }}</p>
+                  {% else %}
+                    <p class="card-text">{{ class['description'] }}</p>
+                  {% endif %}
+              </div>
+          </a>
+        </div>
+    </div>
+    {% endfor%}
+    </div>
+</div>
+<div class="row text-center">
     {% if progress == 100 %}
         <div class="alert alert-dismissible alert-success">
-            {{ _('Well done! Settings completed successfully. You can start recording clients in') }} <a href="{{ url_for('appointments_table') }}" class="alert-link">{{ _('Timetable') }}</a>.
+            {{ _('Well done! Settings completed successfully. You can start recording clients! ') }} <a href="{{ url_for('appointments_table') }}" class="alert-link">{{ _('Timetable') }}</a>.
         </div>
     {% endif %}
 </div>

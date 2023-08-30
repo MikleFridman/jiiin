@@ -10,9 +10,8 @@
                     <img width="240px" src="data:image/jpeg;base64,{{ qr_code }}" alt="qr_code"/>
                 </div>
                 <a href="{{ form.link.data }}">{{ form.link.label }}</a>
+                <button type="button" class="btn btn-secondary mt-3 mb-2" onclick="window.location.href='{{ url_back }}'">{{ _('Back') }}</button>
             </div>
-            {{ form.submit(class_="btn btn-primary mt-3 mb-2") }}
-            <button type="button" class="btn btn-secondary mt-3 ms-3 mb-2" onclick="window.location.href='{{ url_back }}'">{{ _('Back') }}</button>
         </form>
     </div>
 </div>

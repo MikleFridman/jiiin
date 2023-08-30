@@ -27,7 +27,9 @@
                                 {{ field.label(class_="col-form-label") }} {% if field.flags.required %}*{% endif %}
                                 {{ field(class_="list-group") }}
                             {% elif field.type == 'URLField' %}
-                                <a href="{{ field.data }}">{{ field.label(class_="mt-2 ms-1") }}</a>
+                                {% if field.data %}
+                                    <a href="{{ field.data }}">{{ field.label(class_="mt-2 ms-1") }}</a>
+                                {% endif %}
                             {% else%}
                                 <div class="mt-1">
                                     {{ field.label(class_="col-form-label") }} {% if field.flags.required %}*{% endif %}

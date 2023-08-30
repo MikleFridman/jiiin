@@ -621,6 +621,11 @@ class Appointment(db.Model, Entity, Splitter):
         headers = ['location', 'staff', 'count', 'sum']
         return [dict(list(zip(headers, item))) for item in items.all()]
 
+    def delete_object(self, *args, **kwargs):
+        payment = self.payment
+        super(Appointment, self).delete_object(*args, **kwargs)
+        payment.delete_object()
+
 
 class Week:
     days = [_l('Monday'), _l('Tuesday'), _l('Wednesday'), _l('Thursday'),
@@ -759,6 +764,11 @@ class CashFlow(db.Model, Entity, Splitter):
     appointment = db.relationship('Appointment', backref='payment',
                                   uselist='False')
 
+    def delete_object(self, *args, **kwargs):
+        cash = self.location.cash[0]
+        cash.cost -= self.cost
+        super(CashFlow, self).delete_object(*args, **kwargs)
+
 
 class Cash(db.Model, Entity, Splitter):
     id = None
@@ -768,6 +778,22 @@ class Cash(db.Model, Entity, Splitter):
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'),
                             primary_key=True)
     cost = db.Column(db.Float)
+
+    def plus(self, cost):
+        self.cost += cost
+        db.session.commit()
+
+    def minus(self, cost):
+        self.cost -= cost
+        db.session.commit()
+
+
+# @db.event.listens_for(CashFlow, 'after_delete')
+# def test(mapper, connection, target):
+#     if target:
+#         cash = target.location.cash
+#         if cash:
+#             cash[0].cost = 0
 
 
 class Notice(db.Model, Entity, Splitter):

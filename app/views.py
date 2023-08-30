@@ -36,6 +36,11 @@ def inject_today_date():
 
 
 @app.context_processor
+def inject_week_date():
+    return {'week_date': datetime.now().date() + timedelta(days=7)}
+
+
+@app.context_processor
 def inject_version():
     return {'version': VERSION, 'version_date': VERSION_DATE}
 
@@ -113,12 +118,18 @@ def set_filter(class_object):
                                                          choices=[*choices],
                                                          coerce=str))
         elif issubclass(search_object, type(datetime.now())):
-            setattr(SearchForm, search_attr, DateField(_l(search_name)))
+            setattr(SearchForm, search_attr,
+                    DateField(_l(search_name),
+                              validators=[validate_date_global]))
         elif issubclass(search_object, Period):
             search_attr_from = search_attr + '_from'
             search_attr_to = search_attr + '_to'
-            setattr(SearchForm, search_attr_from, DateField(_l('Date from')))
-            setattr(SearchForm, search_attr_to, DateField(_l('Date to')))
+            setattr(SearchForm, search_attr_from,
+                    DateField(_l('Date from'),
+                              validators=[validate_date_global]))
+            setattr(SearchForm, search_attr_to,
+                    DateField(_l('Date to'),
+                              validators=[validate_date_global]))
             search_list.remove(search_attr)
             search_list.append(search_attr_from)
             search_list.append(search_attr_to)
@@ -167,9 +178,13 @@ def get_filter_parameters(form, class_object):
                 form[search_attr].default = request_arg
                 form.process()
             elif issubclass(search_object, type(datetime.now())):
-                filter_param[search_attr] = request_arg
-                form[search_attr].data = datetime.strptime(request_arg,
-                                                           '%Y-%m-%d')
+                try:
+                    filter_param[search_attr] = request_arg
+                    form[search_attr].data = datetime.strptime(request_arg,
+                                                               '%Y-%m-%d')
+                except ValueError:
+                    check_filter = False
+                    flash(_l('Invalid date'))
             else:
                 search_param.append(getattr(class_object, search_attr
                                             ).ilike(f'%{str(request_arg)}%'))
@@ -180,20 +195,26 @@ def get_filter_parameters(form, class_object):
             request_arg_from = request.args.get(search_attr_from, None, type=str)
             request_arg_to = request.args.get(search_attr_to, None, type=str)
             if request_arg_from and not request_arg_from == '0':
-                check_filter = True
-                search_param.append(func.date(
-                    getattr(class_object, search_attr)) >=
-                    datetime.strptime(request_arg_from, '%Y-%m-%d').date())
-                form[search_attr_from].data = datetime.strptime(
-                    request_arg_from, '%Y-%m-%d')
+                try:
+                    search_param.append(func.date(
+                        getattr(class_object, search_attr)) >=
+                                        datetime.strptime(request_arg_from, '%Y-%m-%d').date())
+                    form[search_attr_from].data = datetime.strptime(
+                        request_arg_from, '%Y-%m-%d')
+                    check_filter = True
+                except ValueError:
+                    flash(_l('Invalid date'))
             if request_arg_to and not request_arg_to == '0':
-                check_filter = True
-                search_param.append(func.date(
-                    getattr(class_object, search_attr)) <
-                    (datetime.strptime(request_arg_to, '%Y-%m-%d') +
-                     timedelta(days=1)).date())
-                form[search_attr_to].data = datetime.strptime(
-                    request_arg_to, '%Y-%m-%d').date()
+                try:
+                    search_param.append(func.date(
+                        getattr(class_object, search_attr)) <
+                                        (datetime.strptime(request_arg_to, '%Y-%m-%d') +
+                                         timedelta(days=1)).date())
+                    form[search_attr_to].data = datetime.strptime(
+                        request_arg_to, '%Y-%m-%d').date()
+                    check_filter = True
+                except ValueError:
+                    flash(_l('Invalid date'))
             delattr(SearchForm, search_attr_from)
             delattr(SearchForm, search_attr_to)
         if hasattr(SearchForm, search_attr):
@@ -495,6 +516,7 @@ def staff_create():
                 staff.schedules.append(schedule)
         db.session.commit()
         return redirect(next_page)
+    form.user_link.data = None
     return render_template('data_form.html',
                            title=_('Staff (create)'),
                            form=form,
@@ -546,6 +568,9 @@ def staff_edit(id):
 @admin_required
 def staff_user(id):
     url_back = url_for('staff_edit', id=id, **request.args)
+    if not id:
+        flash(_('Save the data first'))
+        return redirect(url_back)
     staff = Staff.get_object(id)
     if staff.user:
         form = StaffUserEditForm(staff.user.username, staff.user.email)
@@ -1074,7 +1099,7 @@ def service_create():
         return redirect(next_page)
     elif request.method == 'GET':
         form.duration.data = CompanyConfig.get_parameter('min_time_interval')
-        form.location.data = range(1, len(location_list)+1)
+        form.location.data = list([lc.id for lc in current_user.company.locations])
     return render_template('data_form.html',
                            title=_('Service (create)'),
                            form=form,
@@ -1234,6 +1259,14 @@ def location_delete_all_services(id):
 
 
 # Appointment block start
+@app.route('/appointments/assistant/', methods=['GET', 'POST'])
+@login_required
+def appointment_assistant():
+    calendar = get_calendar(42)
+    return render_template('assistant.html',
+                           calendar=calendar)
+
+
 # noinspection PyTypeChecker
 @app.route('/appointments/')
 @login_required
@@ -1902,16 +1935,14 @@ def dashboard_view():
 @app.route('/select_service/<service_id>/<selected>/')
 @login_required
 def select_service(service_id, selected):
+    services_id = session.get('services', [])
     if int(selected) == 1:
-        services_id = session.get('services', [])
         if str(service_id) not in services_id:
             services_id.append(service_id)
-            session['services'] = services_id
     else:
-        services_id = session.get('services', [])
         if str(service_id) in services_id:
             services_id.remove(str(service_id))
-            session['services'] = services_id
+    session['services'] = services_id
     return jsonify(services_id)
 
 
@@ -2074,5 +2105,5 @@ def quick_start():
         db.session.commit()
     return render_template('quick_start.html',
                            title=_('Quick start'),
-                           check=check_list,
+                           check_list=check_list,
                            progress=progress)
