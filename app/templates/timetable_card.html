@@ -2,7 +2,7 @@
 
 {% block app_content %}
   {% import '_header.html' as forms %}
-  {{ forms.render_header(_('Timetable'), url_for('services_table', choice_mode=1, **request.args), form) }}
+  {{ forms.render_header(_('Timetable'), url_for('appointment_assistant'), form) }}
   <!--Screen LG-XL-->
   <div class="d-none d-lg-block">
   <table id="data" class="table table-hover border-top border-bottom border-light">
@@ -36,28 +36,28 @@
     <div class="row text-center mt-2 mb-2">
       <div class="col-4">
         {% if request.args.get('period') == 'today' %}
-          {{ _('Today') }}
+          <small>{{ _('Today') }}</small>
         {% else %}
           <a class="text-decoration-none" href="{{ url_for('appointments_table', date_time_from=today_date, date_time_to=today_date, period='today') }}">
-            {{ _('Today') }}
+            <small>{{ _('Today') }}</small>
           </a>
         {% endif %}
       </div>
       <div class="col-4">
         {% if request.args.get('period') == 'week' %}
-            {{ _('Week') }}
+          <small>{{ _('Week') }}</small>
         {% else %}
           <a class="text-decoration-none" href="{{ url_for('appointments_table', date_time_from=today_date, date_time_to=week_date, period='week') }}">
-            {{ _('Week') }}
+            <small>{{ _('Week') }}</small>
           </a>
         {% endif %}
       </div>
       <div class="col-4">
         {% if request.args.get('period') == 'all' %}
-          {{ _('All') }}
+          <small>{{ _('All') }}</small>
         {% else %}
           <a class="text-decoration-none" href="{{ url_for('appointments_table', period='all') }}">
-            {{ _('All') }}
+            <small>{{ _('All') }}</small>
           </a>
         {% endif %}
       </div>
@@ -65,28 +65,30 @@
     {% set current_date = {'date': ''} %}
     {% for a in items %}
       {% if a.date_time.date() != current_date.date %}
-        <div class="row mb-1 text-center">
-          <span>{{ a.date_time.strftime('%d.%m.%Y') }}</span>
+        <div class="row mb-1 text-center text-primary-emphasis">
+          <small><span>{{ a.date_time.strftime('%d.%m.%Y') }}</span></small>
         </div>
         {% if current_date.update({'date': a.date_time.date()}) %} {% endif%}
       {% endif %}
       <div class="card border-primary mb-3" >
         <a class="text-decoration-none text-reset" href="{{ url_for('appointment_edit', id=a.id, **request.args) }}">
-        <div class="card-header" style="background-color: #dae2eb !important">
+        <div class="card-header pt-1 pb-1 ps-2 pe-2" style="background-color: #dae2eb !important">
           <div class="row text-dark">
             <div class="col-7">
-              {{ a.location.name|truncate(killwords=True, length=40) }}
+              <small>{{ a.location.name|truncate(killwords=True, length=40) }}</small>
             </div>
             <div class="col-5 d-flex justify-content-end">
-              {{ a.date_time.strftime('%d.%m.%y %H:%M') }}
+              <small>{{ a.date_time.strftime('%d.%m.%y %H:%M') }}</small>
             </div>
           </div>
         </div>
-        <div class="card-body">
-          <span class="card-text">
-            {{ a. client.name|truncate(killwords=True, length=60) }}<br/>
-            {{ a. client.phone }}
-          </span>
+        <div class="card-body pt-1 pb-1 ps-2 pe-2">
+          <small>
+            <span class="card-text">
+              {{ a. client.name|truncate(killwords=True, length=60) }}<br/>
+              {{ a. client.phone }}
+            </span>
+          </small>
 <!--          <div>-->
 <!--            <hr>-->
 <!--            {% for service in a.services %}-->
@@ -95,11 +97,13 @@
 <!--          </div>-->
         </div>
         </a>
-        <div class="card-footer">
+        <div class="card-footer pt-1 pb-1 ps-2 pe-2">
           <div class="row text-dark">
             <div class="col-10">
-              <span class="me-2">{{ _('Time') }}: {{ '%02d' % (a.duration.seconds // 3600) }}:{{ '%02d' % (a.duration.seconds % 3600 // 60) }}</span>
-              <span>{{ _('Sum') }}: {{ a.cost }}</span>
+              <small>
+                <span class="me-2">{{ _('Time') }}: {{ '%02d' % (a.duration.seconds // 3600) }}:{{ '%02d' % (a.duration.seconds % 3600 // 60) }}</span>
+                <span>{{ _('Sum') }}: {{ a.cost }}</span>
+              </small>
             </div>
             <div class="col-2 d-flex justify-content-end">
               <a href="{{ url_for('delete', class_name='appointment', object_id=a.id, url_back=url_for('appointments_table', **request.args)) }}"><img src="{{ url_for('static', filename='/trash_2.png') }}" alt="delete" width="24"></a>
@@ -114,28 +118,28 @@
     <div class="row text-center mb-2">
       <div class="col-4">
         {% if request.args.get('period') == 'today' %}
-          {{ _('Today') }}
+          <small>{{ _('Today') }}</small>
         {% else %}
           <a class="text-decoration-none" href="{{ url_for('appointments_table', date_time_from=today_date, date_time_to=today_date, period='today') }}">
-            {{ _('Today') }}
+            <small>{{ _('Today') }}</small>
           </a>
         {% endif %}
       </div>
       <div class="col-4">
         {% if request.args.get('period') == 'week' %}
-            {{ _('Week') }}
+          <small>{{ _('Week') }}</small>
         {% else %}
           <a class="text-decoration-none" href="{{ url_for('appointments_table', date_time_from=today_date, date_time_to=week_date, period='week') }}">
-            {{ _('Week') }}
+            <small>{{ _('Week') }}</small>
           </a>
         {% endif %}
       </div>
       <div class="col-4">
         {% if request.args.get('period') == 'all' %}
-          {{ _('All') }}
+          <small>{{ _('All') }}</small>
         {% else %}
           <a class="text-decoration-none" href="{{ url_for('appointments_table', period='all') }}">
-            {{ _('All') }}
+            <small>{{ _('All') }}</small>
           </a>
         {% endif %}
       </div>
@@ -143,30 +147,32 @@
     {% set current_date = {'date': ''} %}
     {% for a in items %}
       {% if a.date_time.date() != current_date.date %}
-        <div class="row mb-1 text-center">
-          <span>{{ a.date_time.strftime('%d.%m.%Y') }}</span>
+        <div class="row mb-1 text-center text-primary-emphasis">
+          <small><span>{{ a.date_time.strftime('%d.%m.%Y') }}</span></small>
         </div>
         {% if current_date.update({'date': a.date_time.date()}) %} {% endif%}
       {% endif %}
       <div class="card border-primary mb-3" >
         <a class="text-decoration-none text-reset" href="{{ url_for('appointment_edit', id=a.id, **request.args) }}">
-        <div class="card-header" style="background-color: #dae2eb !important">
+        <div class="card-header pt-1 pb-1 ps-2 pe-2" style="background-color: #dae2eb !important">
           <div class="row text-dark">
             <div class="col-7">
-              {{ a.location.name|truncate(killwords=True, length=20) }}
+              <small>{{ a.location.name|truncate(killwords=True, length=20) }}</small>
             </div>
             <div class="col-5 d-flex justify-content-end">
-              {{ a.date_time.strftime('%d.%m.%y %H:%M') }}
+              <small>{{ a.date_time.strftime('%d.%m.%y %H:%M') }}</small>
             </div>
           </div>
         </div>
-        <div class="card-body">
-          <span class="card-text">
-            {{ a. client.name|truncate(killwords=True, length=32) }}<br/>
-            <object>
-              <a class="text-decoration-none text-primary" href="tel:{{ a. client.phone }}">{{ a. client.phone }}</a>
-            </object>
-          </span>
+        <div class="card-body pt-1 pb-1 ps-2 pe-2">
+          <small>
+            <span class="card-text">
+              {{ a. client.name|truncate(killwords=True, length=40) }}<br/>
+              <object>
+                <a class="text-decoration-none text-primary" href="tel:{{ a. client.phone }}">{{ a. client.phone }}</a>
+              </object>
+            </span>
+          </small>
 <!--          <div>-->
 <!--            <hr>-->
 <!--            {% for service in a.services %}-->
@@ -175,11 +181,13 @@
 <!--          </div>-->
         </div>
         </a>
-        <div class="card-footer">
+        <div class="card-footer pt-1 pb-1 ps-2 pe-2">
           <div class="row text-dark">
             <div class="col-10">
-              <span class="me-2">{{ _('Time') }}: {{ '%02d' % (a.duration.seconds // 3600) }}:{{ '%02d' % (a.duration.seconds % 3600 // 60) }}</span>
-              <span>{{ _('Sum') }}: {{ a.cost }}</span>
+              <small>
+                <span class="me-2">{{ _('Time') }}: {{ '%02d' % (a.duration.seconds // 3600) }}:{{ '%02d' % (a.duration.seconds % 3600 // 60) }}</span>
+                <span>{{ _('Sum') }}: {{ a.cost }}</span>
+              </small>
             </div>
             <div class="col-2 d-flex justify-content-end">
               <a href="{{ url_for('delete', class_name='appointment', object_id=a.id, url_back=url_for('appointments_table', **request.args)) }}"><img src="{{ url_for('static', filename='/trash_2.png') }}" alt="delete" width="24"></a>

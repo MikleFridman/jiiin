@@ -2,37 +2,47 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 {% block app_content %}
 <div class="container border">
-    <div class="row row-cols-7 text-center text-dark">
-        <div class="col border bg-secondary"><small>Sun</small></div>
-        <div class="col border bg-secondary"><small>Mon</small></div>
-        <div class="col border bg-secondary"><small>Tue</small></div>
-        <div class="col border bg-secondary"><small>Wed</small></div>
-        <div class="col border bg-secondary"><small>Thu</small></div>
-        <div class="col border bg-secondary"><small>Fri</small></div>
-        <div class="col border bg-secondary"><small>Sut</small></div>
+    <div class="row row-cols-7 text-center text-primary" style="background-color: #dae2eb !important">
+        <div class="col border"><small>{{ _('Sun') }}</small></div>
+        <div class="col border"><small>{{ _('Mon') }}</small></div>
+        <div class="col border"><small>{{ _('Tue') }}</small></div>
+        <div class="col border"><small>{{ _('Wed') }}</small></div>
+        <div class="col border"><small>{{ _('Thu') }}</small></div>
+        <div class="col border"><small>{{ _('Fri') }}</small></div>
+        <div class="col border"><small>{{ _('Sut') }}</small></div>
     </div>
     <div class="row row-cols-7">
-    {% for date, locations in calendar.items() %}
-        <div class="col p-0 pe-1 border {% if date < today_date %}bg-light{% endif %}">
-            <div class="d-flex align-items-end flex-column" style="height: 75px;">
-                {% if date >= today_date %}
-                <div class="align-self-start ps-1">
-                    <span class="badge bg-success mb-n2"> </span>
-                    <span class="badge bg-success mb-n2"> </span>
-                    <span class="badge bg-success mb-n2"> </span>
-                    <span class="badge bg-success mb-n2"> </span>
+        {% for date, locations in calendar.items() %}
+            <div class="col p-0 pe-1 border {% if date < today_date %}bg-light{% endif %}">
+                <a class="text-decoration-none text-reset" href="{{ url_for('appointment_create', date = date) }}">
+                <div class="d-flex align-items-end flex-column" style="height: 75px;">
+                    {% if date >= today_date %}
+                    {% set counter = {'count': 0} %}
+                        <div class="align-self-start ps-1">
+                            {% for location in locations %}
+                                {% if counter.update({'count': counter.count + location.appointments | count}) %} {% endif %}
+                            {% endfor %}
+                            {% if counter.count %}
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-people-fill text-primary" viewBox="0 0 16 16">
+                                  <path d="M7 14s-1 0-1-1 1-4 5-4 5 3 5 4-1 1-1 1H7zm4-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6z"/>
+                                  <path fill-rule="evenodd" d="M5.216 14A2.238 2.238 0 0 1 5 13c0-1.355.68-2.75 1.936-3.72A6.325 6.325 0 0 0 5 9c-4 0-5 3-5 4s1 1 1 1h4.216z"/>
+                                  <path d="M4.5 8a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z"/>
+                                </svg>
+                                <span class=""><small><small>{{ counter.count }}</small></small></span>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                    <div class="mt-auto"><small>{{ date.strftime('%d') }}</small></div>
                 </div>
-                {% endif %}
-                <div class="mt-auto"><small>{{ date.strftime('%d') }}</small></div>
+                </a>
             </div>
-        </div>
-        {% if loop.index % 7 == 0 %}
-            </div>
-            <div class="row row-cols-7">
-        {% else %}
-        {% endif %}
-
-    {% endfor %}
+            {% if loop.index % 7 == 0 %}
+                </div>
+                <div class="row row-cols-7">
+            {% else %}
+            {% endif %}
+        {% endfor %}
     </div>
+    </a>
 </div>
 {% endblock %}

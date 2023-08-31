@@ -1046,13 +1046,13 @@ def services_table():
                              mod_services=1)
     else:
         url_submit = url_for('appointment_create')
-    if url_back == url_for('appointments_table'):
-        session.pop('services', None)
-        session.pop('location', None)
-        session.pop('staff', None)
-        session.pop('client', None)
-        session.pop('date', None)
-        session.pop('time', None)
+    # if url_back == url_for('appointments_table'):
+    #     session.pop('services', None)
+    #     session.pop('location', None)
+    #     session.pop('staff', None)
+    #     session.pop('client', None)
+    #     session.pop('date', None)
+    #     session.pop('time', None)
     choice_mode = request.args.get('choice_mode', None, type=int)
     if choice_mode:
         template = 'service_table_choice.html'
@@ -1262,6 +1262,12 @@ def location_delete_all_services(id):
 @app.route('/appointments/assistant/', methods=['GET', 'POST'])
 @login_required
 def appointment_assistant():
+    session.pop('services', None)
+    session.pop('location', None)
+    session.pop('staff', None)
+    session.pop('client', None)
+    session.pop('date', None)
+    session.pop('time', None)
     calendar = get_calendar(42)
     return render_template('assistant.html',
                            calendar=calendar)
@@ -1299,6 +1305,8 @@ def appointment_create():
     selected_location_id = session.get('location')
     selected_staff_id = session.get('staff')
     selected_client_id = session.get('client')
+    if request.args.get('date'):
+        session['date'] = request.args.get('date')
     selected_date = session.get('date')
     selected_time = session.get('time')
     form = AppointmentForm()

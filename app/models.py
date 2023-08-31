@@ -134,7 +134,8 @@ class Entity:
             items = items.order_by(getattr(cls, cls.sort).desc())
         if tuple_mode:
             items = [(i.id, i.name) for i in items]
-            items.insert(0, (0, _l('-Select-')))
+            if len(items) > 1:
+                items.insert(0, (0, _l('-Select-')))
         else:
             items = [i for i in items]
         return items

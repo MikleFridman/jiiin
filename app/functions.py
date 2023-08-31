@@ -215,7 +215,7 @@ def get_calendar(days=None):
                 [(a.date_time, a.date_time + a.duration, a.staff) for a in appointments])
             appointments_list.sort(key=lambda x: x[0])
             dl.append({'location': location,
-                       'free_time': free_time-busy_time,
+                       'work_time': (time_open, time_close),
                        'appointments': appointments_list})
         calendar[current_day] = dl
         current_day += timedelta(days=1)

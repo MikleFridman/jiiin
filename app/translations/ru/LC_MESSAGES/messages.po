@@ -7,7 +7,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2023-08-25 12:13+0300\n"
+"POT-Creation-Date: 2023-08-31 21:07+0300\n"
 "PO-Revision-Date: 2023-03-06 15:40+0200\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: ru\n"
@@ -66,266 +66,270 @@ msgstr "Поле \"%(fn)s\" должно содержать минимум 1 б�
 msgid "Invalid birthday date"
 msgstr "Некорректная дата рождения"
 
-#: app/forms.py:113 app/templates/base.html:53
+#: app/forms.py:114 app/forms.py:115 app/forms.py:602 app/forms.py:603
+#: app/views.py:187 app/views.py:206 app/views.py:217
+msgid "Invalid date"
+msgstr "Некорректная дата"
+
+#: app/forms.py:119 app/templates/base.html:53
 msgid "Company"
 msgstr "Компания"
 
-#: app/forms.py:115 app/forms.py:140
+#: app/forms.py:121 app/forms.py:146
 msgid "Username"
 msgstr "Имя пользователя"
 
-#: app/forms.py:117 app/forms.py:191 app/forms.py:574
+#: app/forms.py:123 app/forms.py:197 app/forms.py:579
 msgid "E-mail"
 msgstr ""
 
-#: app/forms.py:118 app/forms.py:141 app/forms.py:162 app/forms.py:196
+#: app/forms.py:124 app/forms.py:147 app/forms.py:168 app/forms.py:202
 msgid "Password"
 msgstr "Пароль"
 
-#: app/forms.py:119 app/forms.py:197
+#: app/forms.py:125 app/forms.py:203
 msgid "Repeat password"
 msgstr "Пароль (ещё раз)"
 
-#: app/forms.py:121
+#: app/forms.py:127
 msgid "Promo code"
 msgstr "Промокод"
 
-#: app/forms.py:124 app/forms.py:150 app/forms.py:192 app/forms.py:199
-#: app/forms.py:216 app/forms.py:224 app/forms.py:238 app/forms.py:263
-#: app/forms.py:271 app/forms.py:314 app/forms.py:329 app/forms.py:334
-#: app/forms.py:339 app/forms.py:356 app/forms.py:380 app/forms.py:415
-#: app/forms.py:517 app/forms.py:537 app/forms.py:548 app/forms.py:587
-#: app/forms.py:607 app/forms.py:628 app/templates/appointment_form.html:69
+#: app/forms.py:130 app/forms.py:156 app/forms.py:198 app/forms.py:205
+#: app/forms.py:222 app/forms.py:230 app/forms.py:244 app/forms.py:269
+#: app/forms.py:277 app/forms.py:320 app/forms.py:335 app/forms.py:340
+#: app/forms.py:345 app/forms.py:362 app/forms.py:386 app/forms.py:425
+#: app/forms.py:522 app/forms.py:542 app/forms.py:553 app/forms.py:592
+#: app/forms.py:613 app/forms.py:634 app/templates/appointment_form.html:69
 #: app/templates/staff_schedule_form.html:106 app/templates/upload_form.html:25
 msgid "Submit"
 msgstr "Сохранить"
 
-#: app/forms.py:129 app/forms.py:130 app/forms.py:175 app/forms.py:176
+#: app/forms.py:135 app/forms.py:136 app/forms.py:181 app/forms.py:182
 msgid "Please use a different username"
 msgstr "Указанное имя пользователя уже используется"
 
-#: app/forms.py:135 app/forms.py:136 app/forms.py:181 app/forms.py:182
+#: app/forms.py:141 app/forms.py:142 app/forms.py:187 app/forms.py:188
 msgid "Please use a different email"
 msgstr "Указанный адрес электронной почты уже используется"
 
-#: app/forms.py:142
+#: app/forms.py:148
 msgid "Remember me"
 msgstr "Запомнить меня"
 
-#: app/forms.py:143 app/templates/base.html:101
+#: app/forms.py:149 app/templates/base.html:101
 msgid "Login"
 msgstr "Войти"
 
-#: app/forms.py:154
+#: app/forms.py:160
 msgid "Language"
 msgstr "Язык интерфейса"
 
-#: app/forms.py:156
+#: app/forms.py:162
 msgid "Start page"
 msgstr "Стартовая страница"
 
-#: app/forms.py:157 app/functions.py:16 app/models.py:137 app/models.py:633
+#: app/forms.py:163 app/functions.py:16 app/models.py:138 app/models.py:639
 #: app/views.py:114
 msgid "-Select-"
 msgstr "-Выберите-"
 
-#: app/forms.py:158 app/templates/base.html:36
-#: app/templates/quick_start.html:34 app/templates/timetable.html:9
-#: app/templates/timetable_card.html:5 app/views.py:1257
+#: app/forms.py:164 app/templates/base.html:36
+#: app/templates/quick_start.html:65 app/templates/timetable.html:9
+#: app/templates/timetable_card.html:5 app/views.py:1291
 msgid "Timetable"
 msgstr "Запись"
 
-#: app/forms.py:159 app/templates/base.html:39
-#: app/templates/client_table.html:5 app/views.py:813
+#: app/forms.py:165 app/templates/base.html:39
+#: app/templates/client_table.html:5 app/views.py:833
 msgid "Clients"
 msgstr "Клиенты"
 
-#: app/forms.py:160 app/templates/base.html:42 app/templates/base.html:83
+#: app/forms.py:166 app/templates/base.html:42 app/templates/base.html:83
 #: app/templates/client_table.html:11 app/templates/notice_table.html:5
-#: app/views.py:1626
+#: app/views.py:1662
 msgid "Notices"
 msgstr "Звонки"
 
-#: app/forms.py:163
+#: app/forms.py:169
 msgid "Password new"
 msgstr "Новый пароль"
 
-#: app/forms.py:164
+#: app/forms.py:170
 msgid "Repeat password new"
 msgstr "Новый пароль (ещё раз)"
 
-#: app/forms.py:187
+#: app/forms.py:193
 msgid "Disabled"
 msgstr "Заблокирован"
 
-#: app/forms.py:203
+#: app/forms.py:209
 msgid "Company name"
 msgstr "Наименование"
 
-#: app/forms.py:205
+#: app/forms.py:211
 msgid "Registration number"
 msgstr "Регистрационный номер"
 
-#: app/forms.py:206
+#: app/forms.py:212
 msgid "Open from (default)"
 msgstr "График (по умолчанию) с"
 
-#: app/forms.py:207
+#: app/forms.py:213
 msgid "Open until (default)"
 msgstr "График (по умолчанию) до"
 
-#: app/forms.py:210
+#: app/forms.py:216
 msgid "Time interval (min)"
 msgstr "Интервал записи (мин)"
 
-#: app/forms.py:212
+#: app/forms.py:218
 msgid "Not use staff schedules"
 msgstr "Не использовать графики сотрудников"
 
-#: app/forms.py:213
+#: app/forms.py:219
 msgid "Show quick start"
 msgstr "Показывать страницу 'Быстрый старт'"
 
-#: app/forms.py:214
+#: app/forms.py:220
 msgid "Delete account"
 msgstr "Удалить аккаунт"
 
-#: app/forms.py:220
+#: app/forms.py:226
 msgid "Reason"
 msgstr "Причина"
 
-#: app/forms.py:222 app/views.py:322
+#: app/forms.py:228 app/views.py:338
 msgid "Confirm deletion account and all data"
 msgstr "Удалить мой аккаунт и все данные"
 
-#: app/forms.py:229 app/forms.py:305 app/forms.py:572
+#: app/forms.py:235 app/forms.py:311 app/forms.py:577
 #: app/templates/client_table.html:9 app/templates/client_table.html:16
-#: app/templates/location_table.html:15 app/templates/staff_table.html:9
-#: app/templates/staff_table.html:15
+#: app/templates/staff_table.html:9 app/templates/staff_table.html:15
 msgid "Name"
 msgstr "Имя"
 
-#: app/forms.py:231 app/forms.py:307 app/forms.py:373
+#: app/forms.py:237 app/forms.py:313 app/forms.py:379
 #: app/templates/client_table.html:12 app/templates/location_table.html:11
 #: app/templates/staff_table.html:11
 msgid "Phone"
 msgstr "Телефон"
 
-#: app/forms.py:233 app/forms.py:309 app/templates/staff_table.html:10
+#: app/forms.py:239 app/forms.py:315 app/templates/staff_table.html:10
 msgid "Birthday"
 msgstr "День рождения"
 
-#: app/forms.py:235 app/forms.py:376
+#: app/forms.py:241 app/forms.py:382
 msgid "Schedule"
 msgstr "График"
 
-#: app/forms.py:237
+#: app/forms.py:243
 msgid "Access settings"
 msgstr "Настройки доступа"
 
-#: app/forms.py:247 app/forms.py:248 app/forms.py:323 app/forms.py:324
-#: app/forms.py:389 app/forms.py:390
+#: app/forms.py:253 app/forms.py:254 app/forms.py:329 app/forms.py:330
+#: app/forms.py:395 app/forms.py:396
 msgid "Please use a different phone"
 msgstr "Указанный телефон уже используется"
 
-#: app/forms.py:252 app/forms.py:253 app/forms.py:394 app/forms.py:395
+#: app/forms.py:258 app/forms.py:259 app/forms.py:400 app/forms.py:401
 msgid "Please select schedule"
 msgstr "Выберите график"
 
-#: app/forms.py:261 app/forms.py:338 app/forms.py:346 app/forms.py:371
-#: app/forms.py:534 app/templates/client_files_table.html:17
+#: app/forms.py:267 app/forms.py:344 app/forms.py:352 app/forms.py:377
+#: app/forms.py:539 app/templates/client_files_table.html:17
 #: app/templates/item_table.html:16 app/templates/location_table.html:9
-#: app/templates/schedule_table.html:9 app/templates/service_table.html:9
-#: app/templates/service_table.html:16
+#: app/templates/location_table.html:15 app/templates/schedule_table.html:9
+#: app/templates/service_table.html:9 app/templates/service_table.html:16
 #: app/templates/service_table_choice.html:16
 #: app/templates/service_table_choice.html:22 app/templates/tags_table.html:9
 msgid "Title"
 msgstr "Наименование"
 
-#: app/forms.py:268 app/templates/schedule_days_table.html:17
+#: app/forms.py:274 app/templates/schedule_days_table.html:17
 msgid "Weekday"
 msgstr "День недели"
 
-#: app/forms.py:269 app/forms.py:605
+#: app/forms.py:275 app/forms.py:611
 msgid "From hour"
 msgstr "С"
 
-#: app/forms.py:270 app/forms.py:606
+#: app/forms.py:276 app/forms.py:612
 msgid "To hour"
 msgstr "До"
 
-#: app/forms.py:280 app/forms.py:281 app/forms.py:289 app/forms.py:290
-#: app/forms.py:478 app/forms.py:479
+#: app/forms.py:286 app/forms.py:287 app/forms.py:295 app/forms.py:296
+#: app/forms.py:483 app/forms.py:484
 msgid "Please select time"
 msgstr "Выберите время"
 
-#: app/forms.py:284 app/forms.py:285
+#: app/forms.py:290 app/forms.py:291
 msgid "Incorrect time interval"
 msgstr "Некорректный временной интервал"
 
-#: app/forms.py:300 app/forms.py:301
+#: app/forms.py:306 app/forms.py:307
 msgid "Incorrect weekday"
 msgstr "Недопустимый день недели"
 
-#: app/forms.py:311 app/forms.py:414
+#: app/forms.py:317 app/forms.py:424
 msgid "Info"
 msgstr "Информация"
 
-#: app/forms.py:312
+#: app/forms.py:318
 msgid "Client tags"
 msgstr "Тэги клиента"
 
-#: app/forms.py:313
+#: app/forms.py:319
 msgid "Client files"
 msgstr "Файлы клиента"
 
-#: app/forms.py:333 app/templates/base.html:60 app/templates/tags_table.html:5
-#: app/views.py:954 app/views.py:972
+#: app/forms.py:339 app/templates/base.html:60 app/templates/tags_table.html:5
+#: app/views.py:974 app/views.py:992
 msgid "Tags"
 msgstr "Тэги"
 
-#: app/forms.py:348 app/forms.py:411
+#: app/forms.py:354 app/forms.py:421
 msgid "Duration"
 msgstr "Длительность"
 
-#: app/forms.py:350 app/templates/service_table.html:12
+#: app/forms.py:356 app/templates/service_table.html:12
 #: app/templates/service_table_choice.html:18
 msgid "Price"
 msgstr "Цена"
 
-#: app/forms.py:352
+#: app/forms.py:358
 msgid "Repeat"
 msgstr "Повтор"
 
-#: app/forms.py:354 app/templates/base.html:56
+#: app/forms.py:360 app/templates/base.html:56
 #: app/templates/location_table.html:5 app/templates/service_table.html:10
-#: app/views.py:1135 app/views.py:2062
+#: app/views.py:1155 app/views.py:2096
 msgid "Locations"
 msgstr "Филиалы"
 
-#: app/forms.py:360 app/forms.py:361 app/forms.py:423 app/forms.py:424
-#: app/forms.py:432 app/forms.py:632 app/forms.py:633
+#: app/forms.py:366 app/forms.py:367 app/forms.py:433 app/forms.py:434
+#: app/forms.py:442 app/forms.py:638 app/forms.py:639
 msgid "Please select location"
 msgstr "Выберите филиал"
 
-#: app/forms.py:366 app/forms.py:367
+#: app/forms.py:372 app/forms.py:373
 #, python-format
 msgid "Price cannot exceed %(mp)s"
 msgstr "Цена не может превышать %(mp)s"
 
-#: app/forms.py:375 app/templates/location_table.html:10
+#: app/forms.py:381 app/templates/location_table.html:10
 msgid "Address"
 msgstr "Адрес"
 
-#: app/forms.py:378
+#: app/forms.py:384
 msgid "Add all services"
 msgstr "Добавить все услуги"
 
-#: app/forms.py:379
+#: app/forms.py:385
 msgid "Delete all services"
 msgstr "Удалить все услуги"
 
-#: app/forms.py:404 app/forms.py:541 app/forms.py:611 app/forms.py:620
+#: app/forms.py:410 app/forms.py:546 app/forms.py:617 app/forms.py:626
 #: app/templates/cash_flow_table.html:10 app/templates/cash_table.html:15
 #: app/templates/cash_table.html:20 app/templates/item_flow_table.html:17
 #: app/templates/report_statistics_table.html:16
@@ -333,165 +337,157 @@ msgstr "Удалить все услуги"
 msgid "Location"
 msgstr "Филиал"
 
-#: app/forms.py:405 app/forms.py:542 app/forms.py:583 app/forms.py:603
-#: app/forms.py:621 app/templates/cash_flow_table.html:9
+#: app/forms.py:412 app/forms.py:547 app/forms.py:588 app/forms.py:608
+#: app/forms.py:627 app/templates/cash_flow_table.html:9
 #: app/templates/cash_flow_table.html:16 app/templates/holiday_table.html:9
 #: app/templates/item_flow_table.html:18 app/templates/notice_table.html:9
 msgid "Date"
 msgstr "Дата"
 
-#: app/forms.py:406 app/templates/schedule_days_table.html:18
+#: app/forms.py:414 app/templates/schedule_days_table.html:18
 #: app/templates/service_table.html:11
 #: app/templates/service_table_choice.html:17
-#: app/templates/timetable_card.html:89 app/templates/timetable_card.html:157
+#: app/templates/timetable_card.html:104 app/templates/timetable_card.html:188
 msgid "Time"
 msgstr "Время"
 
-#: app/forms.py:407 app/forms.py:581 app/templates/notice_table.html:10
+#: app/forms.py:415 app/forms.py:586 app/templates/notice_table.html:10
 #: app/templates/timetable.html:20 app/templates/timetable.html:26
 #: app/templates/timetable_card.html:14
 msgid "Client"
 msgstr "Клиент"
 
-#: app/forms.py:408 app/forms.py:612 app/templates/holiday_table.html:10
+#: app/forms.py:417 app/forms.py:618 app/templates/holiday_table.html:10
 #: app/templates/report_statistics_table.html:17
 #: app/templates/timetable.html:19 app/templates/timetable_card.html:13
 msgid "Worker"
 msgstr "Сотрудник"
 
-#: app/forms.py:409 app/forms.py:412 app/templates/base.html:57
+#: app/forms.py:419 app/forms.py:422 app/templates/base.html:57
 #: app/templates/service_table.html:5 app/templates/service_table_choice.html:8
-#: app/views.py:1046 app/views.py:2065
+#: app/views.py:1066 app/views.py:2099
 msgid "Services"
 msgstr "Услуги"
 
-#: app/forms.py:413
+#: app/forms.py:423
 msgid "Not control duration"
 msgstr "Не учитывать длительность"
 
-#: app/forms.py:428 app/forms.py:429
+#: app/forms.py:438 app/forms.py:439
 msgid "Please select services"
 msgstr "Выберите услугу"
 
-#: app/forms.py:438
+#: app/forms.py:448
 #, python-format
 msgid "Service %(sn)s unavailable in select location"
 msgstr "Услуга %(sn)s недоступна в выбранном филиале"
 
-#: app/forms.py:445 app/forms.py:446 app/forms.py:591 app/forms.py:592
+#: app/forms.py:455 app/forms.py:456 app/forms.py:596 app/forms.py:597
 msgid "Please select client"
 msgstr "Выберите клиента"
 
-#: app/forms.py:463 app/forms.py:464
+#: app/forms.py:473 app/forms.py:474
 msgid "Client is busy at this time"
 msgstr "Клиент занят в указанное время"
 
-#: app/forms.py:468 app/forms.py:469
+#: app/forms.py:478 app/forms.py:479
 msgid "Please select staff"
 msgstr "Выберите сотрудника"
 
-#: app/forms.py:473 app/forms.py:474
-msgid "Please select date"
-msgstr "Выберите дату"
-
-#: app/forms.py:493 app/forms.py:494 app/forms.py:496 app/forms.py:497
+#: app/forms.py:498 app/forms.py:499 app/forms.py:501 app/forms.py:502
 msgid "Incorrect data"
 msgstr "Некорректные данные"
 
-#: app/forms.py:505 app/forms.py:506 app/forms.py:511 app/forms.py:512
+#: app/forms.py:510 app/forms.py:511 app/forms.py:516 app/forms.py:517
 msgid "This time unavailable"
 msgstr "Это время недоступно"
 
-#: app/forms.py:516 app/templates/appointment_form.html:89 app/views.py:1429
+#: app/forms.py:521 app/templates/appointment_form.html:89 app/views.py:1465
 msgid "Result"
 msgstr "Результат"
 
-#: app/forms.py:521
+#: app/forms.py:526
 msgid "Link to payment receipt"
 msgstr "Ссылка на чек"
 
-#: app/forms.py:522
+#: app/forms.py:527
 msgid "Share"
 msgstr ""
 
-#: app/forms.py:530 app/templates/_confirm_form.html:13
+#: app/forms.py:535 app/templates/_confirm_form.html:13
 msgid "Confirm"
 msgstr "Подтвердить"
 
-#: app/forms.py:543 app/templates/item_flow_table.html:16
+#: app/forms.py:548 app/templates/item_flow_table.html:16
 msgid "Item"
 msgstr "Товар"
 
-#: app/forms.py:544 app/forms.py:624
+#: app/forms.py:549 app/forms.py:630
 msgid "Operation"
 msgstr "Операция"
 
-#: app/forms.py:545 app/forms.py:624
+#: app/forms.py:550 app/forms.py:630
 msgid "Plus"
 msgstr "Приход"
 
-#: app/forms.py:545 app/forms.py:624
+#: app/forms.py:550 app/forms.py:630
 msgid "Minus"
 msgstr "Расход"
 
-#: app/forms.py:547
+#: app/forms.py:552
 msgid "Quantity"
 msgstr "Количество"
 
-#: app/forms.py:566
+#: app/forms.py:571
 #, python-format
 msgid "Quantity exceeds available %(count)s"
 msgstr "Количество превышает доступное %(count)s"
 
-#: app/forms.py:575
+#: app/forms.py:580
 msgid "Text"
 msgstr "Текст"
 
-#: app/forms.py:577
+#: app/forms.py:582
 msgid "Send"
 msgstr "Отправить"
 
-#: app/forms.py:584 app/forms.py:622 app/templates/cash_flow_table.html:11
+#: app/forms.py:589 app/forms.py:628 app/templates/cash_flow_table.html:11
 msgid "Description"
 msgstr "Описание"
 
-#: app/forms.py:586
+#: app/forms.py:591
 msgid "Processed"
 msgstr "Обработан"
 
-#: app/forms.py:597 app/forms.py:598
-msgid "Invalid date"
-msgstr "Некорректная дата"
-
-#: app/forms.py:602 app/templates/base.html:58 app/templates/staff_table.html:5
-#: app/views.py:469 app/views.py:2068
+#: app/forms.py:607 app/templates/base.html:58 app/templates/staff_table.html:5
+#: app/views.py:485 app/views.py:2102
 msgid "Staff"
 msgstr "Сотрудники"
 
-#: app/forms.py:604
+#: app/forms.py:610
 msgid "Working day"
 msgstr "Рабочий день"
 
-#: app/forms.py:613 app/views.py:125
+#: app/forms.py:619 app/views.py:128
 msgid "Date from"
 msgstr "Дата с"
 
-#: app/forms.py:614 app/views.py:126
+#: app/forms.py:620 app/views.py:131
 msgid "Date to"
 msgstr "Дата по"
 
-#: app/forms.py:616 app/templates/_report_form.html:41
+#: app/forms.py:622 app/templates/_report_form.html:41
 #: app/templates/_search_form.html:36 app/templates/_search_form.html:71
 #: app/templates/service_table_choice.html:77
 #: app/templates/service_table_choice.html:79
 msgid "Select"
 msgstr "Выбрать"
 
-#: app/forms.py:626 app/templates/cash_flow_table.html:12
+#: app/forms.py:632 app/templates/cash_flow_table.html:12
 #: app/templates/cash_flow_table.html:17 app/templates/cash_table.html:17
 #: app/templates/cash_table.html:21
 #: app/templates/report_statistics_table.html:19
-#: app/templates/timetable_card.html:90 app/templates/timetable_card.html:158
+#: app/templates/timetable_card.html:105 app/templates/timetable_card.html:189
 msgid "Sum"
 msgstr "Сумма"
 
@@ -499,39 +495,39 @@ msgstr "Сумма"
 msgid "Something went wrong..."
 msgstr "Что-то пошло не так..."
 
-#: app/models.py:181
+#: app/models.py:182
 msgid "Unable to delete the selected object"
 msgstr "Невозможно удалить выбранный объект"
 
-#: app/models.py:185
+#: app/models.py:186
 msgid "Object successfully deleted"
 msgstr "Объект успешно удален"
 
-#: app/models.py:626
+#: app/models.py:632
 msgid "Monday"
 msgstr "Понедельник"
 
-#: app/models.py:626
+#: app/models.py:632
 msgid "Tuesday"
 msgstr "Вторник"
 
-#: app/models.py:626
+#: app/models.py:632
 msgid "Wednesday"
 msgstr "Среда"
 
-#: app/models.py:626
+#: app/models.py:632
 msgid "Thursday"
 msgstr "Четверг"
 
-#: app/models.py:627
+#: app/models.py:633
 msgid "Friday"
 msgstr "Пятница"
 
-#: app/models.py:627
+#: app/models.py:633
 msgid "Saturday"
 msgstr "Суббота"
 
-#: app/models.py:627
+#: app/models.py:633
 msgid "Sunday"
 msgstr "Воскресенье"
 
@@ -551,263 +547,267 @@ msgstr "Нет"
 msgid "True"
 msgstr "Да"
 
-#: app/templates/success_sendmail.html:4 app/views.py:230
+#: app/templates/success_sendmail.html:4 app/views.py:246
 msgid "Message success send"
 msgstr "Сообщение успешно отправлено"
 
-#: app/views.py:233
+#: app/views.py:249
 msgid "Send mail"
 msgstr "Отправить письмо"
 
-#: app/views.py:275
+#: app/views.py:291
 msgid "Registration successfully"
 msgstr "Регистрация успешно завершена"
 
-#: app/views.py:291
+#: app/views.py:307
 msgid "Invalid username or password"
 msgstr "Неправильный пароль или имя пользователя"
 
-#: app/views.py:296
+#: app/views.py:312
 msgid "Not found company configuration!"
 msgstr "Отсутствует конфигурация для компании!"
 
-#: app/views.py:306
+#: app/views.py:322
 msgid "Sign in"
 msgstr "Вход в систему"
 
-#: app/views.py:327
+#: app/views.py:343
 msgid "Account successfully deleted"
 msgstr "Аккаунт успешно удален"
 
-#: app/views.py:383
+#: app/views.py:399
 msgid "Company (edit)"
 msgstr "Данные компании"
 
-#: app/views.py:413 app/views.py:424 app/views.py:583
+#: app/views.py:429 app/views.py:440 app/views.py:603
 msgid "User (edit)"
 msgstr "Профиль (редактировать)"
 
-#: app/views.py:441 app/views.py:452
+#: app/views.py:457 app/views.py:468
 msgid "Reset password"
 msgstr "Сброс пароля"
 
-#: app/views.py:446
+#: app/views.py:462
 msgid "Temporary password has been sent to your e-mail"
 msgstr "Временный пароль отправлен на ваш e-mail"
 
-#: app/views.py:449
+#: app/views.py:465
 msgid "User with the specified e-mail is not registered"
 msgstr "Пользователь с указанным e-mail не зарегистрирован"
 
-#: app/views.py:504
+#: app/views.py:521
 msgid "Staff (create)"
 msgstr "Сотрудник (создать)"
 
-#: app/views.py:544
+#: app/views.py:561
 msgid "Staff (edit)"
 msgstr "Сотрудник (редактировать)"
 
-#: app/views.py:567
+#: app/views.py:572
+msgid "Save the data first"
+msgstr ""
+
+#: app/views.py:587
 msgid "User successfully changed"
 msgstr "Пользователь изменен"
 
-#: app/views.py:577
+#: app/views.py:597
 msgid "User successfully create"
 msgstr "Пользователь успешно создан"
 
 #: app/templates/base.html:59 app/templates/holiday_table.html:5
-#: app/views.py:598
+#: app/views.py:618
 msgid "Holidays"
 msgstr "Выходные"
 
-#: app/views.py:623
+#: app/views.py:643
 msgid "Holiday (create)"
 msgstr "Выходной (создать)"
 
-#: app/views.py:653
+#: app/views.py:673
 msgid "Holiday (edit)"
 msgstr "Выходной (редактировать)"
 
 #: app/templates/base.html:55 app/templates/schedule_table.html:5
-#: app/views.py:671 app/views.py:2059
+#: app/views.py:691 app/views.py:2093
 msgid "Schedules"
 msgstr "Графики"
 
-#: app/views.py:690
+#: app/views.py:710
 msgid "Schedule (create)"
 msgstr "График (создать)"
 
-#: app/views.py:714
+#: app/views.py:734
 msgid "Schedule (edit)"
 msgstr "График (редактировать)"
 
-#: app/views.py:724
+#: app/views.py:744
 msgid "Reset schedule to default?"
 msgstr "Сбросить на настройки по умолчанию?"
 
-#: app/views.py:744
+#: app/views.py:764
 msgid "Schedule_days"
 msgstr "Дни"
 
-#: app/views.py:769
+#: app/views.py:789
 msgid "Schedule day (create)"
 msgstr "День (создать)"
 
-#: app/views.py:797
+#: app/views.py:817
 msgid "Schedule day (edit)"
 msgstr "День (редактировать)"
 
-#: app/views.py:836
+#: app/views.py:856
 msgid "Client (create)"
 msgstr "Клиент (создать)"
 
-#: app/views.py:861
+#: app/views.py:881
 msgid "Client (edit)"
 msgstr "Клиент (редактировать)"
 
-#: app/templates/client_files_table.html:10 app/views.py:878
+#: app/templates/client_files_table.html:10 app/views.py:898
 msgid "Files"
 msgstr "Файлы"
 
-#: app/views.py:922
+#: app/views.py:942
 msgid "File upload"
 msgstr "Загрузка файла"
 
-#: app/views.py:991
+#: app/views.py:1011
 msgid "Tag (create)"
 msgstr "Метка (создать)"
 
-#: app/views.py:1010
+#: app/views.py:1030
 msgid "Tag (edit)"
 msgstr "Метка (редактировать)"
 
-#: app/views.py:1084
+#: app/views.py:1104
 msgid "Service (create)"
 msgstr "Услуга (создать)"
 
-#: app/views.py:1118
+#: app/views.py:1138
 msgid "Service (edit)"
 msgstr "Услуга (редактировать)"
 
-#: app/views.py:1166
+#: app/views.py:1186
 msgid "Location (create)"
 msgstr "Филиал (создать)"
 
-#: app/views.py:1208
+#: app/views.py:1228
 msgid "Location (edit)"
 msgstr "Филиал (редактировать)"
 
-#: app/views.py:1216
+#: app/views.py:1236
 msgid "Add all services?"
 msgstr "Добавить все услуги?"
 
-#: app/views.py:1230
+#: app/views.py:1250
 msgid "Delete all services?"
 msgstr "Удалить все услуги?"
 
-#: app/views.py:1322
+#: app/views.py:1358
 msgid "Appointment (create)"
 msgstr "Запись (создать)"
 
-#: app/views.py:1407
+#: app/views.py:1443
 msgid "Appointment (edit)"
 msgstr "Запись (редактировать)"
 
-#: app/views.py:1455
+#: app/views.py:1491
 msgid "Payment receipt"
 msgstr "Чек платежа"
 
-#: app/templates/item_table.html:9 app/views.py:1472
+#: app/templates/item_table.html:9 app/views.py:1508
 msgid "Items"
 msgstr "Материалы"
 
-#: app/views.py:1491
+#: app/views.py:1527
 msgid "Item (create)"
 msgstr "Материал (создать)"
 
-#: app/views.py:1510
+#: app/views.py:1546
 msgid "Item (edit)"
 msgstr "Материал (редактировать)"
 
-#: app/views.py:1526
+#: app/views.py:1562
 msgid "Items flow"
 msgstr "Движение материалов"
 
-#: app/views.py:1564
+#: app/views.py:1600
 msgid "Item flow (create)"
 msgstr "Движение материалов (создать)"
 
-#: app/views.py:1610
+#: app/views.py:1646
 msgid "Item flow (edit)"
 msgstr "Движение материалов (редактировать)"
 
-#: app/views.py:1657
+#: app/views.py:1693
 msgid "*Previous visit"
 msgstr "*Предыдущий визит"
 
-#: app/views.py:1660
+#: app/views.py:1696
 msgid "Notice (create)"
 msgstr "Напоминание (создать)"
 
-#: app/views.py:1687
+#: app/views.py:1723
 msgid "Notice (edit)"
 msgstr "Напоминание (редактировать)"
 
-#: app/templates/base.html:46 app/views.py:1704
+#: app/templates/base.html:46 app/views.py:1740
 msgid "Cash desk"
 msgstr "Касса"
 
 #: app/templates/base.html:49 app/templates/cash_flow_table.html:5
-#: app/views.py:1720
+#: app/views.py:1756
 msgid "Cash flow"
 msgstr "Движение денег"
 
-#: app/views.py:1758 app/views.py:1811
+#: app/views.py:1794 app/views.py:1847
 msgid "Amount exceeds the balance in the cash box"
 msgstr "Сумма превышает остаток в кассе"
 
-#: app/views.py:1765
+#: app/views.py:1801
 msgid "#Payment for services"
 msgstr "#Оплата услуг"
 
-#: app/views.py:1777
+#: app/views.py:1813
 msgid "Cash flow (create)"
 msgstr "Движение денег (создать)"
 
-#: app/views.py:1825
+#: app/views.py:1861
 msgid "Cash flow (edit)"
 msgstr "Движение денег (редактирование)"
 
-#: app/templates/base.html:69 app/views.py:1877
+#: app/templates/base.html:69 app/views.py:1913
 msgid "Reports"
 msgstr "Отчеты"
 
-#: app/views.py:2009
+#: app/views.py:2043
 msgid "Export data to Excel?"
 msgstr "Выгрузить данные в Excel?"
 
-#: app/views.py:2052
+#: app/views.py:2086
 msgid "File not found"
 msgstr "Файл не найден"
 
-#: app/views.py:2061
+#: app/views.py:2095
 msgid "Necessary to create at least one schedule"
 msgstr "Необходимо создать хотя бы один график работы"
 
-#: app/views.py:2064
+#: app/views.py:2098
 msgid "Necessary to create at least one location"
 msgstr "Необходимо создать хотя бы один филиал"
 
-#: app/views.py:2067
+#: app/views.py:2101
 msgid "Necessary to create at least one service"
 msgstr "Необходимо создать хотя бы одну услугу"
 
-#: app/views.py:2070
+#: app/views.py:2104
 msgid "Necessary to create at least one worker"
 msgstr "Необходимо создать хотя бы одного сотрудника"
 
 #: app/templates/base.html:62 app/templates/quick_start.html:6
-#: app/views.py:2081
+#: app/views.py:2115
 msgid "Quick start"
 msgstr "Быстрый старт"
 
@@ -832,7 +832,7 @@ msgid "Confirmation"
 msgstr "Подтверждение"
 
 #: app/templates/_confirm_form.html:14 app/templates/appointment_form.html:70
-#: app/templates/data_form.html:47 app/templates/receipt_form.html:13
+#: app/templates/data_form.html:49 app/templates/receipt_form.html:13
 #: app/templates/schedule_form.html:40
 #: app/templates/staff_schedule_form.html:107
 #: app/templates/success_sendmail.html:5 app/templates/upload_form.html:26
@@ -875,6 +875,34 @@ msgstr "Оплата"
 #: app/templates/appointment_form.html:91
 msgid "Notice"
 msgstr "Звонок"
+
+#: app/templates/assistant.html:6
+msgid "Sun"
+msgstr "Вск"
+
+#: app/templates/assistant.html:7
+msgid "Mon"
+msgstr "Пон"
+
+#: app/templates/assistant.html:8
+msgid "Tue"
+msgstr "Втр"
+
+#: app/templates/assistant.html:9
+msgid "Wed"
+msgstr "Срд"
+
+#: app/templates/assistant.html:10
+msgid "Thu"
+msgstr "Чтв"
+
+#: app/templates/assistant.html:11
+msgid "Fri"
+msgstr "Птн"
+
+#: app/templates/assistant.html:12
+msgid "Sut"
+msgstr "Суб"
 
 #: app/templates/base.html:4 app/templates/index.html:4
 msgid "Welcome to Jiiin"
@@ -958,15 +986,11 @@ msgstr "Забыли пароль"
 msgid "Click to reset"
 msgstr "Кликните для сброса"
 
-#: app/templates/quick_start.html:23
+#: app/templates/quick_start.html:26 app/templates/quick_start.html:51
 msgid "Successfully configured"
 msgstr "Настройка выполнена"
 
-#: app/templates/quick_start.html:27
-msgid "Сonfigure"
-msgstr "Настроить"
-
-#: app/templates/quick_start.html:34
+#: app/templates/quick_start.html:65
 msgid ""
 "Well done! Settings completed successfully. You can start recording "
 "clients! "
@@ -1013,15 +1037,18 @@ msgstr "Выбранные услуги"
 msgid "Date / time"
 msgstr "Дата / время"
 
-#: app/templates/timetable_card.html:39 app/templates/timetable_card.html:105
+#: app/templates/timetable_card.html:39 app/templates/timetable_card.html:42
+#: app/templates/timetable_card.html:121 app/templates/timetable_card.html:124
 msgid "Today"
 msgstr "Сегодня"
 
-#: app/templates/timetable_card.html:44 app/templates/timetable_card.html:110
+#: app/templates/timetable_card.html:48 app/templates/timetable_card.html:51
+#: app/templates/timetable_card.html:130 app/templates/timetable_card.html:133
 msgid "Week"
 msgstr "Неделя"
 
-#: app/templates/timetable_card.html:49 app/templates/timetable_card.html:115
+#: app/templates/timetable_card.html:57 app/templates/timetable_card.html:60
+#: app/templates/timetable_card.html:139 app/templates/timetable_card.html:142
 msgid "All"
 msgstr "Все"
 
@@ -1057,4 +1084,10 @@ msgstr "Все"
 
 #~ msgid "Id"
 #~ msgstr "Идентификатор"
+
+#~ msgid "Please select date"
+#~ msgstr "Выберите дату"
+
+#~ msgid "Сonfigure"
+#~ msgstr "Настроить"
 
