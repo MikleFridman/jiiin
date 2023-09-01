@@ -2,7 +2,7 @@ import os
 from datetime import datetime, timedelta
 from threading import Thread
 
-from flask import flash
+from flask import flash, session
 from flask_login import current_user
 from flask_mail import Message
 from flask_babel import lazy_gettext as _l, _
@@ -185,38 +185,35 @@ def phone_number_plus(number):
     return number
 
 
-def get_calendar(days=None):
-    day_start = current_day = (datetime.now().date() +
-                               timedelta(days=-datetime.now().isoweekday()))
-    if not days:
-        day_end = day_start + timedelta(days=31)
+def get_calendar(days=None, data_filter=None, day_start=None):
+    if not day_start:
+        current_day = (datetime.now().date() +
+                       timedelta(days=-datetime.now().isoweekday()))
     else:
-        day_end = day_start + timedelta(days=days)
+        current_day = day_start + timedelta(days=-day_start.isoweekday())
+    if not days:
+        day_end = current_day + timedelta(days=31)
+    else:
+        day_end = current_day + timedelta(days=days)
     calendar = {}
-    locations = Location.get_items(False)
     while current_day < day_end:
-        dl = []
-        for location in locations:
-            time_open = datetime.strptime('00.00', '%H.%M')
-            time_close = datetime.strptime('00.00', '%H.%M')
-            if location.main_schedule:
-                wt = location.main_schedule.get_work_time(current_day)
-                time_open = wt['hour_from']
-                time_close = wt['hour_to']
-            free_time = time_close - time_open
-            busy_time = timedelta(seconds=0)
-            data_filter = {'location_id': location.id}
-            data_search = [func.date(Appointment.date_time) == current_day]
-            appointments = Appointment.get_items(False, data_filter=data_filter,
-                                                 data_search=data_search)
-            for appointment in appointments:
-                busy_time += appointment.duration
-            appointments_list = (
-                [(a.date_time, a.date_time + a.duration, a.staff) for a in appointments])
-            appointments_list.sort(key=lambda x: x[0])
-            dl.append({'location': location,
-                       'work_time': (time_open, time_close),
-                       'appointments': appointments_list})
-        calendar[current_day] = dl
+        data_search = [func.date(Appointment.date_time) == current_day]
+        appointments = Appointment.get_items(False, data_filter=data_filter,
+                                             data_search=data_search)
+        appointments_list = (
+            [(a.date_time, a.date_time + a.duration, a.staff) for a in appointments])
+        appointments_list.sort(key=lambda x: x[0])
+        day = {'count': len(appointments_list),
+               'appointments': appointments_list}
+        calendar[current_day] = day
         current_day += timedelta(days=1)
     return calendar
+
+
+def clear_session():
+    session.pop('services', None)
+    session.pop('location', None)
+    session.pop('staff', None)
+    session.pop('client', None)
+    session.pop('date', None)
+    session.pop('time', None)

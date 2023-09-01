@@ -162,6 +162,7 @@ class UserFormEdit(UserForm):
     start_page = SelectField(_l('Start page'),
                              choices=[('', _l('-Select-')),
                                       ('appointments_table', _l('Timetable')),
+                                      ('appointment_assistant', _l('Calendar')),
                                       ('clients_table', _l('Clients')),
                                       ('notices_table', _l('Notices'))],
                              coerce=str, validators=[Optional()])

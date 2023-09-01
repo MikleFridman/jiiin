@@ -2,10 +2,14 @@
   <div class="d-none d-sm-block">
     <div class="row">
       <div class="col-md-2 mb-2">
-        <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_create }}';">{{ _('Add new') }}</button>
+        {% if url_create %}
+          <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_create }}';">{{ _('Add new') }}</button>
+        {% endif %}
       </div>
       <div class="col-md-5 mb-2 text-center">
-        <h4>{{ title }}</h4>
+        {% if title %}
+          <h4>{{ title }}</h4>
+        {% endif %}
       </div>
       {% include '_search_form.html' %}
     </div>
@@ -13,10 +17,14 @@
   <div class="d-block d-sm-none">
     <div class="row">
       <div class="col-1 z-3 position-absolute mb-2">
-        <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_create }}';"> + </button>
+        {% if url_create %}
+          <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_create }}';"> + </button>
+        {% endif %}
       </div>
       <div class="col-12 mt-1 mb-2 text-center">
-        <h4>{{ title }}</h4>
+        {% if title %}
+          <h4>{{ title }}</h4>
+        {% endif %}
       </div>
     </div>
     <div class="row">

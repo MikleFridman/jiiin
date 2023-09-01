@@ -828,3 +828,11 @@ class Holiday(db.Model, Entity, Splitter):
     working_day = db.Column(db.Boolean, default=False)
     hour_from = db.Column(db.Time)
     hour_to = db.Column(db.Time)
+
+
+class Assistant:
+    search = [('location_id', 'Location', Location),
+              ('staff_id', 'Worker', Staff)]
+    location_id = None
+    staff_id = None
+

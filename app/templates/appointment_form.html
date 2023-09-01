@@ -2,7 +2,7 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 {% block app_content %}
     <form method="post">
-        <div class="form-group row">
+        <div class="form-group row mb-2">
             {{ form.hidden_tag() }}
             <div class="form-group col-md-6">
                 {{ form.location.label(class_="col-form-label") }} {% if form.location.flags.required %}*{% endif %}
@@ -47,7 +47,12 @@
                 </div>
             </div>
         </div>
-        <div class="form-group mt-3">
+        {% if items | count == 0 %}
+        <div class="alert alert-dismissible alert-secondary mt-3 text-center pt-1 pb-1">
+          <div>{{ _('To get the available time, select location, worker and service') }}</div>
+        </div>
+        {% endif %}
+        <div class="form-group">
             <div class="form-group col-md-12">
                 {{ form.service.label(class_="col-form-label") }} {% if form.service.flags.required %}*{% endif %}
                 <a href="{{ url_select_service }}"> ({{ _('select') }})</a>

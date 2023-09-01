@@ -7,6 +7,7 @@ from xml.dom import minidom
 
 import pandas as pd
 import qrcode
+from dateutil.relativedelta import relativedelta
 from pandas import ExcelWriter
 from sqlalchemy.orm import RelationshipProperty
 
@@ -14,7 +15,7 @@ import app
 import hashlib
 import os.path
 
-from flask import render_template, redirect, url_for, request, jsonify, session, send_file
+from flask import render_template, redirect, url_for, request, jsonify, send_file
 from flask_babel import _, lazy_gettext as _l
 from flask_login import login_user, logout_user, login_required
 from werkzeug.urls import url_parse
@@ -155,7 +156,8 @@ def get_filter_parameters(form, class_object):
         if request_arg and not request_arg == '0':
             check_filter = True
             if issubclass(search_object, Entity) or issubclass(search_object, Week):
-                if type(getattr(class_object, search_attr).property) == RelationshipProperty:
+                if (getattr(class_object, search_attr) and
+                        type(getattr(class_object, search_attr).property) == RelationshipProperty):
                     search_param.append(getattr(class_object, search_attr).any(id=request_arg))
                 else:
                     filter_param[search_attr] = request_arg
@@ -1046,13 +1048,6 @@ def services_table():
                              mod_services=1)
     else:
         url_submit = url_for('appointment_create')
-    # if url_back == url_for('appointments_table'):
-    #     session.pop('services', None)
-    #     session.pop('location', None)
-    #     session.pop('staff', None)
-    #     session.pop('client', None)
-    #     session.pop('date', None)
-    #     session.pop('time', None)
     choice_mode = request.args.get('choice_mode', None, type=int)
     if choice_mode:
         template = 'service_table_choice.html'
@@ -1259,30 +1254,28 @@ def location_delete_all_services(id):
 
 
 # Appointment block start
+# noinspection PyTypeChecker
 @app.route('/appointments/assistant/', methods=['GET', 'POST'])
 @login_required
 def appointment_assistant():
-    session.pop('services', None)
-    session.pop('location', None)
-    session.pop('staff', None)
-    session.pop('client', None)
-    session.pop('date', None)
-    session.pop('time', None)
-    calendar = get_calendar(42)
+    offset = request.args.get('offset', 0, type=int)
+    form = set_filter(Assistant)
+    param = get_filter_parameters(form, Assistant)[0]
+    clear_session()
+    first_day = (datetime(datetime.now().year, datetime.now().month, 1).date() +
+                 relativedelta(months=offset))
+    day_start = max(first_day, datetime.now().date())
+    calendar = get_calendar(days=42, data_filter=param, day_start=day_start)
     return render_template('assistant.html',
-                           calendar=calendar)
+                           calendar=calendar,
+                           month=day_start.strftime('%B %Y'),
+                           form=form)
 
 
 # noinspection PyTypeChecker
 @app.route('/appointments/')
 @login_required
 def appointments_table():
-    session.pop('location', None)
-    session.pop('staff', None)
-    session.pop('client', None)
-    session.pop('services', None)
-    session.pop('date', None)
-    session.pop('time', None)
     page = request.args.get('page', 1, type=int)
     form = set_filter(Appointment)
     param = get_filter_parameters(form, Appointment)
@@ -1341,6 +1334,7 @@ def appointment_create():
             appointment.add_service(service)
         session.pop('services', None)
         db.session.commit()
+        clear_session()
         return redirect(url_for('appointments_table'))
     elif request.method == 'GET':
         if selected_location_id:
@@ -1412,6 +1406,7 @@ def appointment_edit(id):
             appointment.add_service(service)
         session.pop('services', None)
         db.session.commit()
+        clear_session()
         return redirect(url_back)
     elif request.method == 'GET':
         if selected_location_id:
