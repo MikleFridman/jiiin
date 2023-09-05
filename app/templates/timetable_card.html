@@ -1,8 +1,8 @@
 {% extends "base.html" %}
-
 {% block app_content %}
   {% import '_header.html' as forms %}
   {{ forms.render_header(_('Timetable'), url_for('appointment_assistant'), form) }}
+<div id="timetable" class="container p-0">
   <!--Screen LG-XL-->
   <div class="d-none d-lg-block">
   <table id="data" class="table table-hover border-top border-bottom border-light">
@@ -89,12 +89,6 @@
               {{ a. client.phone }}
             </span>
           </small>
-<!--          <div>-->
-<!--            <hr>-->
-<!--            {% for service in a.services %}-->
-<!--              <span class="list-group-item text-body">{{ service.name|truncate(killwords=True, length=60) }}</span>-->
-<!--            {% endfor %}-->
-<!--          </div>-->
         </div>
         </a>
         <div class="card-footer pt-1 pb-1 ps-2 pe-2">
@@ -173,12 +167,6 @@
               </object>
             </span>
           </small>
-<!--          <div>-->
-<!--            <hr>-->
-<!--            {% for service in a.services %}-->
-<!--              <span class="list-group-item text-body">{{ service.name|truncate(killwords=True, length=32) }}</span>-->
-<!--            {% endfor %}-->
-<!--          </div>-->
         </div>
         </a>
         <div class="card-footer pt-1 pb-1 ps-2 pe-2">
@@ -197,7 +185,23 @@
       </div>
     {% endfor %}
   </div>
-
+</div>
 {% import '_pagination.html' as forms %}
 {{ forms.render_pagination(pagination, 'appointments_table', **request.args) }}
+
+<script src="{{ url_for('static', filename='js/hammer.js') }}"></script>
+<script>
+  var myElement = document.getElementById('timetable');
+  var hammertime = new Hammer(myElement);
+  hammertime.on('swiperight', function(ev) {
+      if (document.getElementById('prev')) {
+          document.getElementById('prev').click();
+          }
+  });
+  hammertime.on('swipeleft', function(ev) {
+      if (document.getElementById('next')) {
+        document.getElementById('next').click();
+      }
+  });
+</script>
 {% endblock %}

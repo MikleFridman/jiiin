@@ -5,6 +5,7 @@ from functools import wraps
 from io import BytesIO
 from xml.dom import minidom
 
+from flask_babel import get_locale
 import pandas as pd
 import qrcode
 from dateutil.relativedelta import relativedelta
@@ -15,7 +16,7 @@ import app
 import hashlib
 import os.path
 
-from flask import render_template, redirect, url_for, request, jsonify, send_file
+from flask import render_template, redirect, url_for, request, jsonify, send_file, g
 from flask_babel import _, lazy_gettext as _l
 from flask_login import login_user, logout_user, login_required
 from werkzeug.urls import url_parse
@@ -29,6 +30,11 @@ from app.models import *
 doc_version = minidom.parse('version.xml')
 VERSION = doc_version.getElementsByTagName('version')[0].firstChild.data
 VERSION_DATE = doc_version.getElementsByTagName('date')[0].firstChild.data
+
+
+@app.before_request
+def before_request():
+    g.locale = str(get_locale())
 
 
 @app.context_processor
@@ -53,11 +59,6 @@ def check_notices():
         items = Notice.get_items(data_filter=param)
         return {'notices_count': len(items)}
     return []
-
-
-@app.context_processor
-def get_interface_type():
-    return {'interface_compact': True}
 
 
 def admin_required(f):
@@ -1047,7 +1048,7 @@ def services_table():
         url_submit = url_for('appointment_edit', id=appointment_id,
                              mod_services=1)
     else:
-        url_submit = url_for('appointment_create')
+        url_submit = url_for('appointment_create', **request.args)
     choice_mode = request.args.get('choice_mode', None, type=int)
     if choice_mode:
         template = 'service_table_choice.html'
@@ -1268,7 +1269,7 @@ def appointment_assistant():
     calendar = get_calendar(days=42, data_filter=param, day_start=day_start)
     return render_template('assistant.html',
                            calendar=calendar,
-                           month=day_start.strftime('%B %Y'),
+                           month=day_start,
                            form=form)
 
 
@@ -1327,6 +1328,7 @@ def appointment_create():
                                   client_id=form.client.data,
                                   staff_id=form.staff.data,
                                   no_check_duration=form.no_check_duration.data,
+                                  allow_booking_this_time=form.allow_booking_this_time.data,
                                   info=form.info.data)
         db.session.add(appointment)
         db.session.flush()
@@ -1400,6 +1402,7 @@ def appointment_edit(id):
         appointment.client_id = form.client.data
         appointment.staff_id = form.staff.data
         appointment.no_check_duration = form.no_check_duration.data
+        appointment.allow_booking_this_time = form.allow_booking_this_time.data
         appointment.info = form.info.data
         appointment.services.clear()
         for service in selected_services:
@@ -1433,6 +1436,7 @@ def appointment_edit(id):
         else:
             form.date.data = appointment.date_time.date()
         form.no_check_duration.data = appointment.no_check_duration
+        form.allow_booking_this_time.data = appointment.allow_booking_this_time
         form.info.data = appointment.info
     return render_template('appointment_form.html',
                            title=_('Appointment (edit)'),

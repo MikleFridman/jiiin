@@ -111,7 +111,8 @@ def get_free_time_intervals(location_id, date, staff_id, duration,
             staff_intervals = []
         else:
             staff_intervals = [(ht['hour_from'], ht['hour_to'])]
-    filter_param = dict(staff_id=staff_id, cancel=False)
+    filter_param = dict(staff_id=staff_id, cancel=False,
+                        allow_booking_this_time=False)
     search_param = [func.date(Appointment.date_time) == date]
     if appointment_id:
         search_param.append(Appointment.id != appointment_id)

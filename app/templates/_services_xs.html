@@ -1,0 +1,20 @@
+  <ul class="list-group">
+    {% for s in items %}
+    <li class="list-group-item text-body">
+      <div class="d-none d-sm-block d-lg-none">
+        {{ s.name|truncate(killwords=True, length=60) }}
+      </div>
+      <div class="d-block d-sm-none">
+        {{ s.name|truncate(killwords=True, length=32) }}
+      </div>
+    </li>
+    {% endfor %}
+<!--    <li class="list-group-item bg-light">-->
+<!--        <a class="text-decoration-none text-primary" href="{{ url_select_service }}">-->
+<!--            <div class="text-center">-->
+<!--                {{ _('Select') }}-->
+<!--            </div>-->
+<!--        </a>-->
+<!--    </li>-->
+  </ul>
+

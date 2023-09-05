@@ -24,7 +24,7 @@
     <ul class="pagination">
         {% if offset > 0 %}
             <li class="page-item">
-                <a class="page-link" href="{{ url_for(endpoint, offset = [0, offset - 1] | max, **param) }}">&laquo;</a>
+                <a id="prev" class="page-link" href="{{ url_for(endpoint, offset = [0, offset - 1] | max, **param) }}">&laquo;</a>
             </li>
         {% else %}
             <li class="page-item disabled">
@@ -35,10 +35,26 @@
             <a class="page-link" href="{{ url_for(endpoint, **param) }}"><small>{{ _('Today') }}</small></a>
         </li>
         <li class="page-item d-flex justify-content-end">
-          <a class="page-link" href="{{ url_for(endpoint, offset = offset + 1, **param) }}">&raquo;</a>
+            <a id="next" class="page-link" href="{{ url_for(endpoint, offset = offset + 1, **param) }}">&raquo;</a>
         </li>
     </ul>
   </div>
   {% endwith %}
   {% endwith %}
+
+  <script src="{{ url_for('static', filename='js/hammer.js') }}"></script>
+  <script>
+    var myElement = document.getElementById('calendar');
+    var hammertime = new Hammer(myElement);
+    hammertime.on('swiperight', function(ev) {
+        if (document.getElementById('prev')) {
+            document.getElementById('prev').click();
+            }
+    });
+    hammertime.on('swipeleft', function(ev) {
+        if (document.getElementById('next')) {
+          document.getElementById('next').click();
+        }
+    });
+  </script>
 {% endmacro %}

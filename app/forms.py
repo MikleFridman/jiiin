@@ -196,7 +196,7 @@ class StaffUserEditForm(UserFormEdit):
 
 class ResetPasswordRequestForm(FlaskForm):
     email = EmailField(_l('E-mail'), validators=[DataRequired(), Email()])
-    submit = SubmitField(_l('Submit'))
+    submit = SubmitField(_l('Send'))
 
 
 class ResetPasswordForm(FlaskForm):
@@ -422,6 +422,7 @@ class AppointmentForm(FlaskForm):
     duration = HiddenField(_l('Duration'), default=0)
     services = HiddenField(_l('Services'), default='')
     no_check_duration = BooleanField(_l('Not control duration'))
+    allow_booking_this_time = BooleanField(_l('Allow booking for this time'))
     info = TextAreaField(_l('Info'), validators=[Length(max=200)])
     submit = SubmitField(_l('Submit'))
 

@@ -546,6 +546,7 @@ class Appointment(db.Model, Entity, Splitter):
     client_id = db.Column(db.Integer, db.ForeignKey('client.id'))
     staff_id = db.Column(db.Integer, db.ForeignKey('staff.id'))
     no_check_duration = db.Column(db.Boolean, default=False)
+    allow_booking_this_time = db.Column(db.Boolean, default=False)
     info = db.Column(db.Text)
     result = db.Column(db.Text)
     payment_id = db.Column(db.Integer, db.ForeignKey('cash_flow.id'))

@@ -2,22 +2,22 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 {% block app_content %}
     {% import '_header.html' as forms %}
-    {{ forms.render_header(month, '', form) }}
-    <div class="container border">
-        <div class="row row-cols-7 text-center text-primary" style="background-color: #dae2eb !important">
-            <div class="col border"><small>{{ _('Sun') }}</small></div>
-            <div class="col border"><small>{{ _('Mon') }}</small></div>
-            <div class="col border"><small>{{ _('Tue') }}</small></div>
-            <div class="col border"><small>{{ _('Wed') }}</small></div>
-            <div class="col border"><small>{{ _('Thu') }}</small></div>
-            <div class="col border"><small>{{ _('Fri') }}</small></div>
-            <div class="col border"><small>{{ _('Sut') }}</small></div>
+    {{ forms.render_header(moment(month).format('YYYY MMMM'), '', form) }}
+    <div class="container border" id="calendar">
+        <div class="row row-cols-7 text-center text-primary flex-nowrap" style="background-color: #dae2eb !important">
+            <div class="col border"><small>{{ _('Su') }}</small></div>
+            <div class="col border"><small>{{ _('Mo') }}</small></div>
+            <div class="col border"><small>{{ _('Tu') }}</small></div>
+            <div class="col border"><small>{{ _('We') }}</small></div>
+            <div class="col border"><small>{{ _('Th') }}</small></div>
+            <div class="col border"><small>{{ _('Fr') }}</small></div>
+            <div class="col border"><small>{{ _('Sa') }}</small></div>
         </div>
-        <div class="row row-cols-7">
+        <div class="row row-cols-7 flex-nowrap">
             {% for date, day in calendar.items() %}
                 <div class="col p-0 pe-1 border {% if date < today_date %}bg-light{% endif %}">
                     {% if date >= today_date %}
-                        <a class="text-decoration-none text-reset" href="{{ url_for('appointment_create', date = date) }}">
+                        <a class="text-decoration-none text-reset" href="{{ url_for('services_table', choice_mode=1, date=date, **request.args) }}">
                     {% endif %}
                     <div class="d-flex align-items-end flex-column" style="height: 60px;">
                         {% if date >= today_date %}
@@ -50,5 +50,4 @@
     </div>
     {% import '_calendar_footer.html' as forms %}
     {{ forms.render_footer('appointment_assistant', **request.args) }}
-
 {% endblock %}

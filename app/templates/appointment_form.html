@@ -2,6 +2,26 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 {% block app_content %}
     <form method="post">
+        <div class="d-block d-lg-none mb-1">
+            <div class="form-group">
+                <div class="form-group col-md-12">
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            {{ form.service.label(class_="col-form-label") }} *
+                        </div>
+                        <div class="mt-1">
+                            <a class="text-decoration-none text-primary" href="{{ url_select_service }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-plus-square me-1" viewBox="0 0 16 16" text-primary>
+                                  <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
+                                  <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                    {% include '_services_xs.html' %}
+                </div>
+            </div>
+        </div>
         <div class="form-group row mb-2">
             {{ form.hidden_tag() }}
             <div class="form-group col-md-6">
@@ -53,14 +73,20 @@
         </div>
         {% endif %}
         <div class="form-group">
-            <div class="form-group col-md-12">
-                {{ form.service.label(class_="col-form-label") }} {% if form.service.flags.required %}*{% endif %}
-                <a href="{{ url_select_service }}"> ({{ _('select') }})</a>
-                {% include '_services.html' %}
+            <div class="d-none d-lg-block">
+                <div class="form-group col-md-12">
+                    {{ form.service.label(class_="col-form-label") }} {% if form.service.flags.required %}*{% endif %}
+                    <a href="{{ url_select_service }}"> ({{ _('select') }})</a>
+                    {% include '_services.html' %}
+                </div>
             </div>
             <div class="form-group col-md-12 mt-2">
                 {{ form.no_check_duration(class_="form-check-input ms-1", onclick="handleClick()") }}
                 {{ form.no_check_duration.label(class_="form-check-label ms-3") }}
+            </div>
+            <div class="form-group col-md-12 mt-2">
+                {{ form.allow_booking_this_time(class_="form-check-input ms-1", onclick="handleClick()") }}
+                {{ form.allow_booking_this_time.label(class_="form-check-label ms-3") }}
             </div>
             <div class="form-group col-md-12 mt-2">
                 {{ form.info.label(class_="col-form-label") }} {% if form.info.flags.required %}*{% endif %}

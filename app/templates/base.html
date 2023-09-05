@@ -5,6 +5,9 @@
 {% endblock %}
 
 {% block scripts %}
+    {{ super() }}
+    {{ moment.include_moment() }}
+    {{ moment.lang(g.locale) }}
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
 {% endblock %}
 
@@ -13,11 +16,21 @@
   <div class="container-fluid">
     <a class="navbar-brand ms-3" href="{{ url_for('index') }}" title="ver. {{ version }} ({{ version_date }})"> Jiiin </a>
     {% if current_user.is_authenticated %}
-      <div class="d-flex d-lg-none nav-item justify-content-end">
+      <div class="d-flex d-lg-none nav-item">
           <a class="nav-link me-2 {% if request.path == url_for('user_edit', id=current_user.id) %}active{% endif %}" href="{{ url_for('user_edit', id=current_user.id) }}">
               <img src="{{ url_for('static', filename='/profile.png') }}" alt="profile" title="{{ _('Profile') }}" width="26">
           </a>
       </div>
+      {% if notices_count %}
+      <li class="d-flex d-lg-none nav-item">
+          <a class="nav-link me-2" href="{{ url_for('notices_table', date=today_date, processed=False) }}">
+            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-bell-fill text-light" viewBox="0 0 16 16">
+              <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z"/>
+                <small><span class="position-absolute top-10 start-40 translate-middle badge bg-danger rounded-pill">{{ notices_count }}</span></small>
+            </svg>
+          </a>
+      </li>
+      {% endif %}
     {% endif %}
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
@@ -78,10 +91,12 @@
           <ul class="navbar-nav me-auto">
               {% if current_user.is_authenticated %}
               {% if notices_count %}
-              <li class="nav-item">
+              <li class="d-none d-lg-flex nav-item">
                   <a class="nav-link me-2" href="{{ url_for('notices_table', date=today_date, processed=False) }}">
-                      <img src="{{ url_for('static', filename='/bell.png') }}" alt="notices" title="{{ _('Notices') }}" width="22">
-                      <span class="badge bg-secondary rounded-pill">{{ notices_count }}</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-bell-fill text-light" viewBox="0 0 16 16">
+                      <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z"/>
+                        <small><span class="position-absolute top-10 start-40 translate-middle badge bg-danger rounded-pill">{{ notices_count }}</span></small>
+                    </svg>
                   </a>
               </li>
               {% endif %}
