@@ -22,17 +22,12 @@
                             {{ day.weekday }}
                             </a>
                         </div>
-                        <div class="col-5 text-end pe-2">{{day.hour_from.strftime('%H:%M')}} - {{day.hour_to.strftime('%H:%M')}}</div>
-                        <div class="col-1 text-start ps-2">
-                            <a href="{{ url_for('delete', class_name='schedule_day', object_id=day.id, url_back=url_for('schedule_edit', id=schedule.id, **request.args)) }}">
-                              <img src="{{ url_for('static', filename='/delete.png') }}" alt="hidden" width="18">
-                            </a>
-                        </div>
+                        <div class="col-6 text-end pe-2">{{day.hour_from.strftime('%H:%M')}} - {{day.hour_to.strftime('%H:%M')}}</div>
                     </div>
                 {% endfor %}
             </div>
             <a class="text-decoration-none" href="{{ url_for('schedule_reset', id=schedule.id, url_back=url_for('schedule_edit', id=schedule.id)) }}">
-                <div class="mt-3">{{ _('Reset to default') }}</div>
+                <div class="mt-3 ms-1">{{ _('Reset to default') }}</div>
             </a>
             {% endif %}
 

@@ -626,7 +626,8 @@ class Appointment(db.Model, Entity, Splitter):
     def delete_object(self, *args, **kwargs):
         payment = self.payment
         super(Appointment, self).delete_object(*args, **kwargs)
-        payment.delete_object()
+        if payment:
+            payment.delete_object()
 
 
 class Week:
@@ -693,6 +694,7 @@ class ScheduleDay(db.Model, Entity, Splitter):
     day_number = db.Column(db.Integer)
     hour_from = db.Column(db.Time)
     hour_to = db.Column(db.Time)
+    holiday = db.Column(db.Boolean, default=False)
 
     @property
     def weekday(self):
@@ -836,4 +838,3 @@ class Assistant:
               ('staff_id', 'Worker', Staff)]
     location_id = None
     staff_id = None
-

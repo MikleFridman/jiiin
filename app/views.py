@@ -1,9 +1,11 @@
 import ast
+import datetime
 import zipfile
 from base64 import b64encode
 from functools import wraps
 from io import BytesIO
 from xml.dom import minidom
+from datetime import time
 
 from flask_babel import get_locale
 import pandas as pd
@@ -809,6 +811,9 @@ def schedule_day_edit(schedule_id, id):
         schedule_day.day_number = form.weekday.data
         schedule_day.hour_from = form.hour_from.data
         schedule_day.hour_to = form.hour_to.data
+        schedule_day.holiday = form.holiday.data
+        if form.holiday.data:
+            schedule_day.hour_from = schedule_day.hour_to = time()
         db.session.commit()
         return redirect(url_back)
     elif request.method == 'GET':
@@ -816,6 +821,7 @@ def schedule_day_edit(schedule_id, id):
         form.process()
         form.hour_from.data = schedule_day.hour_from
         form.hour_to.data = schedule_day.hour_to
+        form.holiday.data = schedule_day.holiday
     return render_template('data_form.html',
                            title=_('Schedule day (edit)'),
                            form=form,
@@ -832,7 +838,12 @@ def clients_table():
     form = set_filter(Client)
     param = get_filter_parameters(form, Client)
     data = Client.get_pagination(page, *param)
-    return render_template('client_table.html',
+    choice_mode = request.args.get('choice_mode', None, type=int)
+    if choice_mode:
+        template = 'client_table_choice.html'
+    else:
+        template = 'client_table.html'
+    return render_template(template,
                            title=_('Clients'),
                            items=data.items,
                            pagination=data,
@@ -854,7 +865,10 @@ def client_create():
                         info=form.info.data)
         db.session.add(client)
         db.session.commit()
-        return redirect(url_for('clients_table'))
+        if request.args.get('choice_mode', 0, type=int):
+            return redirect(url_for('appointment_create', client_id=client.id))
+        else:
+            return redirect(url_for('clients_table'))
     return render_template('data_form.html',
                            title=_('Client (create)'),
                            form=form,
@@ -879,7 +893,7 @@ def client_edit(id):
     elif request.method == 'GET':
         form = ClientForm(obj=client)
         form.tag_link.data = url_for('client_tags', client_id=client.id)
-        form.files_link.data = url_for('client_files_table', client_id=client.id)
+        # form.files_link.data = url_for('client_files_table', client_id=client.id)
     return render_template('data_form.html',
                            title=_('Client (edit)'),
                            form=form,
@@ -1078,7 +1092,8 @@ def service_create():
         next_page = url_for('services_table')
     form = ServiceForm()
     location_list = Location.get_items(True)
-    location_list.pop(0)
+    if len(location_list) > 0 and type(location_list[0]) == tuple and location_list[0][0] == 0:
+        location_list.pop(0)
     form.location.choices = location_list
     if form.validate_on_submit():
         service = Service(cid=current_user.cid,
@@ -1298,6 +1313,8 @@ def appointment_create():
     selected_services_id = session.get('services')
     selected_location_id = session.get('location')
     selected_staff_id = session.get('staff')
+    if request.args.get('client_id'):
+        session['client'] = request.args.get('client_id')
     selected_client_id = session.get('client')
     if request.args.get('date'):
         session['date'] = request.args.get('date')

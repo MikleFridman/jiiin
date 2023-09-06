@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+  {% import '_header.html' as forms %}
+  {{ forms.render_header(_('Clients'), url_for('client_create', **request.args), form) }}
+  <table id="data" class="table table-hover border-top border-bottom border-light">
+    <thead>
+      <tr class="d-none d-lg-table-row table-primary border-start border-end border-light text-center">
+        <th class="10">{{ _('Name') }}</th>
+        <th class="col-2">{{ _('Phone') }}</th>
+      </tr>
+      <tr class="d-table-row d-lg-none table-primary border-start border-end border-light text-center">
+        <th class="col-12">{{ _('Name') }}</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in items %}
+        <tr class="d-none d-lg-table-row {{ loop.cycle('table-default', 'table-light') }}  border-start border-end border-light">
+          <td class="col-10 ps-3">
+            <a class="text-decoration-none text-reset" href="{{ url_for('appointment_create', client_id=c.id) }}">
+              <div style="height:100%; width:100%">
+                {{ c.name|truncate(killwords=True, length=60) }}
+              </div>
+            </a>
+          </td>
+          <td class="col-2 text-center">{{ c.phone }}</td>
+        </tr>
+        <tr class="d-none d-sm-table-row d-lg-none {{ loop.cycle('table-default', 'table-light') }} border-start border-end border-light">
+          <td class="col-12">
+            <a class="text-decoration-none text-reset" href="{{ url_for('appointment_create', client_id=c.id) }}">
+              <div style="height:100%; width:100%">
+                {{ c.name|truncate(killwords=True, length=50) }}
+              </div>
+            </a>
+          </td>
+        </tr>
+        <tr class="d-table-row d-sm-none {{ loop.cycle('table-default', 'table-light') }} border-start border-end border-light">
+          <td class="col-12">
+            <a class="text-decoration-none text-reset" href="{{ url_for('appointment_create', client_id=c.id) }}">
+              <div style="height:100%; width:100%">
+                {{ c.name|truncate(killwords=True, length=32) }}
+              </div>
+            </a>
+          </td>
+       </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+{% import '_pagination.html' as forms %}
+{{ forms.render_pagination(pagination, 'clients_table', **request.args) }}
+{% endblock %}

@@ -275,6 +275,7 @@ class ScheduleDayForm(FlaskForm):
     weekday = SelectField(_l('Weekday'), choices=[*choices], coerce=int)
     hour_from = TimeField(_l('From hour'))
     hour_to = TimeField(_l('To hour'))
+    holiday = BooleanField(_l('Holiday'))
     submit = SubmitField(_l('Submit'))
 
     def __init__(self, schedule=None, schedule_day=None, *args, **kwargs):
@@ -287,7 +288,8 @@ class ScheduleDayForm(FlaskForm):
             flash(_l('Please select time'))
             raise ValidationError(_l('Please select time'))
         if (datetime.combine(datetime.now(), self.hour_to.data) -
-                datetime.combine(datetime.now(), field.data) < timedelta(minutes=1)):
+                datetime.combine(datetime.now(), field.data) < timedelta(minutes=1) and
+                not self.holiday.data):
             flash(_l('Incorrect time interval'))
             raise ValidationError(_l('Incorrect time interval'))
 
@@ -317,7 +319,7 @@ class ClientForm(FlaskForm):
                                                      validate_birthday_global])
     info = TextAreaField(_l('Info'), validators=[Length(max=200)])
     tag_link = URLField(_l('Client tags'))
-    files_link = URLField(_l('Client files'))
+    # files_link = URLField(_l('Client files'))
     submit = SubmitField(_l('Submit'))
 
     def __init__(self, source_phone=None, *args, **kwargs):

@@ -11,9 +11,8 @@
                         </div>
                         <div class="mt-1">
                             <a class="text-decoration-none text-primary" href="{{ url_select_service }}">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-plus-square me-1" viewBox="0 0 16 16" text-primary>
-                                  <path d="M14 1a1 1 0 0 1 1 1v12a1 1 0 0 1-1 1H2a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h12zM2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2z"/>
-                                  <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z"/>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-bag-plus-fill text-primary me-1" viewBox="0 0 16 16">
+                                  <path fill-rule="evenodd" d="M10.5 3.5a2.5 2.5 0 0 0-5 0V4h5v-.5zm1 0V4H15v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V4h3.5v-.5a3.5 3.5 0 1 1 7 0zM8.5 8a.5.5 0 0 0-1 0v1.5H6a.5.5 0 0 0 0 1h1.5V12a.5.5 0 0 0 1 0v-1.5H10a.5.5 0 0 0 0-1H8.5V8z"/>
                                 </svg>
                             </a>
                         </div>
@@ -41,12 +40,25 @@
                 </div>
             </div>
             <div class="form-group col-md-6">
-                {{ form.client.label(class_="col-form-label") }} {% if form.client.flags.required %}*{% endif %}
+                <div class="d-none d-lg-flex justify-content-between">
+                    <div>
+                        {{ form.client.label(class_="col-form-label") }} {% if form.client.flags.required %}*{% endif %}
+                    </div>
+                    <div class="mt-2 me-1">
+                        <a class="text-decoration-none text-reset" href="{{ url_for('clients_table', choice_mode=1)}}">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-person-lines-fill text-primary" viewBox="0 0 16 16">
+                              <path d="M6 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm-5 6s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zM11 3.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5zm.5 2.5a.5.5 0 0 0 0 1h4a.5.5 0 0 0 0-1h-4zm2 3a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1h-2zm0 3a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1h-2z"/>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+                <div class="d-none d-lg-block">
                 {% if form.client.errors %}
                     {{ form.client(class_="form-select is-invalid", onchange="select_client(this.value)") }}
                 {% else %}
                     {{ form.client(class_="form-select", onchange="select_client(this.value)") }}
                 {% endif %}
+                </div>
                 <div class="row mt-2">
                     <div class="col-md-7">
                     {{ form.date.label(class_="col-form-label") }} *
@@ -72,11 +84,40 @@
           <div>{{ _('To get the available time, select location, worker and service') }}</div>
         </div>
         {% endif %}
+        <div class="form-group d-col-md-6 d-lg-none mb-3">
+            <div class="d-flex justify-content-between">
+                <div>
+                    {{ form.client.label(class_="col-form-label") }} {% if form.client.flags.required %}*{% endif %}
+                </div>
+                <div class="mt-2">
+                    <a class="text-decoration-none text-reset" href="{{ url_for('clients_table', choice_mode=1)}}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" fill="currentColor" class="bi bi-person-lines-fill text-primary me-1" viewBox="0 0 16 16">
+                          <path d="M6 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm-5 6s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zM11 3.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5zm.5 2.5a.5.5 0 0 0 0 1h4a.5.5 0 0 0 0-1h-4zm2 3a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1h-2zm0 3a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1h-2z"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+            {% if form.client.errors %}
+                {{ form.client(class_="form-select is-invalid", onchange="select_client(this.value)") }}
+            {% else %}
+                {{ form.client(class_="form-select", onchange="select_client(this.value)") }}
+            {% endif %}
+        </div>
         <div class="form-group">
             <div class="d-none d-lg-block">
                 <div class="form-group col-md-12">
-                    {{ form.service.label(class_="col-form-label") }} {% if form.service.flags.required %}*{% endif %}
-                    <a href="{{ url_select_service }}"> ({{ _('select') }})</a>
+                    <div class="d-flex justify-content-between">
+                        <div>
+                            {{ form.service.label(class_="col-form-label") }} {% if form.service.flags.required %}*{% endif %}
+                        </div>
+                        <div class="mt-2">
+                            <a href="{{ url_select_service }}">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-bag-plus-fill text-primary me-1" viewBox="0 0 16 16">
+                                  <path fill-rule="evenodd" d="M10.5 3.5a2.5 2.5 0 0 0-5 0V4h5v-.5zm1 0V4H15v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V4h3.5v-.5a3.5 3.5 0 1 1 7 0zM8.5 8a.5.5 0 0 0-1 0v1.5H6a.5.5 0 0 0 0 1h1.5V12a.5.5 0 0 0 1 0v-1.5H10a.5.5 0 0 0 0-1H8.5V8z"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
                     {% include '_services.html' %}
                 </div>
             </div>
@@ -117,7 +158,6 @@
                               <div class="btn-group" role="group">
                                 <button id="btnGroupDrop1" type="button" class="btn btn-light mt-3 mb-2 dropdown-toggle" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"></button>
                                 <div class="dropdown-menu" aria-labelledby="btnGroupDrop1">
-                                  <a class="dropdown-item" href="{{ url_for('appointment_result', appointment_id=appointment_id, url_back=request.path) }}">{{ _('Result') }}</a>
                                   <a class="dropdown-item" href="{{ url_for('cash_flow_create', appointment_id=appointment_id, url_back=request.path) }}">{{ _('Payment') }}</a>
                                   <a class="dropdown-item" href="{{ url_for('notice_create', client_id=form.client.data, url_back=request.path, appointment_id=appointment_id) }}">{{ _('Notice') }}</a>
                                 </div>
