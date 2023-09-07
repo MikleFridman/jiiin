@@ -583,7 +583,14 @@ class ContactForm(FlaskForm):
     email = StringField(_l('E-mail'), validators=[DataRequired(), Email()])
     text = TextAreaField(_l('Text'), validators=[DataRequired(),
                                                  Length(max=255)])
+    recaptcha = RecaptchaField()
     submit = SubmitField(_l('Send'))
+
+
+class ContactUserForm(ContactForm):
+    text = TextAreaField(_l('Text'), validators=[DataRequired(),
+                                                 Length(max=400)])
+    recaptcha = None
 
 
 class NoticeForm(FlaskForm):

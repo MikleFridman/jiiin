@@ -241,7 +241,10 @@ def get_filter_parameters(form, class_object):
 @app.route('/sendmail/', methods=['GET', 'POST'])
 def sendmail():
     url_back = request.args.get('url_back', url_for('index', **request.args))
-    form = ContactForm()
+    if current_user.is_authenticated:
+        form = ContactUserForm()
+    else:
+        form = ContactForm()
     form.text.render_kw = {'rows': 6}
     if form.validate_on_submit():
         sender = app.config['MAIL_DEFAULT_SENDER']
@@ -838,6 +841,7 @@ def clients_table():
     form = set_filter(Client)
     param = get_filter_parameters(form, Client)
     data = Client.get_pagination(page, *param)
+    appointment_id = request.args.get('appointment_id', None, type=int)
     choice_mode = request.args.get('choice_mode', None, type=int)
     if choice_mode:
         template = 'client_table_choice.html'
@@ -847,6 +851,7 @@ def clients_table():
                            title=_('Clients'),
                            items=data.items,
                            pagination=data,
+                           appointment_id=appointment_id,
                            form=form)
 
 
@@ -866,7 +871,7 @@ def client_create():
         db.session.add(client)
         db.session.commit()
         if request.args.get('choice_mode', 0, type=int):
-            return redirect(url_for('appointment_create', client_id=client.id))
+            return redirect(url_for('appointment_create', select_client_id=client.id))
         else:
             return redirect(url_for('clients_table'))
     return render_template('data_form.html',
@@ -1292,6 +1297,7 @@ def appointment_assistant():
 @app.route('/appointments/')
 @login_required
 def appointments_table():
+    clear_session()
     page = request.args.get('page', 1, type=int)
     form = set_filter(Appointment)
     param = get_filter_parameters(form, Appointment)
@@ -1310,11 +1316,14 @@ def appointment_create():
     url_select_service = url_for('services_table',
                                  choice_mode=1,
                                  url_back=request.path)
+    url_select_client = url_for('clients_table',
+                                choice_mode=1,
+                                url_back=request.path)
     selected_services_id = session.get('services')
     selected_location_id = session.get('location')
     selected_staff_id = session.get('staff')
-    if request.args.get('client_id'):
-        session['client'] = request.args.get('client_id')
+    if request.args.get('select_client_id'):
+        session['client'] = request.args.get('select_client_id')
     selected_client_id = session.get('client')
     if request.args.get('date'):
         session['date'] = request.args.get('date')
@@ -1372,7 +1381,8 @@ def appointment_create():
                            form=form,
                            items=selected_services,
                            url_back=url_back,
-                           url_select_service=url_select_service)
+                           url_select_service=url_select_service,
+                           url_select_client=url_select_client)
 
 
 @app.route('/appointments/edit/<id>/', methods=['GET', 'POST'])
@@ -1381,6 +1391,7 @@ def appointment_edit(id):
     appointment = Appointment.get_object(id)
     param_url = {**request.args}
     param_url.pop('mod_services', None)
+    param_url.pop('select_client_id', None)
     url_back = request.args.get('url_back', url_for('appointments_table', **param_url))
     mod_services = request.args.get('mod_services', None)
     if not mod_services:
@@ -1391,6 +1402,10 @@ def appointment_edit(id):
                                  choice_mode=1,
                                  appointment_id=id,
                                  url_back=request.path)
+    url_select_client = url_for('clients_table',
+                                choice_mode=1,
+                                appointment_id=id,
+                                url_back=request.path)
     selected_services = []
     for service_id in selected_services_id:
         service = Service.get_object(service_id)
@@ -1398,6 +1413,8 @@ def appointment_edit(id):
     selected_services.sort(key=lambda x: x.name)
     selected_location_id = session.get('location')
     selected_staff_id = session.get('staff')
+    if request.args.get('select_client_id'):
+        session['client'] = request.args.get('select_client_id')
     selected_client_id = session.get('client')
     selected_date = session.get('date')
     selected_time = session.get('time')
@@ -1462,6 +1479,7 @@ def appointment_edit(id):
                            payment_id=appointment.payment_id,
                            items=selected_services,
                            url_select_service=url_select_service,
+                           url_select_client=url_select_client,
                            url_back=url_back)
 
 

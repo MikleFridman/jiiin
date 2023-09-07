@@ -24,19 +24,31 @@
         <div class="form-group row mb-2">
             {{ form.hidden_tag() }}
             <div class="form-group col-md-6">
-                {{ form.location.label(class_="col-form-label") }} {% if form.location.flags.required %}*{% endif %}
-                {% if form.location.errors %}
-                    {{ form.location(class_="form-select is-invalid", onchange="select_location(this.value)") }}
+                {% if form.location.choices | count == 1 and form.location.choices[0][0] != 0 %}
+                    <div class="d-none d-lg-block">
                 {% else %}
-                    {{ form.location(class_="form-select", onchange="select_location(this.value)") }}
+                    <div>
                 {% endif %}
-                <div class="form-group mt-2">
-                    {{ form.staff.label(class_="col-form-label") }} {% if form.staff.flags.required %}*{% endif %}
-                    {% if form.staff.errors %}
-                        {{ form.staff(class_="form-select is-invalid", onchange="select_staff(this.value)") }}
+                    {{ form.location.label(class_="col-form-label") }} {% if form.location.flags.required %}*{% endif %}
+                    {% if form.location.errors %}
+                        {{ form.location(class_="form-select is-invalid", onchange="select_location(this.value)") }}
                     {% else %}
-                        {{ form.staff(class_="form-select", onchange="select_staff(this.value)") }}
+                        {{ form.location(class_="form-select", onchange="select_location(this.value)") }}
                     {% endif %}
+                    </div>
+                {% if form.staff.choices | count == 1 and form.staff.choices[0][0] != 0 %}
+                    <div class="d-none d-lg-block">
+                {% else %}
+                    <div>
+                {% endif %}
+                    <div class="form-group mt-2">
+                        {{ form.staff.label(class_="col-form-label") }} {% if form.staff.flags.required %}*{% endif %}
+                        {% if form.staff.errors %}
+                            {{ form.staff(class_="form-select is-invalid", onchange="select_staff(this.value)") }}
+                        {% else %}
+                            {{ form.staff(class_="form-select", onchange="select_staff(this.value)") }}
+                        {% endif %}
+                    </div>
                 </div>
             </div>
             <div class="form-group col-md-6">
@@ -45,7 +57,7 @@
                         {{ form.client.label(class_="col-form-label") }} {% if form.client.flags.required %}*{% endif %}
                     </div>
                     <div class="mt-2 me-1">
-                        <a class="text-decoration-none text-reset" href="{{ url_for('clients_table', choice_mode=1)}}">
+                        <a class="text-decoration-none text-reset" href="{{ url_select_client }}">
                             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-person-lines-fill text-primary" viewBox="0 0 16 16">
                               <path d="M6 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm-5 6s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zM11 3.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5zm.5 2.5a.5.5 0 0 0 0 1h4a.5.5 0 0 0 0-1h-4zm2 3a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1h-2zm0 3a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1h-2z"/>
                             </svg>
@@ -53,11 +65,11 @@
                     </div>
                 </div>
                 <div class="d-none d-lg-block">
-                {% if form.client.errors %}
-                    {{ form.client(class_="form-select is-invalid", onchange="select_client(this.value)") }}
-                {% else %}
-                    {{ form.client(class_="form-select", onchange="select_client(this.value)") }}
-                {% endif %}
+                    {% if form.client.errors %}
+                        {{ form.client(class_="form-select is-invalid", onchange="select_client(this.value)") }}
+                    {% else %}
+                        {{ form.client(class_="form-select", onchange="select_client(this.value)") }}
+                    {% endif %}
                 </div>
                 <div class="row mt-2">
                     <div class="col-md-7">
@@ -90,7 +102,7 @@
                     {{ form.client.label(class_="col-form-label") }} {% if form.client.flags.required %}*{% endif %}
                 </div>
                 <div class="mt-2">
-                    <a class="text-decoration-none text-reset" href="{{ url_for('clients_table', choice_mode=1)}}">
+                    <a class="text-decoration-none text-reset" href="{{ url_select_client }}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="23" height="23" fill="currentColor" class="bi bi-person-lines-fill text-primary me-1" viewBox="0 0 16 16">
                           <path d="M6 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm-5 6s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H1zM11 3.5a.5.5 0 0 1 .5-.5h4a.5.5 0 0 1 0 1h-4a.5.5 0 0 1-.5-.5zm.5 2.5a.5.5 0 0 0 0 1h4a.5.5 0 0 0 0-1h-4zm2 3a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1h-2zm0 3a.5.5 0 0 0 0 1h2a.5.5 0 0 0 0-1h-2z"/>
                         </svg>
@@ -111,7 +123,7 @@
                             {{ form.service.label(class_="col-form-label") }} {% if form.service.flags.required %}*{% endif %}
                         </div>
                         <div class="mt-2">
-                            <a href="{{ url_select_service }}">
+                            <a class="text-decoration-none text-reset" href="{{ url_select_service }}">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-bag-plus-fill text-primary me-1" viewBox="0 0 16 16">
                                   <path fill-rule="evenodd" d="M10.5 3.5a2.5 2.5 0 0 0-5 0V4h5v-.5zm1 0V4H15v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V4h3.5v-.5a3.5 3.5 0 1 1 7 0zM8.5 8a.5.5 0 0 0-1 0v1.5H6a.5.5 0 0 0 0 1h1.5V12a.5.5 0 0 0 1 0v-1.5H10a.5.5 0 0 0 0-1H8.5V8z"/>
                                 </svg>
@@ -197,6 +209,7 @@
    response.json().then(function(data) {
    })
    });
+   document.getElementById('client').value = id
   }
 
   function select_date(date)  {

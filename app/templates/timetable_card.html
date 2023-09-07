@@ -23,7 +23,7 @@
             <td class="col-3 text-center">{{ a.staff.name|truncate(killwords=True, length=24) }}</td>
             <td class="col-3 text-center">{{ a.client.name|truncate(killwords=True, length=35) }}</td>
             <td class="col-1 text-center">
-              <a href="{{ url_for('appointment_edit', id=a.id, **request.args) }}"><img src="{{ url_for('static', filename='/edit.png') }}" alt="edit" width="24"></a>
+              <a href="{{ url_for('appointment_edit', id=a.id, **request.args ) }}"><img src="{{ url_for('static', filename='/edit.png') }}" alt="edit" width="24"></a>
               <a href="{{ url_for('delete', class_name='appointment', object_id=a.id, url_back=url_for('appointments_table', **request.args)) }}">
                 <img class="ms-2" src="{{ url_for('static', filename='/trash.png') }}" alt="delete" width="23">
               </a>
