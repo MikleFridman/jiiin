@@ -47,7 +47,11 @@
             </a>
           </td>
           <td class="col-3 text-center">
-            {{ cfl.cost|float }}
+            <a class="text-decoration-none text-reset" href="{{ url_for('cash_flow_edit', id=cfl.id, **request.args) }}">
+              <div style="height:100%; width:100%">
+                {{ cfl.cost|float }}
+              </div>
+            </a>
           </td>
           <td class="col-1 text-center">
             <a class="text-decoration-none text-reset" href="{{ url_for('delete', class_name='cash_flow', object_id=cfl.id, url_back=url_for('cash_flow_table', **request.args)) }}">
@@ -66,7 +70,11 @@
             </a>
           </td>
           <td class="col-5 text-center">
-            {{ cfl.cost|float }}
+            <a class="text-decoration-none text-reset" href="{{ url_for('cash_flow_edit', id=cfl.id, **request.args) }}">
+              <div style="height:100%; width:100%">
+                {{ cfl.cost|float }}
+              </div>
+            </a>
           </td>
           <td class="col-1 text-center">
             <a class="text-decoration-none text-reset" href="{{ url_for('delete', class_name='cash_flow', object_id=cfl.id, url_back=url_for('cash_flow_table', **request.args)) }}">

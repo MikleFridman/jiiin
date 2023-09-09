@@ -871,7 +871,8 @@ def client_create():
         db.session.add(client)
         db.session.commit()
         if request.args.get('choice_mode', 0, type=int):
-            return redirect(url_for('appointment_create', select_client_id=client.id))
+            session['client'] = client.id
+            return redirect(url_for('appointment_create'))
         else:
             return redirect(url_for('clients_table'))
     return render_template('data_form.html',
@@ -1083,7 +1084,7 @@ def services_table():
                            pagination=data,
                            url_back=url_back,
                            url_submit=url_submit,
-                           id=appointment_id,
+                           appointment_id=appointment_id,
                            form=form)
 
 
@@ -1322,8 +1323,6 @@ def appointment_create():
     selected_services_id = session.get('services')
     selected_location_id = session.get('location')
     selected_staff_id = session.get('staff')
-    if request.args.get('select_client_id'):
-        session['client'] = request.args.get('select_client_id')
     selected_client_id = session.get('client')
     if request.args.get('date'):
         session['date'] = request.args.get('date')
@@ -1360,7 +1359,6 @@ def appointment_create():
         db.session.flush()
         for service in selected_services:
             appointment.add_service(service)
-        session.pop('services', None)
         db.session.commit()
         clear_session()
         return redirect(url_for('appointments_table'))
@@ -1391,7 +1389,6 @@ def appointment_edit(id):
     appointment = Appointment.get_object(id)
     param_url = {**request.args}
     param_url.pop('mod_services', None)
-    param_url.pop('select_client_id', None)
     url_back = request.args.get('url_back', url_for('appointments_table', **param_url))
     mod_services = request.args.get('mod_services', None)
     if not mod_services:
@@ -1413,8 +1410,6 @@ def appointment_edit(id):
     selected_services.sort(key=lambda x: x.name)
     selected_location_id = session.get('location')
     selected_staff_id = session.get('staff')
-    if request.args.get('select_client_id'):
-        session['client'] = request.args.get('select_client_id')
     selected_client_id = session.get('client')
     selected_date = session.get('date')
     selected_time = session.get('time')
@@ -1441,7 +1436,6 @@ def appointment_edit(id):
         appointment.services.clear()
         for service in selected_services:
             appointment.add_service(service)
-        session.pop('services', None)
         db.session.commit()
         clear_session()
         return redirect(url_back)
@@ -1805,6 +1799,7 @@ def cash_flow_create():
                                 **request.args))
     form = CashFlowForm()
     form.location.choices = Location.get_items(True)
+    form.cost.render_kw = {'type': 'number'}
     if form.validate_on_submit():
         cash_flow = CashFlow(cid=current_user.cid,
                              location_id=form.location.data,
@@ -1856,7 +1851,9 @@ def cash_flow_edit(id):
                                                     **request.args))
     cash_flow = CashFlow.get_object(id)
     form = CashFlowForm()
+    form.cost.render_kw = {'type': 'number'}
     form.location.choices = Location.get_items(True)
+    info_msg = ''
     if form.validate_on_submit():
         current_location = cash_flow.location_id
         current_cost = cash_flow.cost
@@ -1888,13 +1885,20 @@ def cash_flow_edit(id):
         form.date.data = cash_flow.date
         form.description.data = cash_flow.description
         form.cost.data = abs(cash_flow.cost)
-        form.action.data = cash_flow.cost / abs(cash_flow.cost)
-        # payment_link = cash_flow.link
-        # form.payment_link.data = url_for('payment_receipt', link=payment_link)
+        if cash_flow.cost >= 0:
+            form.action.data = 1
+        else:
+            form.action.data = -1
+        if cash_flow.appointment:
+            appointment_id = request.args.get('appointment_id', 1, type=int)
+            if not appointment_id == cash_flow.appointment[0].id:
+                form.submit.render_kw = {'disabled': ''}
+                info_msg = _('Payment can be changed only through the appointment form')
     return render_template('data_form.html',
                            title=_('Cash flow (edit)'),
                            form=form,
-                           url_back=url_back)
+                           url_back=url_back,
+                           info_msg=info_msg)
 
 
 @app.route('/payment_receipt/')
@@ -1985,6 +1989,9 @@ def select_service(service_id, selected):
         if str(service_id) in services_id:
             services_id.remove(str(service_id))
     session['services'] = services_id
+    url_back = request.args.get('url_back')
+    if url_back:
+        return redirect(url_back)
     return jsonify(services_id)
 
 
@@ -2006,6 +2013,9 @@ def select_staff(staff_id):
 @login_required
 def select_client(client_id):
     session['client'] = client_id
+    url_back = request.args.get('url_back')
+    if url_back:
+        return redirect(url_back)
     return jsonify('Ok')
 
 

@@ -2,22 +2,55 @@
     <tbody>
       {% for s in items %}
         <tr id="tr_{{ s.id }}" class="d-none d-lg-table-row border-start border-end border-light">
-          <td class="col-8 ps-3">
-            {{ s.name|truncate(killwords=True, length=60) }}
+          <td class="col-9 ps-3">
+            {{ s.name|truncate(killwords=True, length=55) }}
           </td>
-          <td class="col-2 text-center">{{ s.duration }} {{ _('min') }}</td>
-          <td class="col-2 text-center">
+          <td class="col-1 text-center">{{ s.duration }} {{ _('min') }}</td>
+          <td class="col-1 text-center">
             {{ s.price }}
+          </td>
+          <td align="end">
+            {% if appointment_id %}
+              <a class="text-decoration-none text-reset" href="{{ url_for('select_service', service_id=s.id, selected=0, url_back=url_for('appointment_edit', id=appointment_id, mod_services=1)) }}">
+            {% else %}
+              <a class="text-decoration-none text-reset" href="{{ url_for('select_service', service_id=s.id, selected=0, url_back=url_for('appointment_create')) }}">
+            {% endif %}
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+              </svg>
+              </a>
           </td>
         </tr>
         <tr class="d-none d-sm-table-row d-lg-none border-start border-end border-light">
-          <td class="col-12">
+          <td class="col-11">
             {{ s.name|truncate(killwords=True, length=60) }}
+          </td>
+          <td align="end">
+            {% if appointment_id %}
+              <a class="text-decoration-none text-reset" href="{{ url_for('select_service', service_id=s.id, selected=0, url_back=url_for('appointment_edit', id=appointment_id, mod_services=1)) }}">
+            {% else %}
+              <a class="text-decoration-none text-reset" href="{{ url_for('select_service', service_id=s.id, selected=0, url_back=url_for('appointment_create')) }}">
+            {% endif %}
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+              </svg>
+              </a>
           </td>
         </tr>
         <tr class="d-sm-none table-row border-start border-end border-light">
-          <td class="col-12">
+          <td class="col-11">
             {{ s.name|truncate(killwords=True, length=32) }}
+          </td>
+          <td align="end">
+            {% if appointment_id %}
+              <a class="text-decoration-none text-reset" href="{{ url_for('select_service', service_id=s.id, selected=0, url_back=url_for('appointment_edit', id=appointment_id, mod_services=1)) }}">
+            {% else %}
+              <a class="text-decoration-none text-reset" href="{{ url_for('select_service', service_id=s.id, selected=0, url_back=url_for('appointment_create')) }}">
+            {% endif %}
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+              </svg>
+              </a>
           </td>
         </tr>
       {% endfor %}

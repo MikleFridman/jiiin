@@ -640,7 +640,7 @@ class CashFlowForm(FlaskForm):
                                                              Length(max=120)])
     action = SelectField(_l('Operation'), choices=[(1, _l('Plus')), (-1, _l('Minus'))],
                          coerce=int)
-    cost = FloatField(_l('Sum'), default=0)
+    cost = FloatField(_l('Sum'), default=0, validators=[DataRequired()])
     # payment_link = URLField(_l('Link to payment receipt'))
     submit = SubmitField(_l('Submit'))
 
@@ -648,3 +648,8 @@ class CashFlowForm(FlaskForm):
         if not self.location.data:
             flash(_l('Please select location'))
             raise ValidationError(_l('Please select location'))
+
+    def validate_cost(self, field):
+        if self.cost.data < 0:
+            flash(_l('Amount can\'t be negative'))
+            raise ValidationError(_l('Amount can\'t be negative'))

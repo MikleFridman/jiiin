@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+  <div class="row">
+    <div class="col-md-2 mb-2">
+  <!--    <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('service_create') }}';">{{ _('Add new') }}</button>-->
+    </div>
+    <div class="col-md-5 mb-2 text-center">
+        <h4>{{ _('Services') }}</h4>
+    </div>
+    {% include '_search_form.html' %}
+  </div>
+  <table id="data" class="table table-hover border-top border-bottom border-light">
+    <thead>
+      <tr class="d-none d-lg-table-row border-start border-end border-light text-center">
+        <th class="col-1"></th>
+        <th class="col-9">{{ _('Title') }}</th>
+        <th class="col-1">{{ _('Time') }}</th>
+        <th class="col-1">{{ _('Price') }}</th>
+      </tr>
+      <tr class="d-lg-none table-row border-start border-end border-light text-center">
+        <th class="col-1"></th>
+        <th class="11">{{ _('Title') }}</th>
+       </tr>
+    </thead>
+    <tbody>
+      {% for s in items %}
+        <tr class="d-none d-lg-table-row {{ loop.cycle('table-default', 'table-light') }}  border-start border-end border-light">
+          <td class="col-1 ps-3">
+            {% if s.id | string() in session['services'] %}
+              <input class="form-check-input" type="checkbox" value="" id="{{ s.id }}" onchange="select_checkbox(id, checked)" checked="">
+            {% else %}
+              <input class="form-check-input" type="checkbox" value="" id="{{ s.id }}" onchange="select_checkbox(id, checked)">
+            {% endif %}
+          </td>
+          <td class="col-9">
+            {% if s.no_active %}
+              <img src="{{ url_for('static', filename='/hidden.png') }}" alt="hidden" width="24">
+            {% endif %}
+            {{ s.name|truncate(killwords=True, length=55) }}
+          </td>
+          <td class="col-1 text-center">{{ s.duration }}</td>
+          <td class="col-1 text-center">{{ s.price }}</td>
+        </tr>
+        <tr class="d-none d-sm-table-row d-lg-none {{ loop.cycle('table-default', 'table-light') }} border-start border-end border-light">
+          <td class="col-1">
+            {% if s.id | string() in session['services'] %}
+              <input class="form-check-input" type="checkbox" value="" id="{{ s.id }}" onchange="select_checkbox(id, checked)" checked="">
+            {% else %}
+              <input class="form-check-input" type="checkbox" value="" id="{{ s.id }}" onchange="select_checkbox(id, checked)">
+            {% endif %}
+          </td>
+          <td class="col-11">
+            {{ s.name|truncate(killwords=True, length=50) }}
+          </td>
+        </tr>
+        <tr class="d-sm-none table-row {{ loop.cycle('table-default', 'table-light') }} border-start border-end border-light">
+          <td class="col-1">
+            {% if s.id | string() in session['services'] %}
+              <input class="form-check-input" type="checkbox" value="" id="{{ s.id }}" onchange="select_checkbox(id, checked)" checked="">
+            {% else %}
+              <input class="form-check-input" type="checkbox" value="" id="{{ s.id }}" onchange="select_checkbox(id, checked)">
+            {% endif %}
+          </td>
+          <td class="col-11">
+            {{ s.name|truncate(killwords=True, length=28) }}
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <div id="services-count-label" style="display: inline-block">{{ _('Selected services') }}: </div>
+  <div id="services-count" style="display: inline-block">
+    {{ session.get('services', []) | count }}
+  </div>
+  <div>
+    {% if session.get('services', []) | count > 0 %}
+      <button type="button" id="submit" class="btn btn-primary mt-3" onclick="window.location.href='{{ url_submit }}'">{{ _('Select') }}</button>
+    {% else %}
+      <button type="button" id="submit" class="btn btn-primary disabled mt-3" onclick="window.location.href='{{ url_submit }}'">{{ _('Select') }}</button>
+    {% endif%}
+  </div>
+{% import '_pagination.html' as forms %}
+{{ forms.render_pagination(pagination, 'services_table', **request.args) }}
+
+<script>
+  function select_checkbox(id, checked)  {
+      if (checked){
+        value = 1
+      } else {
+        value = 0
+      }
+      fetch('/select_service/' + id + '/' + value).then(function(response) {
+          response.json().then(function(data) {
+            var block = document.getElementById('services-count');
+            block.innerHTML = data.length;
+            var submit = document.getElementById('submit');
+            if (data.length > 0) {
+              submit.classList.remove('disabled')
+            } else {
+              submit.classList.add('disabled')
+            }
+          })
+      });
+  }
+</script>
+{% endblock %}

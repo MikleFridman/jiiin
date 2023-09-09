@@ -1,13 +1,38 @@
   <ul class="list-group">
     {% for s in items %}
     <li class="list-group-item text-body">
-      <div class="d-none d-sm-block d-lg-none">
-        {{ s.name|truncate(killwords=True, length=60) }}
+      <div class="d-none d-sm-flex d-lg-none justify-content-between">
+          <div>
+              {{ s.name|truncate(killwords=True, length=60) }}
+          </div>
+          <div>
+              {% if appointment_id %}
+                <a class="text-decoration-none text-reset" href="{{ url_for('select_service', service_id=s.id, selected=0, url_back=url_for('appointment_edit', id=appointment_id, mod_services=1)) }}">
+              {% else %}
+                <a class="text-decoration-none text-reset" href="{{ url_for('select_service', service_id=s.id, selected=0, url_back=url_for('appointment_create')) }}">
+              {% endif %}
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                      <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                  </svg>
+              </a>
+          </div>
       </div>
-      <div class="d-block d-sm-none">
-        {{ s.name|truncate(killwords=True, length=32) }}
+      <div class="d-flex justify-content-between d-sm-none">
+          <div>
+              {{ s.name|truncate(killwords=True, length=28) }}
+          </div>
+          <div>
+              {% if appointment_id %}
+                <a class="text-decoration-none text-reset" href="{{ url_for('select_service', service_id=s.id, selected=0, url_back=url_for('appointment_edit', id=appointment_id, mod_services=1)) }}">
+              {% else %}
+                <a class="text-decoration-none text-reset" href="{{ url_for('select_service', service_id=s.id, selected=0, url_back=url_for('appointment_create')) }}">
+              {% endif %}
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-x" viewBox="0 0 16 16">
+                      <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z"/>
+                  </svg>
+              </a>
+          </div>
       </div>
     </li>
     {% endfor %}
   </ul>
-
