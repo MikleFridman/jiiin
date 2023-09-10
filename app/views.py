@@ -841,7 +841,7 @@ def clients_table():
     form = set_filter(Client)
     param = get_filter_parameters(form, Client)
     data = Client.get_pagination(page, *param)
-    appointment_id = request.args.get('appointment_id', None, type=int)
+    url_back = request.args.get('url_back')
     choice_mode = request.args.get('choice_mode', None, type=int)
     if choice_mode:
         template = 'client_table_choice.html'
@@ -851,7 +851,7 @@ def clients_table():
                            title=_('Clients'),
                            items=data.items,
                            pagination=data,
-                           appointment_id=appointment_id,
+                           url_back=url_back,
                            form=form)
 
 
@@ -1098,7 +1098,8 @@ def service_create():
         next_page = url_for('services_table')
     form = ServiceForm()
     location_list = Location.get_items(True)
-    if len(location_list) > 0 and type(location_list[0]) == tuple and location_list[0][0] == 0:
+    if (len(location_list) > 0 and type(location_list[0]) == tuple and
+            location_list[0][0] == 0):
         location_list.pop(0)
     form.location.choices = location_list
     if form.validate_on_submit():
@@ -1130,7 +1131,9 @@ def service_edit(id):
     url_back = url_for('services_table', **request.args)
     form = ServiceForm()
     location_list = Location.get_items(True)
-    location_list.pop(0)
+    if (len(location_list) > 0 and type(location_list[0]) == tuple and
+            location_list[0][0] == 0):
+        location_list.pop(0)
     form.location.choices = location_list
     service = Service.get_object(id)
     if form.validate_on_submit():
@@ -1324,7 +1327,6 @@ def appointment_create():
     selected_location_id = session.get('location')
     selected_staff_id = session.get('staff')
     selected_client_id = session.get('client')
-    print(selected_client_id)
     if request.args.get('date'):
         session['date'] = request.args.get('date')
     selected_date = session.get('date')
@@ -1402,7 +1404,6 @@ def appointment_edit(id):
                                  url_back=request.path)
     url_select_client = url_for('clients_table',
                                 choice_mode=1,
-                                appointment_id=id,
                                 url_back=request.path)
     selected_services = []
     for service_id in selected_services_id:
@@ -1683,6 +1684,7 @@ def item_flow_edit(id):
 @app.route('/notices/')
 @login_required
 def notices_table():
+    clear_session()
     page = request.args.get('page', 1, type=int)
     form = set_filter(Notice)
     param = get_filter_parameters(form, Notice)
@@ -1699,11 +1701,15 @@ def notices_table():
 def notice_create():
     url_back = request.args.get('url_back', url_for('notices_table', **request.args))
     client_id = request.args.get('client_id', None)
+    selected_client_id = session.get('client')
     appointment_id = request.args.get('appointment_id', None)
     appointment = Appointment.get_object(appointment_id, False)
     form = NoticeForm()
     form.processed.render_kw = {'disabled': ''}
     form.client.choices = Client.get_items(True)
+    url_select_client = url_for('clients_table',
+                                choice_mode=1,
+                                url_back=request.path)
     if form.validate_on_submit():
         notice = Notice(cid=current_user.cid,
                         client_id=form.client.data,
@@ -1716,15 +1722,21 @@ def notice_create():
         if client_id:
             form.client.default = client_id
             form.process()
+        if selected_client_id:
+            form.client.default = selected_client_id
+            form.process()
         if appointment:
-            form.date.data = appointment.date_repeat
+            if appointment.date_repeat:
+                form.date.data = max(appointment.date_repeat, datetime.now().date())
             previous_visit = appointment.date_time.date()
             form.description.data = ' '.join((_('*Previous visit'),
                                              str(previous_visit)))
-    return render_template('data_form.html',
+        form.date.data = datetime.now().date()
+    return render_template('notice_form.html',
                            title=_('Notice (create)'),
                            form=form,
-                           url_back=url_back)
+                           url_back=url_back,
+                           url_select_client=url_select_client)
 
 
 @app.route('/notices/edit/<id>/', methods=['GET', 'POST'])
@@ -1735,6 +1747,10 @@ def notice_edit(id):
     notice = Notice.get_object(id)
     form = NoticeForm()
     form.client.choices = Client.get_items(True)
+    selected_client_id = session.get('client')
+    url_select_client = url_for('clients_table',
+                                choice_mode=1,
+                                url_back=request.path)
     if form.validate_on_submit():
         notice.client_id = form.client.data
         notice.date = form.date.data
@@ -1744,14 +1760,18 @@ def notice_edit(id):
         return redirect(url_back)
     elif request.method == 'GET':
         form.client.default = notice.client_id
+        if selected_client_id:
+            form.client.default = selected_client_id
         form.process()
         form.date.data = notice.date
         form.description.data = notice.description
         form.processed.data = notice.processed
-    return render_template('data_form.html',
+    return render_template('notice_form.html',
                            title=_('Notice (edit)'),
                            form=form,
-                           url_back=url_back)
+                           url_back=url_back,
+                           url_select_client=url_select_client,
+                           client=notice.client)
 # Notice block end
 
 

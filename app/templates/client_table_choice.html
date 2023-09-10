@@ -17,11 +17,7 @@
       {% for c in items %}
         <tr class="d-none d-lg-table-row {{ loop.cycle('table-default', 'table-light') }} border-start border-end border-light">
           <td class="col-10 ps-3">
-            {% if appointment_id %}
-              <a class="text-decoration-none text-reset" href="{{ url_for('select_client', client_id=c.id, url_back=url_for('appointment_edit', id=appointment_id)) }}">
-            {% else %}
-              <a class="text-decoration-none text-reset" href="{{ url_for('select_client', client_id=c.id, url_back=url_for('appointment_create')) }}">
-            {% endif %}
+              <a class="text-decoration-none text-reset" href="{{ url_for('select_client', client_id=c.id, url_back=url_back) }}">
               <div style="height:100%; width:100%">
                 {{ c.name|truncate(killwords=True, length=60) }}
               </div>
@@ -31,11 +27,7 @@
         </tr>
         <tr class="d-none d-sm-table-row d-lg-none {{ loop.cycle('table-default', 'table-light') }} border-start border-end border-light">
           <td class="col-12">
-            {% if appointment_id %}
-              <a class="text-decoration-none text-reset" href="{{ url_for('select_client', client_id=c.id, url_back=url_for('appointment_edit', id=appointment_id)) }}">
-            {% else %}
-              <a class="text-decoration-none text-reset" href="{{ url_for('select_client', client_id=c.id, url_back=url_for('appointment_create')) }}">
-            {% endif %}
+              <a class="text-decoration-none text-reset" href="{{ url_for('select_client', client_id=c.id, url_back=url_back) }}">
               <div style="height:100%; width:100%">
                 {{ c.name|truncate(killwords=True, length=50) }}
               </div>
@@ -44,11 +36,7 @@
         </tr>
         <tr class="d-table-row d-sm-none {{ loop.cycle('table-default', 'table-light') }} border-start border-end border-light">
           <td class="col-12">
-            {% if appointment_id %}
-              <a class="text-decoration-none text-reset" href="{{ url_for('select_client', client_id=c.id, url_back=url_for('appointment_edit', id=appointment_id)) }}">
-            {% else %}
-              <a class="text-decoration-none text-reset" href="{{ url_for('select_client', client_id=c.id, url_back=url_for('appointment_create')) }}">
-            {% endif %}
+              <a class="text-decoration-none text-reset" href="{{ url_for('select_client', client_id=c.id, url_back=url_back) }}">
               <div style="height:100%; width:100%">
                 {{ c.name|truncate(killwords=True, length=32) }}
               </div>

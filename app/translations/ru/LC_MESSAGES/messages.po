@@ -768,11 +768,11 @@ msgstr "*Предыдущий визит"
 
 #: app/views.py:1724
 msgid "Notice (create)"
-msgstr "Напоминание (создать)"
+msgstr "Звонок (создать)"
 
 #: app/views.py:1751
 msgid "Notice (edit)"
-msgstr "Напоминание (редактировать)"
+msgstr "Звонок (редактировать)"
 
 #: app/templates/base.html:59 app/views.py:1768
 msgid "Cash desk"
@@ -780,7 +780,7 @@ msgstr "Касса"
 
 #: app/views.py:1784
 msgid "Cash flow"
-msgstr "Движение денег"
+msgstr "Платеж"
 
 #: app/views.py:1822 app/views.py:1877
 msgid "Amount exceeds the balance in the cash box"
@@ -792,7 +792,7 @@ msgstr "#Оплата услуг"
 
 #: app/views.py:1841
 msgid "Cash flow (create)"
-msgstr "Движение денег (создать)"
+msgstr "Платеж (создать)"
 
 #: app/views.py:1893
 msgid "Payment can be changed only through the appointment form"
@@ -800,7 +800,7 @@ msgstr "Оплату можно изменить только через фор�
 
 #: app/views.py:1895
 msgid "Cash flow (edit)"
-msgstr "Движение денег (редактирование)"
+msgstr "Платеж (редактирование)"
 
 #: app/views.py:1948
 msgid "Reports"

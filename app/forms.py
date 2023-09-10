@@ -596,7 +596,7 @@ class ContactUserForm(ContactForm):
 class NoticeForm(FlaskForm):
     client = SelectField(_l('Client'), choices=[], coerce=int,
                          validators=[InputRequired()])
-    date = DateField(_l('Date'), validators=[])
+    date = DateField(_l('Date'), validators=[InputRequired()])
     description = TextAreaField(_l('Description'), validators=[DataRequired(),
                                                                Length(max=255)])
     processed = BooleanField(_l('Processed'))
