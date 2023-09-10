@@ -1324,6 +1324,7 @@ def appointment_create():
     selected_location_id = session.get('location')
     selected_staff_id = session.get('staff')
     selected_client_id = session.get('client')
+    print(selected_client_id)
     if request.args.get('date'):
         session['date'] = request.args.get('date')
     selected_date = session.get('date')
@@ -2100,7 +2101,7 @@ def export():
         items = class_object.get_items()
         ignore_list = {'id', 'no_active', 'timestamp_create',
                        'timestamp_update', 'cid', 'cancel', 'payment_id',
-                       'no_check_duration'}
+                       'no_check_duration', 'allow_booking_this_time'}
         column_list = [get_attr_inspect(col.name, class_object) for col in
                        inspect(class_object).columns
                        if col.name not in ignore_list]
