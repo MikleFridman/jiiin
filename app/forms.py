@@ -222,6 +222,20 @@ class CompanyForm(FlaskForm):
     # info = TextAreaField(_l('Info'), validators=[Length(max=200)])
     submit = SubmitField(_l('Submit'))
 
+    def validate_default_time_from(self, field):
+        if not self.default_time_from.data:
+            flash(_l('Please select time'))
+            raise ValidationError(_l('Please select time'))
+        if (datetime.combine(datetime.now(), self.default_time_to.data) -
+                datetime.combine(datetime.now(), field.data) < timedelta(minutes=1)):
+            flash(_l('Incorrect time interval'))
+            raise ValidationError(_l('Incorrect time interval'))
+
+    def validate_default_time_to(self, field):
+        if not self.default_time_to.data:
+            flash(_l('Please select time'))
+            raise ValidationError(_l('Please select time'))
+
 
 class DeleteAccountForm(FlaskForm):
     reason = TextAreaField(_l('Reason'), validators=[DataRequired(),
@@ -371,6 +385,8 @@ class ServiceForm(FlaskForm):
 
     def validate_price(self, field):
         max_price = config.Config.MAX_PRICE
+        if not isinstance(self.price.data, float):
+            self.price.data = 0
         if self.price.data > max_price:
             flash(_l('Price cannot exceed %(mp)s', mp=max_price))
             raise ValidationError(_l('Price cannot exceed %(mp)s', mp=max_price))
@@ -615,13 +631,25 @@ class NoticeForm(FlaskForm):
 
 
 class HolidayForm(FlaskForm):
-    staff = SelectField(_l('Staff'), choices=[], coerce=int)
+    staff = SelectField(_l('Worker'), choices=[], coerce=int)
     date = DateField(_l('Date'), validators=[validate_date_global],
                      format='%Y-%m-%d')
     working_day = BooleanField(_l('Working day'))
     hour_from = TimeField(_l('From hour'), validators=[Optional()])
     hour_to = TimeField(_l('To hour'), validators=[Optional()])
     submit = SubmitField(_l('Submit'))
+
+    def validate_working_day(self, field):
+        if not self.hour_from.data:
+            self.hour_from.data = datetime(1, 1, 1).time()
+        if not self.hour_to.data:
+            self.hour_to.data = datetime(1, 1, 1).time()
+        if self.working_day.data:
+            if (datetime.combine(datetime.now(), self.hour_to.data) -
+                    datetime.combine(datetime.now(), self.hour_from.data) <
+                    timedelta(minutes=1)):
+                flash(_l('Incorrect time interval'))
+                raise ValidationError(_l('Incorrect time interval'))
 
 
 class ReportForm(FlaskForm):
@@ -634,14 +662,18 @@ class ReportForm(FlaskForm):
 
 
 class CashFlowForm(FlaskForm):
-    location = SelectField(_l('Location'), choices=[], coerce=int)
-    date = DateField(_l('Date'), validators=[validate_date_global])
+    location = SelectField(_l('Location'), choices=[], coerce=int,
+                           validators=[InputRequired()])
+    date = DateField(_l('Date'), validators=[DataRequired(),
+                                             validate_date_global])
     description = StringField(_l('Description'), validators=[DataRequired(),
                                                              Length(max=120)])
     action = SelectField(_l('Operation'), choices=[(1, _l('Plus')), (-1, _l('Minus'))],
-                         coerce=int)
+                         coerce=int, validators=[InputRequired()])
     cost = FloatField(_l('Sum'), default=0, validators=[DataRequired()])
-    # payment_link = URLField(_l('Link to payment receipt'))
+    payment_method = SelectField(_l('Payment method'), choices='', coerce=int,
+                                 validators=[InputRequired()])
+    appointment_link = URLField(_l('Link to appointment'))
     submit = SubmitField(_l('Submit'))
 
     def validate_location(self, field):
@@ -653,3 +685,8 @@ class CashFlowForm(FlaskForm):
         if self.cost.data < 0:
             flash(_l('Amount can\'t be negative'))
             raise ValidationError(_l('Amount can\'t be negative'))
+
+    def validate_payment_method(self, field):
+        if not self.payment_method.data:
+            flash(_l('Please select payment method'))
+            raise ValidationError(_l('Please select payment method'))

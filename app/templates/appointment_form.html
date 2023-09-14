@@ -2,6 +2,7 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 {% block app_content %}
     <form method="post">
+        {{ form.hidden_tag() }}
         <div class="d-block d-lg-none mb-1">
             <div class="form-group">
                 <div class="form-group col-md-12">
@@ -26,8 +27,7 @@
           <div>{{ _('To get the available time, select location, worker and service') }}</div>
         </div>
         {% endif %}
-        <div class="form-group row mb-2">
-            {{ form.hidden_tag() }}
+        <div class="row mb-2">
             <div class="form-group col-md-6">
                 {% if form.location.choices | count == 1 and form.location.choices[0][0] != 0 %}
                     <div class="d-none d-lg-block">
@@ -41,20 +41,6 @@
                         {{ form.location(class_="form-select", onchange="select_location(this.value)") }}
                     {% endif %}
                     </div>
-                {% if form.staff.choices | count == 1 and form.staff.choices[0][0] != 0 %}
-                    <div class="d-none d-lg-block">
-                {% else %}
-                    <div>
-                {% endif %}
-                    <div class="form-group mt-2">
-                        {{ form.staff.label(class_="col-form-label") }} {% if form.staff.flags.required %}*{% endif %}
-                        {% if form.staff.errors %}
-                            {{ form.staff(class_="form-select is-invalid", onchange="select_staff(this.value)") }}
-                        {% else %}
-                            {{ form.staff(class_="form-select", onchange="select_staff(this.value)") }}
-                        {% endif %}
-                    </div>
-                </div>
             </div>
             <div class="form-group col-md-6">
                 <div class="d-none d-lg-flex justify-content-between">
@@ -76,24 +62,38 @@
                         {{ form.client(class_="form-select", onchange="select_client(this.value)") }}
                     {% endif %}
                 </div>
-                <div class="row mt-2">
-                    <div class="col-md-7">
-                    {{ form.date.label(class_="col-form-label") }} *
-                    {% if form.date.errors %}
-                        {{ form.date(class_="form-control is-invalid", onchange="select_date(this.value)") }}
-                    {% else %}
-                        {{ form.date(class_="form-control", onchange="select_date(this.value)") }}
-                    {% endif %}
-                    </div>
-                    <div class="col-md-5">
-                    {{ form.time.label(class_="col-form-label") }} *
-                    {% if form.time.errors %}
-                        {{ form.time(class_="form-select is-invalid", onchange="select_time(this.value)") }}
-                    {% else %}
-                        {{ form.time(class_="form-select", onchange="select_time(this.value)") }}
-                    {% endif %}
+            </div>
+        </div>
+        <div class="row mb-2">
+                {% if form.staff.choices | count == 1 and form.staff.choices[0][0] != 0 %}
+                    <div class="d-none d-lg-block col-md-6">
+                {% else %}
+                    <div class="col-md-6">
+                {% endif %}
+                    <div class="form-group">
+                        {{ form.staff.label(class_="col-form-label") }} {% if form.staff.flags.required %}*{% endif %}
+                        {% if form.staff.errors %}
+                            {{ form.staff(class_="form-select is-invalid", onchange="select_staff(this.value)") }}
+                        {% else %}
+                            {{ form.staff(class_="form-select", onchange="select_staff(this.value)") }}
+                        {% endif %}
                     </div>
                 </div>
+            <div class="col-md-3">
+            {{ form.date.label(class_="col-form-label") }} *
+            {% if form.date.errors %}
+                {{ form.date(class_="form-control is-invalid", onchange="select_date(this.value)") }}
+            {% else %}
+                {{ form.date(class_="form-control", onchange="select_date(this.value)") }}
+            {% endif %}
+            </div>
+            <div class="col-md-3">
+            {{ form.time.label(class_="col-form-label") }} *
+            {% if form.time.errors %}
+                {{ form.time(class_="form-select is-invalid", onchange="select_time(this.value)") }}
+            {% else %}
+                {{ form.time(class_="form-select", onchange="select_time(this.value)") }}
+            {% endif %}
             </div>
         </div>
         {% if items | count == 0 %}

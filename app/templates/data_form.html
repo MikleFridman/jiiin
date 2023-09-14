@@ -1,12 +1,21 @@
 {% extends "base.html" %}
 {% import 'bootstrap/wtf.html' as wtf %}
 {% block app_content %}
+
 {% if info_msg%}
-    <div class="col-md-6">
-        <div class="alert alert-dismissible alert-success text-center">
-          {{ info_msg }}
-        </div>
+<script>
+    function hide_form_message() {
+        $('#form_message').fadeOut(5000);
+    }
+</script>
+<div class="col-md-6">
+    <div id="form_message" class="alert alert-dismissible alert-success text-center">
+      {{ info_msg }}
     </div>
+</div>
+<script type="text/javascript">
+   hide_form_message();
+</script>
 {% endif %}
 <div class="row">
     <div class="col-md-6">

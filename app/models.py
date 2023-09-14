@@ -630,6 +630,22 @@ class Appointment(db.Model, Entity, Splitter):
             payment.delete_object()
 
 
+class PaymentMethod:
+    items = {100: _l('Cash'),
+             200: _l('Card'),
+             300: _l('Transfer')}
+
+    @classmethod
+    def get_items(cls, tuple_mode=False):
+        if tuple_mode:
+            items = [(key, value) for (key, value) in cls.items.items()]
+            if not len(items) == 1:
+                items.insert(0, (0, _l('-Select-')))
+        else:
+            items = [i for i in cls.items]
+        return items
+
+
 class Week:
     days = [_l('Monday'), _l('Tuesday'), _l('Wednesday'), _l('Thursday'),
             _l('Friday'), _l('Saturday'), _l('Sunday')]
@@ -764,6 +780,7 @@ class CashFlow(db.Model, Entity, Splitter):
     location_id = db.Column(db.Integer, db.ForeignKey('location.id'))
     description = db.Column(db.String(255))
     cost = db.Column(db.Float)
+    payment_method_id = db.Column(db.Integer)
     link = db.Column(db.String(64), default=str(uuid.uuid4()))
     appointment = db.relationship('Appointment', backref='payment',
                                   uselist='False')

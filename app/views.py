@@ -55,6 +55,11 @@ def inject_version():
 
 
 @app.context_processor
+def get_theme():
+    return {'theme': session.get('theme', 'dark')}
+
+
+@app.context_processor
 def check_notices():
     if current_user.is_authenticated:
         param = dict(date=datetime.now().date(), processed=False)
@@ -858,7 +863,8 @@ def clients_table():
 @app.route('/clients/create/', methods=['GET', 'POST'])
 @login_required
 def client_create():
-    url_back = url_for('clients_table', **request.args)
+    url_back = request.args.get('url_back',
+                                url_for('clients_table', **request.args))
     form = ClientForm()
     if request.method == 'POST':
         form.phone.data = phone_number_plus(form.phone.data)
@@ -872,7 +878,7 @@ def client_create():
         db.session.commit()
         if request.args.get('choice_mode', 0, type=int):
             session['client'] = client.id
-            return redirect(url_for('appointment_create'))
+            return redirect(url_back)
         else:
             return redirect(url_for('clients_table'))
     return render_template('data_form.html',
@@ -1727,10 +1733,10 @@ def notice_create():
             form.process()
         if appointment:
             if appointment.date_repeat:
-                form.date.data = max(appointment.date_repeat, datetime.now().date())
-            previous_visit = appointment.date_time.date()
-            form.description.data = ' '.join((_('*Previous visit'),
-                                             str(previous_visit)))
+                form.date.data = max(appointment.date_repeat,
+                                     datetime.now().date())
+            previous_visit = appointment.date_time.date().strftime('%d.%m.%Y')
+            form.description.data = _('*Previous visit') + ' ' + previous_visit
         form.date.data = datetime.now().date()
     return render_template('notice_form.html',
                            title=_('Notice (create)'),
@@ -1820,13 +1826,15 @@ def cash_flow_create():
                                 **request.args))
     form = CashFlowForm()
     form.location.choices = Location.get_items(True)
+    form.payment_method.choices = PaymentMethod.get_items(True)
     form.cost.render_kw = {'type': 'number'}
     if form.validate_on_submit():
         cash_flow = CashFlow(cid=current_user.cid,
                              location_id=form.location.data,
                              date=form.date.data,
                              description=form.description.data,
-                             cost=form.cost.data * form.action.data)
+                             cost=form.cost.data * form.action.data,
+                             payment_method_id=form.payment_method.data)
         db.session.add(cash_flow)
         param = {'location_id': form.location.data}
         cash = Cash.find_object(param)
@@ -1849,7 +1857,7 @@ def cash_flow_create():
         if appointment:
             location_id = appointment.location_id
             description = ' '.join((_('#Payment for services'),
-                                    str(appointment.date_time)))
+                                    appointment.date_time.strftime('%d.%m.%Y %H:%M')))
             date = appointment.date_time.date()
             cost = appointment.cost
             form.location.default = location_id
@@ -1874,6 +1882,7 @@ def cash_flow_edit(id):
     form = CashFlowForm()
     form.cost.render_kw = {'type': 'number'}
     form.location.choices = Location.get_items(True)
+    form.payment_method.choices = PaymentMethod.get_items(True)
     info_msg = ''
     if form.validate_on_submit():
         current_location = cash_flow.location_id
@@ -1885,6 +1894,7 @@ def cash_flow_edit(id):
         param = {'location_id': current_location}
         current_cash = Cash.find_object(param, True)
         current_cash.cost -= current_cost
+        cash_flow.payment_method_id = form.payment_method.data
         param = {'location_id': form.location.data}
         cash = Cash.find_object(param)
         if cash:
@@ -1902,6 +1912,7 @@ def cash_flow_edit(id):
             return redirect(url_back)
     elif request.method == 'GET':
         form.location.default = cash_flow.location_id
+        form.payment_method.default = cash_flow.payment_method_id
         form.process()
         form.date.data = cash_flow.date
         form.description.data = cash_flow.description
@@ -1915,6 +1926,12 @@ def cash_flow_edit(id):
             if not appointment_id == cash_flow.appointment[0].id:
                 form.submit.render_kw = {'disabled': ''}
                 info_msg = _('Payment can be changed only through the appointment form')
+                form.appointment_link.data = url_for('appointment_edit',
+                                                     id=cash_flow.appointment[0].id,
+                                                     url_back=request.path)
+                form.appointment_link.label.text = (
+                        _('Link to appointment') + ': ' +
+                        cash_flow.appointment[0].date_time.strftime('%d.%m.%Y %H:%M'))
     return render_template('data_form.html',
                            title=_('Cash flow (edit)'),
                            form=form,
@@ -2180,3 +2197,17 @@ def quick_start():
                            title=_('Quick start'),
                            check_list=check_list,
                            progress=progress)
+
+
+@app.route('/change_theme/')
+@login_required
+def change_theme():
+    current_theme = session.get('theme', 'dark')
+    if current_theme == 'dark':
+        session['theme'] = 'light'
+    else:
+        session['theme'] = 'dark'
+    url_back = request.args.get('url_back')
+    if url_back:
+        return redirect(url_back)
+    return redirect(url_for('index'))
