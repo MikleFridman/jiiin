@@ -8,6 +8,7 @@ from flask_login import LoginManager
 from flask_mail import Mail
 from flask_admin import Admin
 from flask_moment import Moment
+from flask_caching import Cache
 
 from config import Config
 from flask_sqlalchemy import SQLAlchemy
@@ -39,6 +40,7 @@ login.login_view = 'login'
 mail = Mail(app)
 babel = Babel(app)
 moment = Moment(app)
+cache = Cache(app)
 
 from app import views, models, errors, api
 from app.models import *

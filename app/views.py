@@ -301,7 +301,7 @@ def register():
             if form.promo_code.data:
                 msg += ' promo code: ' + form.promo_code.data
             send_bot_message(app.config['ADMIN_CHAT_ID'], msg)
-        flash(_('Registration successfully'))
+        flash(_('Registration successfully'), 'info')
         return redirect(url_for('login'))
     return render_template('data_form.html',
                            form=form,
@@ -394,6 +394,9 @@ def company_edit():
         company.config.show_quick_start = form.show_quick_start.data
         company.config.min_time_interval = form.min_time_interval.data
         db.session.commit()
+        if not company.config.simple_mode:
+            flash(_('It is necessary to select employee schedules'), 'info')
+            return redirect(url_for('staff_table'))
         return redirect(url_for('index'))
     elif request.method == 'GET':
         form.min_time_interval.default = CompanyConfig.get_parameter('min_time_interval')

@@ -5,6 +5,10 @@ import requests
 from app import app, csrf
 
 TOKEN = app.config['TELEGRAM_API_TOKEN']
+URL = 'https://jiiin.online'
+# print('https://api.telegram.org/bot{}/setWebhook?url={}/webhook/'.format(TOKEN, URL))
+# print('https://api.telegram.org/bot{}/deleteWebhook'.format(TOKEN))
+
 # https://api.telegram.org/bot{TOKEN}/setWebhook?url={URL}/webhook/
 # https://api.telegram.org/bot{TOKEN}/deleteWebhook
 
