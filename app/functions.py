@@ -191,7 +191,10 @@ def get_calendar(days=None, data_filter=None, day_start=None):
         current_day = (datetime.now().date() +
                        timedelta(days=-datetime.now().isoweekday()))
     else:
-        current_day = day_start + timedelta(days=-day_start.isoweekday())
+        if day_start.isoweekday() == 7:
+            current_day = day_start
+        else:
+            current_day = day_start + timedelta(days=-day_start.isoweekday())
     if not days:
         day_end = current_day + timedelta(days=31)
     else:

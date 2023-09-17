@@ -359,8 +359,12 @@ class User(UserMixin, db.Model, Entity, Splitter):
                 'delete': delete}
 
     def get_token(self, lifetime=28800):
+        if (self.token and self.token_expiration >
+                datetime.utcnow() + timedelta(seconds=60)):
+            return self.token
         self.token = base64.b64encode(os.urandom(24)).decode('utf-8')
         self.token_expiration = datetime.utcnow() + timedelta(seconds=lifetime)
+        db.session.commit()
         return self.token
 
     def revoke_token(self):
@@ -390,6 +394,10 @@ class Staff(db.Model, Entity, Splitter):
 
     def __repr__(self):
         return self.name
+
+    @classmethod
+    def check_schedules(cls):
+        return all(s.main_schedule for s in cls.get_items())
 
     @property
     def main_schedule(self):

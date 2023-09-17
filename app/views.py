@@ -394,7 +394,7 @@ def company_edit():
         company.config.show_quick_start = form.show_quick_start.data
         company.config.min_time_interval = form.min_time_interval.data
         db.session.commit()
-        if not company.config.simple_mode:
+        if not company.config.simple_mode and not Staff.check_schedules():
             flash(_('It is necessary to select employee schedules'), 'info')
             return redirect(url_for('staff_table'))
         return redirect(url_for('index'))
@@ -1298,11 +1298,10 @@ def appointment_assistant():
     clear_session()
     first_day = (datetime(datetime.now().year, datetime.now().month, 1).date() +
                  relativedelta(months=offset))
-    day_start = max(first_day, datetime.now().date())
-    calendar = get_calendar(days=42, data_filter=param, day_start=day_start)
+    calendar = get_calendar(days=42, data_filter=param, day_start=first_day)
     return render_template('assistant.html',
                            calendar=calendar,
-                           month=day_start,
+                           month=first_day,
                            form=form)
 
 

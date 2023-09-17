@@ -178,13 +178,15 @@ class UserFormEdit(UserForm):
 
     def validate_username(self, username):
         if username.data != self.original_username:
-            if User.find_object({'username': username.data}):
+            data_filter = {'username': username.data}
+            if User.find_object(data_filter=data_filter, overall=True):
                 flash(_l('Please use a different username'))
                 raise ValidationError(_l('Please use a different username'))
 
     def validate_email(self, email):
         if email.data != self.original_email:
-            if User.find_object({'email': email.data}):
+            data_filter = {'email': email.data}
+            if User.find_object(data_filter=data_filter, overall=True):
                 flash(_l('Please use a different email'))
                 raise ValidationError(_l('Please use a different email'))
 

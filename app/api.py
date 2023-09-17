@@ -14,7 +14,6 @@ from app.auth import basic_auth, token_auth
 @basic_auth.login_required
 def api_get_token():
     token = g.current_user.get_token()
-    db.session.commit()
     return jsonify({'token': token})
 
 
