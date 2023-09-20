@@ -17,7 +17,7 @@
             {% for date, day in calendar.items() %}
                 <div class="col p-0 pe-1 border {% if date < today_date %}bg-secondary bg-opacity-50{% elif date.month != month.month %}bg-light bg-opacity-50{% endif %}">
                     {% if date >= today_date %}
-                        <a class="text-decoration-none text-reset" href="{{ url_for('services_table', choice_mode=1, date=date, **request.args) }}">
+                        <a class="text-decoration-none text-reset" href="{{ url_for('select_date', date=date, url_back=url_for('services_table', choice_mode=1, **request.args)) }}">
                     {% endif %}
                     <div class="d-flex align-items-end flex-column" style="height: 60px;">
                         {% if date >= today_date %}

@@ -310,6 +310,7 @@ class Role(db.Model, RoleMixin, Entity, Splitter):
 
 class User(UserMixin, db.Model, Entity, Splitter):
     sort = 'username'
+    timestamp_login = db.Column(db.DateTime())
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True, nullable=False)
     password_hash = db.Column(db.String(128))
@@ -369,6 +370,10 @@ class User(UserMixin, db.Model, Entity, Splitter):
 
     def revoke_token(self):
         self.token_expiration = datetime.utcnow() - timedelta(seconds=1)
+
+    def update_login_timestamp(self):
+        self.timestamp_login = datetime.utcnow()
+        db.session.commit()
 
     @classmethod
     def check_token(cls, token):
@@ -441,7 +446,7 @@ class Client(db.Model, Entity, Splitter):
     notices = db.relationship('Notice', backref='client', cascade='all, delete')
     appointments = db.relationship('Appointment', backref='client')
     tags = db.relationship('Tag', secondary=clients_tags,
-                           lazy='subquery',
+                           lazy='selectin',
                            backref=db.backref('clients', lazy=True))
 
     def __repr__(self):
@@ -487,7 +492,7 @@ class Location(db.Model, Entity, Splitter):
     item_flows = db.relationship('ItemFlow', backref='location',
                                  cascade='all, delete')
     services = db.relationship('Service', secondary=services_locations,
-                               lazy='subquery',
+                               lazy='selectin',
                                backref=db.backref('locations', lazy=True))
     schedules = db.relationship('Schedule', secondary=locations_schedules,
                                 backref=db.backref('locations', lazy=True))
@@ -526,7 +531,7 @@ class Service(db.Model, Entity, Splitter):
     repeat = db.Column(db.Integer)
     appointments = db.relationship('Appointment',
                                    secondary=appointments_services,
-                                   lazy='subquery',
+                                   lazy='selectin',
                                    backref=db.backref('services', lazy=True))
 
     def __repr__(self):

@@ -2,7 +2,7 @@
 
 {% block app_content %}
   {% import '_header.html' as forms %}
-  {{ forms.render_header(_('Transactions'), url_for('cash_flow_create', **request.args), form) }}
+  {{ forms.render_header(_('Cash desk'), url_for('cash_flow_create', **request.args), form) }}
   <table id="data" class="table table-hover border-top border-bottom border-light">
     <thead>
       <tr class="d-none d-lg-table-row table-primary border-start border-end border-light text-center">

@@ -7,7 +7,6 @@ from io import BytesIO
 from xml.dom import minidom
 from datetime import time
 
-from flask_babel import get_locale
 import pandas as pd
 import qrcode
 from dateutil.relativedelta import relativedelta
@@ -19,7 +18,7 @@ import hashlib
 import os.path
 
 from flask import render_template, redirect, url_for, request, jsonify, send_file, g
-from flask_babel import _, lazy_gettext as _l
+from flask_babel import _, lazy_gettext as _l, get_locale
 from flask_login import login_user, logout_user, login_required
 from werkzeug.urls import url_parse
 
@@ -27,6 +26,7 @@ from .bot import send_bot_message
 from app.forms import *
 from app.functions import *
 from app.models import *
+from app import cache
 
 
 doc_version = minidom.parse('version.xml')
@@ -60,6 +60,7 @@ def get_theme():
 
 
 @app.context_processor
+@cache.memoize()
 def check_notices():
     if current_user.is_authenticated:
         param = dict(date=datetime.now().date(), processed=False)
@@ -106,6 +107,8 @@ def delete(class_name, object_id):
     del_object = class_object.get_object(object_id)
     url_back = request.args.get('url_back', url_for('index'))
     del_object.delete_object()
+    if class_object == Notice:
+        cache.delete_memoized(check_notices)
     return redirect(url_back)
 
 
@@ -320,6 +323,7 @@ def login():
             flash(_('Invalid username or password'))
             return redirect(url_for('login'))
         login_user(user, remember=form.remember_me.data)
+        user.update_login_timestamp()
         if not user.company or not user.company.config:
             logout_user()
             error_message = _('Not found company configuration!')
@@ -440,7 +444,7 @@ def user_edit(id):
             user.start_page = None
         if form.password.data.strip() != '':
             if not user.check_password(form.password_old.data):
-                flash('Invalid password')
+                flash(_('Invalid username or password'))
                 return render_template('data_form.html',
                                        title=_('User (edit)'),
                                        form=form)
@@ -1725,6 +1729,7 @@ def notice_create():
                         description=form.description.data)
         db.session.add(notice)
         db.session.commit()
+        cache.delete_memoized(check_notices)
         return redirect(url_back)
     elif request.method == 'GET':
         if client_id:
@@ -1765,6 +1770,7 @@ def notice_edit(id):
         notice.description = form.description.data
         notice.processed = form.processed.data
         db.session.commit()
+        cache.delete_memoized(check_notices)
         return redirect(url_back)
     elif request.method == 'GET':
         form.client.default = notice.client_id
@@ -1810,7 +1816,7 @@ def cash_flow_table():
     param = get_filter_parameters(form, CashFlow)
     data = CashFlow.get_pagination(page, *param)
     return render_template('cash_flow_table.html',
-                           title=_('Cash flow'),
+                           title=_('Cash desk'),
                            items=data.items,
                            pagination=data,
                            form=form)
@@ -2063,6 +2069,9 @@ def select_client(client_id):
 @login_required
 def select_date(date):
     session['date'] = date
+    url_back = request.args.get('url_back')
+    if url_back:
+        return redirect(url_back)
     return jsonify('Ok')
 
 
@@ -2126,7 +2135,7 @@ def get_intervals(location_id, staff_id, date_string, appointment_id, no_check):
 @admin_required
 @confirm(_l('Export data to Excel?'))
 def export():
-    class_list = [Client, Staff, Appointment, Notice]
+    class_list = [Client, Staff, Appointment, Notice, CashFlow]
     directory = os.path.join(app.config['UPLOAD_FOLDER'],
                              str(current_user.cid), 'temp')
     if not os.path.exists(directory):
@@ -2140,7 +2149,8 @@ def export():
         items = class_object.get_items()
         ignore_list = {'id', 'no_active', 'timestamp_create',
                        'timestamp_update', 'cid', 'cancel', 'payment_id',
-                       'no_check_duration', 'allow_booking_this_time'}
+                       'no_check_duration', 'allow_booking_this_time', 'link',
+                       'payment_method_id'}
         column_list = [get_attr_inspect(col.name, class_object) for col in
                        inspect(class_object).columns
                        if col.name not in ignore_list]

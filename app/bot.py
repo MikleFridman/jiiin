@@ -1,15 +1,22 @@
+import gettext
+import os
+
 from flask import request, jsonify, redirect, url_for
 import telebot
 import requests
 from telebot.types import ReplyKeyboardRemove, ReplyKeyboardMarkup, KeyboardButton
-from flask_babel import _
 
 from app import app, csrf
+from config import basedir
 from .models import User
 
 TOKEN = app.config['TELEGRAM_API_TOKEN']
 URL = 'https://jiiin.online'
 bot = telebot.TeleBot(TOKEN)
+lang = gettext.translation('messages', os.path.join(basedir, 'app', 'translations'),
+                           languages=['ru'])
+_ = lang.gettext
+
 # print('https://api.telegram.org/bot{}/setWebhook?url={}/webhook/'.format(TOKEN, URL))
 # print('https://api.telegram.org/bot{}/deleteWebhook'.format(TOKEN))
 
@@ -17,6 +24,7 @@ TEXT_CONFIRM = _('Please confirm your phone number')
 TEXT_REGISTER = _('Please register to jiiin.online')
 TEXT_CONFIRM_SUCCESS = _('Contact confirmed successfully!')
 TEXT_IMPORT_SUCCESS = _('Contact imported successfully!')
+TEXT_SEND_PHONE = _('Send phone number')
 
 
 def register_phone(user_id, contact):
@@ -50,7 +58,7 @@ def start(message):
         keyboard = ReplyKeyboardMarkup(row_width=1,
                                        resize_keyboard=True,
                                        one_time_keyboard=True)
-        button = KeyboardButton(text='Send phone number',
+        button = KeyboardButton(text=TEXT_SEND_PHONE,
                                 request_contact=True)
         keyboard.add(button)
         bot.send_message(message.from_user.id, TEXT_CONFIRM,

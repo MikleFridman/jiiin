@@ -2,7 +2,7 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 {% block app_content %}
 <div class="row mt-1">
-    <div class="col-md-6">
+    <div class="col-md-12">
         <form class="form-inline" action="" method="POST">
             {{ form.hidden_tag() }}
             <div class="form-group d-flex flex-column justify-content-center align-items-center">
@@ -10,7 +10,6 @@
                     <img width="240px" src="data:image/jpeg;base64,{{ qr_code }}" alt="qr_code"/>
                 </div>
                 <a href="{{ form.link.data }}">{{ form.link.label }}</a>
-                <button type="button" class="btn btn-secondary mt-3 mb-2" onclick="window.location.href='{{ url_back }}'">{{ _('Back') }}</button>
             </div>
         </form>
     </div>

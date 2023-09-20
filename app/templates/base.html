@@ -20,20 +20,16 @@
               <img src="{{ url_for('static', filename='/profile.png') }}" alt="profile" title="{{ _('Profile') }}" width="26">
           </a>
       </div>
-      {% if notices_count %}
-      <li class="d-flex d-lg-none nav-item">
-          <a class="nav-link me-2" href="{{ url_for('notices_table', date=today_date, processed=False) }}">
-            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-bell-fill text-light" viewBox="0 0 16 16">
-              <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z"/>
-                <small><span class="position-absolute top-10 start-40 translate-middle badge bg-danger rounded-pill">{{ notices_count }}</span></small>
-            </svg>
-          </a>
-      </li>
-      {% endif %}
     {% endif %}
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
+    <button class="navbar-toggler position-relative" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
+        {% if notices_count %}
+            <span class="position-absolute top-0 start-0 translate-middle p-1 bg-danger rounded-circle">
+                <span class="visually-hidden">{{ _('Notices') }}</span>
+            </span>
+        {% endif %}
     </button>
+
     <div class="collapse navbar-collapse" id="navbarColor01">
       <ul class="navbar-nav me-auto">
         {% if not current_user.is_authenticated %}
@@ -51,15 +47,26 @@
           <a class="nav-link {% if request.path == url_for('clients_table') %}active{% endif %}" href="{{ url_for('clients_table') }}">{{ _('Clients') }}</a>
         </li>
         <li class="nav-item">
-          <a class="nav-link {% if request.path == url_for('notices_table') %}active{% endif %}" href="{{ url_for('notices_table') }}">{{ _('Notices') }}</a>
+          {% if notices_count%}
+          <a class="nav-link {% if request.path == url_for('notices_table') %}active{% endif %}" href="{{ url_for('notices_table', date=today_date, processed=False) }}">
+          {% else %}
+          <a class="nav-link {% if request.path == url_for('notices_table') %}active{% endif %}" href="{{ url_for('notices_table') }}">
+          {% endif %}
+              <span class="position-relative pe-2">
+                  {{ _('Notices') }}
+                  {% if notices_count %}
+                  <small>
+                      <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                          {{ notices_count }}
+                      </span>
+                  </small>
+                  {% endif %}
+              </span>
+          </a>
         </li>
         {% if not current_user.staff %}
-        <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle {% if request.path == url_for('cash_table') or request.path == url_for('cash_flow_table') %}active{% endif %}" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">{{ _('Cash desk') }}</a>
-                <div class="dropdown-menu">
-                    <a class="dropdown-item" href="{{ url_for('cash_table') }}">{{ _('Balance') }}</a>
-                    <a class="dropdown-item" href="{{ url_for('cash_flow_table') }}">{{ _('Transactions') }}</a>
-                </div>
+        <li class="nav-item">
+          <a class="nav-link {% if request.path == url_for('cash_flow_table') %}active{% endif %}" href="{{ url_for('cash_flow_table') }}">{{ _('Cash desk') }}</a>
         </li>
         <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle {% if request.path == url_for('services_table') or request.path == url_for('locations_table') or request.path == url_for('staff_table') %}active{% endif %}" data-bs-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">{{ _('Company') }}</a>
@@ -83,16 +90,6 @@
       <div class="d-flex">
           <ul class="navbar-nav me-auto">
               {% if current_user.is_authenticated %}
-              {% if notices_count %}
-              <li class="d-none d-lg-flex nav-item">
-                  <a class="nav-link me-2" href="{{ url_for('notices_table', date=today_date, processed=False) }}">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" class="bi bi-bell-fill text-light" viewBox="0 0 16 16">
-                      <path d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z"/>
-                        <small><span class="position-absolute top-10 start-40 translate-middle badge bg-danger rounded-pill">{{ notices_count }}</span></small>
-                    </svg>
-                  </a>
-              </li>
-              {% endif %}
               <li class="nav-item">
                   <a class="nav-link me-2 {% if request.path == url_for('sendmail') %}active{% endif %}" href="{{ url_for('sendmail', url_back=request.path) }}">{{ _('Contact us') }}</a>
               </li>
