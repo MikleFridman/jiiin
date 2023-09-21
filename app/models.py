@@ -96,7 +96,7 @@ locations_schedules = db.Table('locations_schedules',
 
 
 class Entity:
-    table_link = ''
+    table_link = 'index'
     sort = 'id'
     sort_mode = 'asc'
     search = []
@@ -121,8 +121,11 @@ class Entity:
         return list(c.__name__ for c in cls.__subclasses__())
 
     @classmethod
-    def get_items(cls, tuple_mode=False, data_filter=None, data_search=None):
-        param = {'cid': current_user.cid, 'no_active': False}
+    def get_items(cls, tuple_mode=False, data_filter=None, data_search=None, overall=False):
+        if overall:
+            param = {'no_active': False}
+        else:
+            param = {'cid': current_user.cid, 'no_active': False}
         if data_filter:
             param = {**param, **data_filter}
         items = cls.query.filter_by(**param)
@@ -220,6 +223,8 @@ class Tariff(db.Model, Entity):
     max_users = db.Column(db.Integer, default=1)
     max_staff = db.Column(db.Integer, default=1)
     default = db.Column(db.Boolean, default=False)
+    price = db.Column(db.Integer, default=0)
+    companies = db.relationship('CompanyConfig', backref='tariff')
 
     def __repr__(self):
         return self.name
@@ -227,6 +232,16 @@ class Tariff(db.Model, Entity):
     @classmethod
     def get_tariff_default(cls):
         return cls.query.filter_by(default=True).first()
+
+    def check_tariff_limit(self, class_object):
+        limit = 0
+        if class_object == Location:
+            limit = self.max_locations
+        if class_object == Staff:
+            limit = self.max_staff
+        if class_object == User:
+            limit = self.max_users
+        return limit - len(class_object.get_items()) > 0
 
 
 class Company(db.Model, Entity):
@@ -267,6 +282,13 @@ class Company(db.Model, Entity):
     def __repr__(self):
         return self.name
 
+    @staticmethod
+    def get_current_tariff():
+        cfg = current_user.company.config
+        if not cfg or not cfg.tariff:
+            return Tariff.get_tariff_default()
+        return cfg.tariff
+
 
 class CompanyConfig(db.Model, Entity, Splitter):
     min_time_interval = db.Column(db.Integer, default=15)
@@ -274,6 +296,7 @@ class CompanyConfig(db.Model, Entity, Splitter):
     default_time_to = db.Column(db.Time, default=datetime.strptime('18:00', '%H:%M').time())
     simple_mode = db.Column(db.Boolean, default=True)
     show_quick_start = db.Column(db.Boolean, default=True)
+    tariff_id = db.Column(db.Integer, db.ForeignKey('tariff.id'))
 
     @staticmethod
     def get_parameter(name):
@@ -309,6 +332,7 @@ class Role(db.Model, RoleMixin, Entity, Splitter):
 
 
 class User(UserMixin, db.Model, Entity, Splitter):
+    table_link = 'staff_table'
     sort = 'username'
     timestamp_login = db.Column(db.DateTime())
     username = db.Column(db.String(64), index=True, unique=True)
@@ -358,6 +382,10 @@ class User(UserMixin, db.Model, Entity, Splitter):
                 'read': read,
                 'update': update,
                 'delete': delete}
+
+    def check_permission(self, object_name, permission):
+        permissions = self.get_permissions(object_name)
+        return permissions.get(permission, False)
 
     def get_token(self, lifetime=28800):
         if (self.token and self.token_expiration >

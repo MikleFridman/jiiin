@@ -55,6 +55,13 @@ def inject_version():
 
 
 @app.context_processor
+@cache.memoize(1800)
+def inject_tariff():
+    return {'tariff': Company.get_current_tariff().name,
+            'tariff_id': Company.get_current_tariff().id}
+
+
+@app.context_processor
 def get_theme():
     return {'theme': session.get('theme', 'dark')}
 
@@ -94,6 +101,19 @@ def confirm(desc):
                                    desc=desc,
                                    modal=True,
                                    url_back=url_back)
+        return wrap
+    return outer
+
+
+def check_limit(class_object):
+    def outer(f):
+        @wraps(f)
+        def wrap(*args, **kwargs):
+            tariff = Company.get_current_tariff()
+            if not tariff.check_tariff_limit(class_object):
+                flash(_('Exceeded the limit on your tariff'))
+                return redirect(url_for(class_object.table_link))
+            return f(*args, **kwargs)
         return wrap
     return outer
 
@@ -398,6 +418,7 @@ def company_edit():
         company.config.show_quick_start = form.show_quick_start.data
         company.config.min_time_interval = form.min_time_interval.data
         db.session.commit()
+        cache.delete_memoized(inject_tariff)
         if not company.config.simple_mode and not Staff.check_schedules():
             flash(_('It is necessary to select employee schedules'), 'info')
             return redirect(url_for('staff_table'))
@@ -511,6 +532,7 @@ def staff_table():
 @app.route('/staff/create/', methods=['GET', 'POST'])
 @login_required
 @admin_required
+@check_limit(Staff)
 def staff_create():
     url_back = url_for('staff_table', **request.args)
     next_page = request.args.get('next')
@@ -604,7 +626,7 @@ def staff_user(id):
                 staff.user.set_password(form.password.data)
             staff.user.no_active = form.no_active.data
             db.session.commit()
-            flash(_('User successfully changed'))
+            flash(_('User successfully changed'), 'info')
         else:
             user = User(cid=current_user.cid,
                         username=form.username.data,
@@ -614,7 +636,7 @@ def staff_user(id):
             db.session.flush()
             staff.user_id = user.id
             db.session.commit()
-            flash(_('User successfully create'))
+            flash(_('User successfully create'), 'info')
         return redirect(url_back)
     elif request.method == 'GET':
         if staff.user:
@@ -1194,6 +1216,7 @@ def locations_table():
 @app.route('/locations/create/', methods=['GET', 'POST'])
 @login_required
 @admin_required
+@check_limit(Location)
 def location_create():
     url_back = url_for('locations_table', **request.args)
     next_page = request.args.get('next')
@@ -2222,4 +2245,28 @@ def change_theme():
     url_back = request.args.get('url_back')
     if url_back:
         return redirect(url_back)
+    return redirect(url_for('index'))
+
+
+@app.route('/price/')
+@login_required
+@admin_required
+def price():
+    items = Tariff.get_items(overall=True)
+    return render_template('price.html',
+                           title=_('Tariffs'),
+                           plans=items)
+
+
+@app.route('/select_tariff/<tariff_id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+@confirm(_l('Change the tariff plan?'))
+def select_tariff(tariff_id):
+    cfg = current_user.company.config
+    if cfg:
+        cfg.tariff_id = tariff_id
+        db.session.commit()
+        flash(_('Tariff plan successfully changed'), 'info')
+        cache.delete_memoized(inject_tariff)
     return redirect(url_for('index'))

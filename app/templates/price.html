@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+<div class="row row-cols-1 row-cols-md-4 mb-3 text-center">
+    {% for p in plans %}
+    <div class="col mt-3">
+        <div class="card mb-3 rounded-3">
+          {% if p.default %}
+            <h4 class="card-header py-3">{{ p.name }}</h4>
+          {% else %}
+            <h4 class="card-header py-3 bg-primary text-white">{{ p.name }}</h4>
+          {% endif %}
+          <div class="card-body">
+            <h4 class="card-title"><span class="text-dark">${{ p.price }}</span><small class="text-muted fw-light">/{{ _('month') }}</small></h4>
+          </div>
+          <ul class="list-group list-group-flush mb-1">
+              <li class="list-group-item text-body">{{ _('Locations') }} {{ _('up to') }} <span class="text-dark lead">{{ p.max_locations }}</span></li>
+              <li class="list-group-item text-body">{{ _('Staff') }} {{ _('up to') }} <span class="text-dark lead">{{ p.max_staff }}</span></li>
+          </ul>
+          <div class="p-3">
+              {% if tariff_id == p.id %}
+                <button type="button" class="w-100 btn btn-lg btn-outline-primary disabled">{{ _('Select') }}</button>
+              {% else %}
+                  <a href="{{ url_for('select_tariff', tariff_id=p.id, url_back=url_for('price')) }}">
+                      <button type="button" class="w-100 btn btn-lg btn-outline-primary">{{ _('Select') }}</button>
+                  </a>
+              {% endif %}
+          </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

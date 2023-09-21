@@ -49,7 +49,7 @@ from .bot import send_bot_message
 admin = Admin(app, name="Jiiin", index_view=MyAdminView())
 admin.add_view(CompanyAdminView(Company, db.session))
 admin.add_view(MyModelView(CompanyConfig, db.session))
-admin.add_view(MyModelView(Tariff, db.session))
+admin.add_view(TariffAdminView(Tariff, db.session))
 admin.add_view(UserAdminView(User, db.session))
 admin.add_view(MyModelView(Role, db.session))
 admin.add_view(MyModelView(Permission, db.session))

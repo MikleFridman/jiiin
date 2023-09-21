@@ -3,13 +3,12 @@ from datetime import datetime, timedelta
 from threading import Thread
 
 from flask import flash, session
-from flask_login import current_user
 from flask_mail import Message
 from flask_babel import lazy_gettext as _l, _
 from sqlalchemy import func, inspect
 
 from app import app, mail
-from .models import Location, User, Staff, Service, Appointment, CompanyConfig
+from .models import Location, Staff, Service, Appointment, CompanyConfig
 
 
 def get_languages():
@@ -22,21 +21,6 @@ def get_languages():
 def allowed_file_ext(filename):
     allow_ext = app.config['UPLOAD_EXTENSIONS']
     return '.' in filename and os.path.splitext(filename)[1] in allow_ext
-
-
-def get_tariff_limit(parameter):
-    if parameter == 'location':
-        limit = current_user.company.tariff.max_locations
-        count = Location.query.filter_by(cid=current_user.cid).count()
-        return max(0, limit - count)
-    elif parameter == 'user':
-        limit = current_user.company.tariff.max_users
-        count = User.query.filter_by(cid=current_user.cid).count()
-        return max(0, limit - count)
-    elif parameter == 'staff':
-        limit = current_user.company.tariff.max_staff
-        count = Staff.query.filter_by(cid=current_user.cid).count()
-        return max(0, limit - count)
 
 
 def get_duration(services):

@@ -13,7 +13,16 @@
 {% block navbar %}
 <nav class="navbar navbar-expand-lg sticky-top navbar-dark bg-primary">
   <div class="container-fluid">
+    <span class="position-relative">
     <a class="navbar-brand ms-3" href="{{ url_for('index') }}" title="ver. {{ version }} ({{ version_date }})"> Jiiin </a>
+    <small>
+      <span class="position-absolute top-0 start-100 translate-middle badge bg-info">
+          {{ tariff }}
+      </span>
+    </small>
+    </span>
+    <div class="d-none d-lg-block ms-4">
+    </div>
     {% if current_user.is_authenticated %}
       <div class="d-flex d-lg-none nav-item">
           <a class="nav-link me-2 {% if request.path == url_for('user_edit', id=current_user.id) %}active{% endif %}" href="{{ url_for('user_edit', id=current_user.id) }}">
@@ -77,6 +86,8 @@
               <a class="dropdown-item" href="{{ url_for('staff_table') }}">{{ _('Staff') }}</a>
               <a class="dropdown-item" href="{{ url_for('holidays_table') }}">{{ _('Holidays') }}</a>
               <a class="dropdown-item" href="{{ url_for('tags_table') }}">{{ _('Tags') }}</a>
+              <div class="dropdown-divider"></div>
+              <a class="dropdown-item" href="{{ url_for('price') }}">{{ _('Tariffs') }}</a>
               <div class="dropdown-divider"></div>
               <a class="dropdown-item" href="{{ url_for('quick_start') }}">{{ _('Quick start') }}</a>
               <a class="dropdown-item" href="{{ url_for('company_edit') }}">{{ _('Settings') }}</a>
