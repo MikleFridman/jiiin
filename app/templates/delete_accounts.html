@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block app_content %}
+  <ul>
+    {% for i in items %}
+  <li>
+    id={{ i.id }} name="{{ i.name }}" ({{ i.admin_email }})
+    <a class="text-decoration-none" href="{{ url_for('delete_account_admin', company_id=i.id, url_back=url_for('delete_inactive_accounts'))}}">
+      [delete]
+    </a>
+  </li>
+    {% endfor %}
+  </ul>
+{% endblock %}

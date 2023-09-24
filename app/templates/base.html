@@ -15,11 +15,15 @@
   <div class="container-fluid">
     <span class="position-relative">
     <a class="navbar-brand ms-3" href="{{ url_for('index') }}" title="ver. {{ version }} ({{ version_date }})"> Jiiin </a>
-    <small>
-      <span class="position-absolute top-0 start-100 translate-middle badge bg-info">
-          {{ tariff }}
-      </span>
-    </small>
+    {% if current_user.is_authenticated %}
+        {% if tariff %}
+        <small>
+          <span class="position-absolute top-0 start-100 translate-middle badge bg-info">
+              {{ tariff }}
+          </span>
+        </small>
+        {% endif %}
+    {% endif %}
     </span>
     <div class="d-none d-lg-block ms-4">
     </div>

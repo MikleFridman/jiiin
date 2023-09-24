@@ -159,8 +159,11 @@ class Entity:
         return items
 
     @classmethod
-    def get_object(cls, id, mode_404=True):
-        param = {'cid': current_user.cid, 'no_active': False, 'id': id}
+    def get_object(cls, id, mode_404=True, overall=False):
+        if overall:
+            param = {'no_active': False, 'id': id}
+        else:
+            param = {'cid': current_user.cid, 'no_active': False, 'id': id}
         if mode_404:
             obj = cls.query.filter_by(**param).first_or_404()
         else:
@@ -179,14 +182,15 @@ class Entity:
             obj = cls.query.filter_by(**param).first()
         return obj
 
-    def delete_object(self):
+    def delete_object(self, silent_mode=False):
         for attr in self.get_relationships():
-            if len(getattr(self, attr.split('.')[1])) > 0:
+            if getattr(self, attr.split('.')[1]):
                 flash(_l('Unable to delete the selected object'))
                 return False
         db.session.delete(self)
         db.session.commit()
-        flash(_l('Object successfully deleted'))
+        if not silent_mode:
+            flash(_l('Object successfully deleted'))
         return True
 
     def get_relationships(self):
@@ -222,8 +226,11 @@ class Tariff(db.Model, Entity):
     max_locations = db.Column(db.Integer, default=1)
     max_users = db.Column(db.Integer, default=1)
     max_staff = db.Column(db.Integer, default=1)
+    chat = db.Column(db.Boolean, default=False)
+    api = db.Column(db.Boolean, default=False)
     default = db.Column(db.Boolean, default=False)
-    price = db.Column(db.Integer, default=0)
+    price_ils = db.Column(db.Integer, default=0)
+    price_usd = db.Column(db.Integer, default=0)
     companies = db.relationship('CompanyConfig', backref='tariff')
 
     def __repr__(self):
@@ -233,7 +240,7 @@ class Tariff(db.Model, Entity):
     def get_tariff_default(cls):
         return cls.query.filter_by(default=True).first()
 
-    def check_tariff_limit(self, class_object):
+    def check_tariff_limit(self, class_object, allow_null=False):
         limit = 0
         if class_object == Location:
             limit = self.max_locations
@@ -241,7 +248,20 @@ class Tariff(db.Model, Entity):
             limit = self.max_staff
         if class_object == User:
             limit = self.max_users
-        return limit - len(class_object.get_items()) > 0
+        if allow_null:
+            return limit - len(class_object.get_items()) >= 0
+        else:
+            return limit - len(class_object.get_items()) > 0
+
+    def check_downgrade(self):
+        class_objects = [Location, Staff, User]
+        for class_object in class_objects:
+            if not self.check_tariff_limit(class_object, True):
+                msg = _l('Exceeded the limit "%(fn)s" on selected tariff',
+                         fn=_l(class_object.__name__))
+                flash(msg)
+                return False
+        return True
 
 
 class Company(db.Model, Entity):
@@ -281,6 +301,14 @@ class Company(db.Model, Entity):
 
     def __repr__(self):
         return self.name
+
+    @property
+    def admin_email(self):
+        admins = [u for u in self.users if u.staff is None]
+        if admins:
+            return admins[0].email
+        else:
+            return False
 
     @staticmethod
     def get_current_tariff():
@@ -343,7 +371,7 @@ class User(UserMixin, db.Model, Entity, Splitter):
     promo_code = db.Column(db.String(16))
     token = db.Column(db.String(32), index=True, unique=True)
     token_expiration = db.Column(db.DateTime)
-    staff = db.relationship('Staff', backref='user')
+    staff = db.relationship('Staff', uselist=False, backref='user')
     roles = db.relationship('Role', secondary=roles_users,
                             backref=db.backref('users', lazy='dynamic'))
 
@@ -427,6 +455,12 @@ class Staff(db.Model, Entity, Splitter):
 
     def __repr__(self):
         return self.name
+
+    def delete_object(self, *args, **kwargs):
+        user = self.user
+        super(Staff, self).delete_object(*args, **kwargs)
+        if user:
+            user.delete_object(silent_mode=True)
 
     @classmethod
     def check_schedules(cls):
@@ -668,7 +702,7 @@ class Appointment(db.Model, Entity, Splitter):
         payment = self.payment
         super(Appointment, self).delete_object(*args, **kwargs)
         if payment:
-            payment.delete_object()
+            payment.delete_object(silent_mode=True)
 
 
 class PaymentMethod:

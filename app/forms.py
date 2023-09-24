@@ -84,20 +84,17 @@ def validate_name_global(form, field):
         msg = _l('Min length field "%(fn)s" is 6 characters', fn=field.label)
         flash(msg)
         raise ValidationError(msg)
+    symbols = '№#_-().,'
     abc = string.ascii_letters + string.digits + string.whitespace
-    abc += '№#_-().,' + cyrillic_letters
-    letters = string.ascii_letters + cyrillic_letters
-    check_letters = False
-    for s in field.data:
-        if s in letters:
-            check_letters = True
-        if s not in abc:
-            msg = _l('Field "%(fn)s" can contain only letters and numbers',
-                     fn=field.label)
-            flash(msg)
-            raise ValidationError(msg)
-    if not check_letters:
-        msg = _l('Field "%(fn)s" must contain minimum 1 letter')
+    abc += symbols + cyrillic_letters
+    if len(field.data.strip(string.digits + symbols)) == 0:
+        msg = _l('Field "%(fn)s" must contain minimum 1 letter',
+                 fn=field.label)
+        flash(msg)
+        raise ValidationError(msg)
+    if len(field.data.strip(abc)) > 0:
+        msg = _l('Field "%(fn)s" can contain only letters and numbers',
+                 fn=field.label)
         flash(msg)
         raise ValidationError(msg)
 

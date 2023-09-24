@@ -1,9 +1,11 @@
 import ast
 import datetime
+import json
 import zipfile
 from base64 import b64encode
 from functools import wraps
 from io import BytesIO
+from urllib.request import urlopen
 from xml.dom import minidom
 from datetime import time
 
@@ -26,7 +28,6 @@ from .bot import send_bot_message
 from app.forms import *
 from app.functions import *
 from app.models import *
-from app import cache
 
 
 doc_version = minidom.parse('version.xml')
@@ -37,6 +38,33 @@ VERSION_DATE = doc_version.getElementsByTagName('date')[0].firstChild.data
 @app.before_request
 def before_request():
     g.locale = str(get_locale())
+
+
+@app.context_processor
+def ip_country():
+    if not session.get('country', None):
+        if request.remote_addr == '127.0.0.1':
+            url = 'http://ipinfo.io/json'
+        else:
+            url = 'http://ipinfo.io/' + str(request.remote_addr) + '/json'
+        geo_data = json.load(urlopen(url))
+        country_code_ip = geo_data.get('country', None)
+        if country_code_ip and country_code_ip.upper() == 'IL':
+            country_code = 'IL'
+            country = 'Israel'
+            currency_code = 'ILS'
+            currency = '\u20AA'
+        else:
+            country_code = ''
+            country = 'Other'
+            currency_code = 'USD'
+            currency = '\u0024'
+        country = {'country_code': country_code,
+                   'country': country,
+                   'currency_code': currency_code,
+                   'currency': currency}
+        session['country'] = country
+    return session['country']
 
 
 @app.context_processor
@@ -55,10 +83,15 @@ def inject_version():
 
 
 @app.context_processor
-@cache.memoize(1800)
 def inject_tariff():
-    return {'tariff': Company.get_current_tariff().name,
-            'tariff_id': Company.get_current_tariff().id}
+    if current_user.is_authenticated:
+        if not session.get('current_tariff', None):
+            current_tariff = {'tariff': Company.get_current_tariff().name,
+                              'tariff_id': Company.get_current_tariff().id}
+            session['current_tariff'] = current_tariff
+        return session['current_tariff']
+    return {'tariff': Tariff.get_tariff_default().name,
+            'tariff_id': Tariff.get_tariff_default().id}
 
 
 @app.context_processor
@@ -67,12 +100,12 @@ def get_theme():
 
 
 @app.context_processor
-@cache.memoize()
 def check_notices():
     if current_user.is_authenticated:
-        param = dict(date=datetime.now().date(), processed=False)
-        items = Notice.get_items(data_filter=param)
-        return {'notices_count': len(items)}
+        if not session.get('notices_count', None):
+            param = dict(date=datetime.now().date(), processed=False)
+            session['notices_count'] = len(Notice.get_items(data_filter=param))
+        return {'notices_count': session['notices_count']}
     return []
 
 
@@ -128,7 +161,7 @@ def delete(class_name, object_id):
     url_back = request.args.get('url_back', url_for('index'))
     del_object.delete_object()
     if class_object == Notice:
-        cache.delete_memoized(check_notices)
+        session.pop('notices_count', None)
     return redirect(url_back)
 
 
@@ -418,7 +451,7 @@ def company_edit():
         company.config.show_quick_start = form.show_quick_start.data
         company.config.min_time_interval = form.min_time_interval.data
         db.session.commit()
-        cache.delete_memoized(inject_tariff)
+        session.pop('current_tariff', None)
         if not company.config.simple_mode and not Staff.check_schedules():
             flash(_('It is necessary to select employee schedules'), 'info')
             return redirect(url_for('staff_table'))
@@ -1752,7 +1785,7 @@ def notice_create():
                         description=form.description.data)
         db.session.add(notice)
         db.session.commit()
-        cache.delete_memoized(check_notices)
+        session.pop('notices_count', None)
         return redirect(url_back)
     elif request.method == 'GET':
         if client_id:
@@ -1793,7 +1826,7 @@ def notice_edit(id):
         notice.description = form.description.data
         notice.processed = form.processed.data
         db.session.commit()
-        cache.delete_memoized(check_notices)
+        session.pop('notices_count', None)
         return redirect(url_back)
     elif request.method == 'GET':
         form.client.default = notice.client_id
@@ -2263,10 +2296,59 @@ def price():
 @admin_required
 @confirm(_l('Change the tariff plan?'))
 def select_tariff(tariff_id):
-    cfg = current_user.company.config
-    if cfg:
-        cfg.tariff_id = tariff_id
-        db.session.commit()
-        flash(_('Tariff plan successfully changed'), 'info')
-        cache.delete_memoized(inject_tariff)
-    return redirect(url_for('index'))
+    tariff = Tariff.get_object(tariff_id, overall=True)
+    if tariff.check_downgrade():
+        cfg = current_user.company.config
+        if cfg:
+            cfg.tariff_id = tariff_id
+            db.session.commit()
+            session.pop('current_tariff', None)
+            flash(_('Tariff plan successfully changed'), 'info')
+    return redirect(url_for('price'))
+
+
+@app.route('/delete_inactive_accounts/', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def delete_inactive_accounts():
+    if not current_user.check_permission('AdminView', 'read'):
+        return redirect(url_for('index'))
+    send_mail = request.args.get('send_mail', 0, type=int)
+    active_users = User.query.filter(User.timestamp_login.isnot(None))
+    active_companies = []
+    for user in active_users:
+        if user.company not in active_companies:
+            active_companies.append(user.company)
+    inactive_users = User.query.filter(User.timestamp_login.is_(None))
+    inactive_companies = []
+    for user in inactive_users:
+        if user.company not in inactive_companies and user.company not in active_companies:
+            inactive_companies.append(user.company)
+    if send_mail == 1:
+        with mail.connect() as conn:
+            for company in inactive_companies:
+                subject = _('Inactive account') + ' Jiiin'
+                sender = app.config['MAIL_DEFAULT_SENDER']
+                recipients = [company.admin_email]
+                msg = Message(subject=subject,
+                              sender=sender,
+                              recipients=recipients)
+                msg.body = render_template('inactive_account.txt',
+                                           company=company.name)
+                conn.send(msg)
+    return render_template('delete_accounts.html',
+                           items=inactive_companies)
+
+
+@app.route('/delete_account_admin/<company_id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+@confirm(_l('Confirm deletion account and all data'))
+def delete_account_admin(company_id):
+    url_back = request.args.get('url_back',
+                                url_for('delete_inactive_accounts'))
+    company = Company.get_object(id=company_id, overall=True)
+    # db.session.delete(company)
+    # db.session.commit()
+    flash(_('Account successfully deleted'))
+    return redirect(url_back)
