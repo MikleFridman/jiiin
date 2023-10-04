@@ -9,7 +9,7 @@ from flask import abort, flash
 from flask_babel import lazy_gettext as _l
 from flask_login import UserMixin, current_user
 from flask_security import RoleMixin
-from sqlalchemy import func, inspect
+from sqlalchemy import func, inspect, extract
 from sqlalchemy.orm import declared_attr, ONETOMANY, MANYTOMANY
 from werkzeug.security import generate_password_hash, check_password_hash
 from app import db, login, app
@@ -316,6 +316,17 @@ class Company(db.Model, Entity):
         if not cfg or not cfg.tariff:
             return Tariff.get_tariff_default()
         return cfg.tariff
+
+    def check_start_config(self):
+        if len(self.schedules) == 0:
+            return False
+        if len(self.locations) == 0:
+            return False
+        if len(self.services) == 0:
+            return False
+        if len(self.staff) == 0:
+            return False
+        return True
 
 
 class CompanyConfig(db.Model, Entity, Splitter):
@@ -930,3 +941,20 @@ class Assistant:
               ('staff_id', 'Worker', Staff)]
     location_id = None
     staff_id = None
+
+
+class NationalHoliday(db.Model, Entity):
+    date = db.Column(db.Date, nullable=False)
+    name = db.Column(db.String(64))
+    description = db.Column(db.String(128))
+
+    @classmethod
+    def get_month_holidays(cls, year, month):
+        result = {'items': {}, 'dates': set()}
+        if isinstance(month, int) and (1 <= month <= 12):
+            data_search = [extract('year', cls.date) == year,
+                           extract('month', cls.date) == month]
+            items = cls.get_items(data_search=data_search, overall=True)
+            result['items'] = {i.date: i.name for i in items}
+            result['dates'] = set([i.date for i in items])
+        return result

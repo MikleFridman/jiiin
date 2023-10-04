@@ -121,7 +121,7 @@
                     <a class="nav-link me-2 {% if request.path == url_for('login') %}active{% endif %}" href="{{ url_for('login') }}">{{ _('Login') }}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link me-2 {% if request.path == url_for('register') %}active{% endif %}" href="{{ url_for('register') }}">{{ _('Register') }}</a>
+                    <a class="nav-link me-2 {% if request.path == url_for('register') %}active{% endif %}" href="{{ url_for('register') }}">{{ _('Registration') }}</a>
                 </li>
               {% endif %}
          </ul>
@@ -134,7 +134,7 @@
 {% block content %}
     <script>
         function hide_message() {
-            $('#messages').fadeOut(6000);
+            $('#messages').fadeOut(10000);
         }
     </script>
     <div id="messages" class="container mt-2">

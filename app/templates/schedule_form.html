@@ -3,7 +3,7 @@
 {% block app_content %}
 <div class="row mt-1">
     <div class="col-md-6">
-        <form class="form-inline" action="" method="POST">
+        <form class="form-inline" action="" method="POST" autocomplete="off">
             {{ form.hidden_tag() }}
             <div class="form-group mt-2">
                 {{ form.name.label(class_="col-form-label") }} {% if form.name.flags.required %}*{% endif %}

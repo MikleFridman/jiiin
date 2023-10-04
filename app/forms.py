@@ -54,8 +54,8 @@ def validate_phone_global(form, field):
 
 
 def validate_username_global(form, field):
-    if len(field.data.strip()) < 8:
-        msg = _l('Min length username is 8 characters')
+    if len(field.data.strip()) < 6:
+        msg = _l('Min length username is 6 characters')
         flash(msg)
         raise ValidationError(msg)
     if len(field.data.strip()) > 32:
@@ -79,14 +79,15 @@ def validate_username_global(form, field):
 
 def validate_name_global(form, field):
     cyrillic_lower_letters = 'абвгдеёжзийклмнопрстуфхцчшщъыьэюя'
+    hebrew_letters = 'קראטוןםפשדגכעיחלךףזסבהנמצתץ'
     cyrillic_letters = cyrillic_lower_letters + cyrillic_lower_letters.upper()
-    if len(field.data.strip()) < 6:
-        msg = _l('Min length field "%(fn)s" is 6 characters', fn=field.label)
+    if len(field.data.strip()) < 3:
+        msg = _l('Min length field "%(fn)s" is 3 characters', fn=field.label)
         flash(msg)
         raise ValidationError(msg)
     symbols = '№#_-().,'
     abc = string.ascii_letters + string.digits + string.whitespace
-    abc += symbols + cyrillic_letters
+    abc += symbols + cyrillic_letters + hebrew_letters
     if len(field.data.strip(string.digits + symbols)) == 0:
         msg = _l('Field "%(fn)s" must contain minimum 1 letter',
                  fn=field.label)
@@ -140,9 +141,9 @@ class RegisterForm(FlaskForm):
 
 
 class LoginForm(FlaskForm):
-    username = StringField(_l('Username'), validators=[DataRequired()])
+    username = StringField(_l('Username or email'), validators=[DataRequired()])
     password = PasswordField(_l('Password'), validators=[DataRequired()])
-    remember_me = BooleanField(_l('Remember me'))
+    # remember_me = BooleanField(_l('Remember me'))
     submit = SubmitField(_l('Login'))
 
 

@@ -121,6 +121,18 @@ def admin_required(f):
     return wrap
 
 
+def global_admin_required(f):
+    @wraps(f)
+    def wrap(*args, **kwargs):
+        if current_user.check_permission('AdminView', 'read'):
+            return f(*args, **kwargs)
+        else:
+            flash(_l('Access denied'))
+            url_back = request.args.get('url_back', url_for('index'))
+            return redirect(url_back)
+    return wrap
+
+
 def confirm(desc):
     def outer(f):
         @wraps(f)
@@ -352,7 +364,7 @@ def register():
         db.session.flush()
         user.set_password(form.password.data)
         db.session.commit()
-        if not app.debug:
+        if not app.debug and app.config['SEND_BOT_MESSAGE']:
             msg = 'Registered new account: ' + form.username.data
             if form.promo_code.data:
                 msg += ' promo code: ' + form.promo_code.data
@@ -372,10 +384,13 @@ def login():
     if form.validate_on_submit():
         user = User.find_object({'username': form.username.data},
                                 overall=True)
+        if not user:
+            user = User.find_object({'email': form.username.data},
+                                    overall=True)
         if user is None or not user.check_password(form.password.data):
             flash(_('Invalid username or password'))
             return redirect(url_for('login'))
-        login_user(user, remember=form.remember_me.data)
+        login_user(user, remember=True)
         user.update_login_timestamp()
         if not user.company or not user.company.config:
             logout_user()
@@ -567,7 +582,7 @@ def staff_table():
 @admin_required
 @check_limit(Staff)
 def staff_create():
-    url_back = url_for('staff_table', **request.args)
+    url_back = request.args.get('next', url_for('staff_table', **request.args))
     next_page = request.args.get('next')
     if not next_page or url_parse(next_page).netloc != '':
         next_page = url_for('staff_table')
@@ -773,7 +788,8 @@ def schedules_table():
 @login_required
 @admin_required
 def schedule_create():
-    url_back = url_for('schedules_table', **request.args)
+    url_back = request.args.get('next',
+                                url_for('schedules_table', **request.args))
     form = ScheduleForm()
     if form.validate_on_submit():
         schedule = Schedule(cid=current_user.cid,
@@ -1048,8 +1064,10 @@ def client_file_download(client_id, id):
 def client_tags(client_id):
     url_back = url_for('client_edit', id=client_id, **request.args)
     form = ClientTagForm()
-    form.tags.choices = Tag.get_items(True)
-    form.tags.choices.pop(0)
+    tag_list = Tag.get_items(True)
+    if len(tag_list) > 0 and type(tag_list[0]) == tuple and tag_list[0][0] == 0:
+        tag_list.pop(0)
+    form.tags.choices = tag_list
     client = Client.get_object(client_id)
     if form.validate_on_submit():
         client.tags.clear()
@@ -1160,7 +1178,8 @@ def services_table():
 @login_required
 @admin_required
 def service_create():
-    url_back = url_for('services_table', **request.args)
+    url_back = request.args.get('next',
+                                url_for('services_table', **request.args))
     next_page = request.args.get('next')
     if not next_page or url_parse(next_page).netloc != '':
         next_page = url_for('services_table')
@@ -1251,7 +1270,8 @@ def locations_table():
 @admin_required
 @check_limit(Location)
 def location_create():
-    url_back = url_for('locations_table', **request.args)
+    url_back = request.args.get('next',
+                                url_for('locations_table', **request.args))
     next_page = request.args.get('next')
     if not next_page or url_parse(next_page).netloc != '':
         next_page = url_for('locations_table')
@@ -1352,6 +1372,8 @@ def location_delete_all_services(id):
 @app.route('/appointments/assistant/', methods=['GET', 'POST'])
 @login_required
 def appointment_assistant():
+    if not current_user.company.check_start_config():
+        return redirect(url_for('quick_start'))
     offset = request.args.get('offset', 0, type=int)
     form = set_filter(Assistant)
     param = get_filter_parameters(form, Assistant)[0]
@@ -1359,8 +1381,11 @@ def appointment_assistant():
     first_day = (datetime(datetime.now().year, datetime.now().month, 1).date() +
                  relativedelta(months=offset))
     calendar = get_calendar(days=42, data_filter=param, day_start=first_day)
+    n_holidays = NationalHoliday.get_month_holidays(first_day.year, first_day.month)
+
     return render_template('assistant.html',
                            calendar=calendar,
+                           holidays=n_holidays,
                            month=first_day,
                            form=form)
 
@@ -2241,15 +2266,19 @@ def export_download():
 @login_required
 def quick_start():
     check_list = [{'object': Schedule, 'title': _('Schedules'),
+                   'create_link': 'schedule_create',
                    'description':
                        _('Necessary to create at least one schedule')},
                   {'object': Location, 'title': _('Locations'),
+                   'create_link': 'location_create',
                    'description':
                        _('Necessary to create at least one location')},
                   {'object': Service, 'title': _('Services'),
+                   'create_link': 'service_create',
                    'description':
                        _('Necessary to create at least one service')},
                   {'object': Staff, 'title': _('Staff'),
+                   'create_link': 'staff_create',
                    'description':
                        _('Necessary to create at least one worker')}]
     progress = 0
@@ -2307,13 +2336,12 @@ def select_tariff(tariff_id):
     return redirect(url_for('price'))
 
 
-@app.route('/delete_inactive_accounts/', methods=['GET', 'POST'])
+# Admin views
+@app.route('/inactive_accounts/', methods=['GET', 'POST'])
 @login_required
-@admin_required
-def delete_inactive_accounts():
-    if not current_user.check_permission('AdminView', 'read'):
-        return redirect(url_for('index'))
-    send_mail = request.args.get('send_mail', 0, type=int)
+@global_admin_required
+def inactive_accounts():
+    flag_send_mail = request.args.get('send_mail', 0, type=int)
     active_users = User.query.filter(User.timestamp_login.isnot(None))
     active_companies = []
     for user in active_users:
@@ -2324,7 +2352,7 @@ def delete_inactive_accounts():
     for user in inactive_users:
         if user.company not in inactive_companies and user.company not in active_companies:
             inactive_companies.append(user.company)
-    if send_mail == 1:
+    if flag_send_mail == 1:
         with mail.connect() as conn:
             for company in inactive_companies:
                 subject = _('Inactive account') + ' Jiiin'
@@ -2340,10 +2368,10 @@ def delete_inactive_accounts():
                            items=inactive_companies)
 
 
-@app.route('/delete_account_admin/<company_id>', methods=['GET', 'POST'])
+@app.route('/delete_account_admin/<company_id>/', methods=['GET', 'POST'])
 @login_required
-@admin_required
-@confirm(_l('Confirm deletion account and all data'))
+@global_admin_required
+@confirm(_l('Confirm deletion account'))
 def delete_account_admin(company_id):
     url_back = request.args.get('url_back',
                                 url_for('delete_inactive_accounts'))
@@ -2352,3 +2380,38 @@ def delete_account_admin(company_id):
     # db.session.commit()
     flash(_('Account successfully deleted'))
     return redirect(url_back)
+
+
+@app.route('/get_hebrew_calendar/', methods=['GET', 'POST'])
+@login_required
+@global_admin_required
+@confirm(_l('Complete calendar of national holidays?'))
+def get_hebrew_calendar():
+    year = request.args.get('year', None, type=str)
+    month = request.args.get('month', None, type=str)
+    url = 'https://www.hebcal.com/hebcal?v=1&cfg=json&maj=on&mod=on&min=off&i=on'
+    if year:
+        url += '&year=' + year
+    else:
+        url += '&year=now'
+    if month:
+        url += '&month=' + month
+    json_data = json.load(urlopen(url))
+    count = 0
+    for item in json_data['items']:
+        date = datetime.strptime(item['date'], '%Y-%m-%d').date()
+        name = item['title']
+        description = item['memo']
+        data_filter = {'date': date, 'name': name}
+        holidays = NationalHoliday.get_items(data_filter=data_filter,
+                                             overall=True)
+        if not holidays:
+            n_holiday = NationalHoliday(date=date,
+                                        name=name,
+                                        description=description)
+            db.session.add(n_holiday)
+            db.session.flush()
+            count += 1
+    if count:
+        db.session.commit()
+    return redirect(url_for('index'))

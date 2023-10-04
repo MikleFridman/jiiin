@@ -1,24 +1,31 @@
-{% macro render_footer(endpoint) %}
+{% macro render_footer(endpoint, header, holidays) %}
   {% with param=kwargs %}
   {% with offset=param.pop('offset', ['0']) | first() | int %}
-  <div class='d-none d-lg-flex justify-content-end mt-3'>
-    <ul class="pagination">
-        {% if offset > 0 %}
+  <div class='d-none d-lg-flex justify-content-between mt-3'>
+      <div class="ms-1">
+          <a class="text-decoration-none" data-bs-toggle="offcanvas" href="#offcanvasHolidays" role="button" aria-controls="offcanvasHolidays">
+          {{ _('Holidays this month') }}
+          </a>
+      </div>
+      <div>
+        <ul class="pagination">
+            {% if offset > 0 %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for(endpoint, offset = [0, offset - 1] | max, **param) }}">&laquo;</a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <a class="page-link" href="#">&laquo;</a>
+                </li>
+            {% endif %}
             <li class="page-item">
-                <a class="page-link" href="{{ url_for(endpoint, offset = [0, offset - 1] | max, **param) }}">&laquo;</a>
+                <a class="page-link" href="{{ url_for(endpoint, **param) }}">{{ _('Today') }}</a>
             </li>
-        {% else %}
-            <li class="page-item disabled">
-                <a class="page-link" href="#">&laquo;</a>
+            <li class="page-item d-flex justify-content-end">
+              <a class="page-link" href="{{ url_for(endpoint, offset = offset + 1, **param) }}">&raquo;</a>
             </li>
-        {% endif %}
-        <li class="page-item">
-            <a class="page-link" href="{{ url_for(endpoint, **param) }}">{{ _('Today') }}</a>
-        </li>
-        <li class="page-item d-flex justify-content-end">
-          <a class="page-link" href="{{ url_for(endpoint, offset = offset + 1, **param) }}">&raquo;</a>
-        </li>
-    </ul>
+        </ul>
+      </div>
   </div>
   <div class='d-block d-lg-none d-flex flex-column justify-content-center align-items-center mt-3'>
     <ul class="pagination">
@@ -38,7 +45,24 @@
             <a id="next" class="page-link" href="{{ url_for(endpoint, offset = offset + 1, **param) }}">&raquo;</a>
         </li>
     </ul>
+      <div>
+        <a class="text-decoration-none" data-bs-toggle="offcanvas" href="#offcanvasHolidays" role="button" aria-controls="offcanvasHolidays">
+        {{ _('Holidays this month') }}
+        </a>
+    </div>
   </div>
+
+<div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasHolidays" aria-labelledby="offcanvasHolidaysLabel">
+  <div class="offcanvas-header">
+    <h4 class="offcanvas-title" id="offcanvasHolidaysLabel">{{ header }}</h4>
+    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+  </div>
+  <div class="offcanvas-body">
+      {% for date, name in holidays['items'].items() %}
+      <li class="list-unstyled">{{ date.strftime('%d/%m') }} - {{ name }}</li>
+      {% endfor %}
+  </div>
+</div>
   {% endwith %}
   {% endwith %}
 

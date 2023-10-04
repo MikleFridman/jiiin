@@ -15,7 +15,7 @@
         </div>
         <div class="row row-cols-7 flex-nowrap">
             {% for date, day in calendar.items() %}
-                <div class="col p-0 pe-1 border {% if date < today_date %}bg-secondary bg-opacity-50{% elif date.month != month.month %}bg-light bg-opacity-50{% endif %}">
+                <div class="col p-0 pe-1 border {% if date < today_date %}bg-secondary bg-opacity-50{% elif date.month != month.month %}bg-light bg-opacity-50{% elif date in holidays['dates'] %}bg-warning bg-opacity-25{% endif %}">
                     {% if date >= today_date %}
                         <a class="text-decoration-none text-reset" href="{{ url_for('select_date', date=date, url_back=url_for('services_table', choice_mode=1, **request.args)) }}">
                     {% endif %}
@@ -49,5 +49,5 @@
         </a>
     </div>
     {% import '_calendar_footer.html' as forms %}
-    {{ forms.render_footer('appointment_assistant', **request.args) }}
+    {{ forms.render_footer('appointment_assistant', moment(month).format('MMMM'), holidays, **request.args) }}
 {% endblock %}

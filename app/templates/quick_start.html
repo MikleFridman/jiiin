@@ -10,52 +10,88 @@
   <div class="progress-bar progress-bar-striped" role="progressbar" style="width: {{ progress }}%;" aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100"></div>
 </div>
 <!--Screen SM-XL-->
+{% set control_loop=({'break': False}) %}
 <div class="d-none d-sm-block">
     <div class="row">
     {% for class in check_list %}
         <div class="col-3">
           {% if class['flag'] %}
             <div class="card border-success mb-4" style="max-width: 20rem;">
+                <div class="card-header">{{ loop.index }}. {{ class['title'] }}</div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div class="card-text">{{ _('Successfully configured') }}</div>
+                        <div>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all text-success" viewBox="0 0 16 16">
+                              <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0l7-7zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0z"/>
+                              <path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
           {% else %}
+            {% if not control_loop.break %}
             <div class="card border-danger mb-4" style="max-width: 20rem;">
-          {% endif %}
-          <a class="text-decoration-none text-reset card-link" href="{{ url_for(class.object.table_link, next=url_for('quick_start')) }}">
-              <div class="card-header">{{ class['title'] }}</div>
-              <div class="card-body">
-                  {% if class['flag'] %}
-                    <p class="card-text">{{ _('Successfully configured') }}</p>
-                  {% else %}
+                <div class="card-header">{{ loop.index }}. {{ class['title'] }}</div>
+                <div class="card-body">
                     <p class="card-text">{{ class['description'] }}</p>
-                  {% endif %}
-              </div>
-          </a>
+                    <div class="d-flex justify-content-center">
+                        <a class="text-decoration-none text-reset card-link" href="{{ url_for(class.create_link, next=url_for('quick_start')) }}">
+                            <button type="button" class="btn btn-primary">
+                                {{ _('Add new') }}
+                            </button>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% if control_loop.update({'break': True}) %} {% endif%}
+          {% endif %}
         </div>
-    </div>
     {% endfor%}
     </div>
 </div>
 <!--Screen XS    -->
+{% set control_loop=({'break': False}) %}
 <div class="d-block d-sm-none">
     <div class='row'>
     {% for class in check_list %}
         <div class="col-12 d-flex flex-column justify-content-center align-items-center">
           {% if class['flag'] %}
             <div class="card border-success mb-4" style="width: 95%;">
+                <div class="card-header">{{ loop.index }}. {{ class['title'] }}</div>
+                <div class="card-body">
+                    <div class="d-flex justify-content-between">
+                        <div class="card-text">{{ _('Successfully configured') }}</div>
+                        <div>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-check2-all text-success" viewBox="0 0 16 16">
+                              <path d="M12.354 4.354a.5.5 0 0 0-.708-.708L5 10.293 1.854 7.146a.5.5 0 1 0-.708.708l3.5 3.5a.5.5 0 0 0 .708 0l7-7zm-4.208 7-.896-.897.707-.707.543.543 6.646-6.647a.5.5 0 0 1 .708.708l-7 7a.5.5 0 0 1-.708 0z"/>
+                              <path d="m5.354 7.146.896.897-.707.707-.897-.896a.5.5 0 1 1 .708-.708z"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
           {% else %}
+            {% if not control_loop.break %}
             <div class="card border-danger mb-4" style="width: 95%;">
-          {% endif %}
-          <a class="text-decoration-none text-reset card-link" href="{{ url_for(class.object.table_link, next=url_for('quick_start')) }}">
-              <div class="card-header">{{ class['title'] }}</div>
-              <div class="card-body">
-                  {% if class['flag'] %}
-                    <p class="card-text">{{ _('Successfully configured') }}</p>
-                  {% else %}
+                <div class="card-header">{{ loop.index }}. {{ class['title'] }}</div>
+                <div class="card-body">
                     <p class="card-text">{{ class['description'] }}</p>
-                  {% endif %}
-              </div>
-          </a>
+                    <div class="d-flex justify-content-center">
+                        <a class="text-decoration-none text-reset card-link" href="{{ url_for(class.create_link, next=url_for('quick_start')) }}">
+                            <button type="button" class="btn btn-primary">
+                                {{ _('Создать') }}
+                            </button>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% if control_loop.update({'break': True}) %} {% endif%}
+          {% endif %}
         </div>
-    </div>
     {% endfor%}
     </div>
 </div>
