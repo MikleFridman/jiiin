@@ -18,7 +18,7 @@
 </script>
 {% endif %}
 <div class="row">
-    <div class="col-md-6">
+    <div class="col-md-6 mb-2">
         <form class="form-inline" action="" method="POST" autocomplete="off">
             {{ form.hidden_tag() }}
             {% for field in form if field.widget.input_type != 'hidden' and field.widget.input_type != 'submit' %}

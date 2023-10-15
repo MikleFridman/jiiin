@@ -370,6 +370,10 @@ def register():
                 msg += ' promo code: ' + form.promo_code.data
             send_bot_message(app.config['ADMIN_CHAT_ID'], msg)
         flash(_('Registration successfully'), 'info')
+        send_mail(subject=_('Registration') + ' Jiiin',
+                  sender=app.config['MAIL_DEFAULT_SENDER'],
+                  recipients=[form.email.data],
+                  text_body=render_template('welcome.txt'))
         return redirect(url_for('login'))
     return render_template('data_form.html',
                            form=form,

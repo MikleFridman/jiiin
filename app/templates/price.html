@@ -5,9 +5,8 @@
     {% for p in plans %}
     <div class="col-md-3 mt-3" style="max-width:90%">
         <div class="card border-primary shadow mb-3 rounded-3 text-center position-relative">
-
           {% if p.default %}
-            <h4 class="card-header py-3 bg-primary bg-gradient bg-opacity-25 text-вфкл">{{ p.name }}</h4>
+            <h4 class="card-header py-3 bg-primary bg-gradient bg-opacity-25 text-dark">{{ p.name }}</h4>
           {% else %}
             <h4 class="card-header py-3 bg-primary bg-gradient bg-opacity-75 text-white">{{ p.name }}</h4>
           {% endif %}

@@ -155,11 +155,11 @@
             <div class="form-group col-md-12">
                 <hr>
                 <div class="d-flex justify-content-between mt-3 mb-2">
-                    <div>
+                    <div class="mb-2">
                         <button type="button" class="btn btn-secondary" onclick="window.location.href='{{ url_back }}'">{{ _('Back') }}</button>
                     </div>
                     {% if appointment_id %}
-                    <div class="{% if payment_id %}ms-auto{% endif %}">
+                    <div class="{% if payment_id %}ms-auto{% endif %} mb-2">
                         <div class="btn-group" role="group" aria-label="">
                           <button type="button" class="btn btn-light">
                               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-grid-3x3-gap-fill text-primary" viewBox="0 0 16 16">
@@ -190,7 +190,7 @@
                         {% endif %}
                     {% endif %}
                     <div>
-                        <button type="submit" class="btn btn-primary">{{ _('Submit') }}</button>
+                        <button type="submit" class="btn btn-primary mb-2">{{ _('Submit') }}</button>
                     </div>
                 </div>
             </div>

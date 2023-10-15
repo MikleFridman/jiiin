@@ -13,11 +13,11 @@
 <div id="myTabContent" class="tab-content">
     <div class="tab-pane fade show active" id="ru" role="tabpanel">
         <h2 class="mt-3">Добро пожаловать в Jiiin!</h2>
-        <div style="align-text:; margin-top:10px">
+        <div style="text-align:justify; margin-top:10px">
             Jiiin - бесплатный онлайн-помощник для учета и записи клиентов. Что он умеет?
         </div>
 
-        <div style="align-text:justify; margin-top:10px; margin-bottom:5px">На данный момент у нас есть:</div>
+        <div style="text-align:justify; margin-top:10px; margin-bottom:5px">На данный момент у нас есть:</div>
         <ul>
             <li>Филиалы (адреса обслуживания)</li>
             <li>Услуги (стоимость, длительность, привязка к филиалам)</li>
@@ -32,18 +32,18 @@
             <li>Мультиязычный интерфейс (русский, английский)</li>
             <li>...</li>
         </ul>
-        <div style="align-text:justify">
+        <div style="text-align:justify">
             Регистрируйтесь, пользуйтесь, давайте обратную связь. Вместе мы сделаем лучший продукт!
         </div>
     </div>
 
     <div class="tab-pane fade" id="eng" role="tabpanel">
         <h2 class="mt-3">Welcome to Jiiin!</h2>
-        <div style="align-text:; margin-top:10px">
+        <div style="text-align:justify; margin-top:10px">
             Jiiin is a free online assistant for accounting and recording clients. What can he do?
         </div>
 
-        <div style="align-text:justify; margin-top:10px; margin-bottom:5px">At the moment, we have:</div>
+        <div style="text-align:justify; margin-top:10px; margin-bottom:5px">At the moment, we have:</div>
         <ul>
             <li>Branches (service addresses)</li>
             <li>Services (cost, duration, linked to branches)</li>
@@ -58,12 +58,12 @@
             <li>Multilingual interface (russian, english)</li>
             <li>...</li>
         </ul>
-        <div style="align-text:justify">
+        <div style="text-align:justify">
             Register, use it, and give us feedback. Together we will make the best product!
         </div>
     </div>
 </div>
-<div class="d-flex justify-content-center mt-3">
+<div class="d-flex justify-content-center mt-3 mb-4">
     <button type="button" class="btn btn-primary" onclick="window.location.href='{{ url_for('register') }}'">{{ _('Register') }}</button>
 </div>
 {% endblock %}
